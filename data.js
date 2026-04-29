@@ -8,6 +8,7 @@ const T = {
     'nav.certificates': { id:'Sertifikat',      en:'Certificates' },
     'nav.projects':     { id:'Proyek',          en:'Projects' },
     'nav.business':       { id:'Bisnis',        en:'Business' },
+    'nav.learn':          { id:'Belajar',       en:'Learn' },
     'nav.login':        { id:'Masuk / Daftar',  en:'Login / Sign Up' },
     'nav.contact':      { id:'Hubungi',         en:'Contact' },
     'nav.contactFull':  { id:'Hubungi Saya',    en:'Contact Me' },

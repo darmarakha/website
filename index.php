@@ -85,13 +85,14 @@ session_start(); // Wajib di baris pertama untuk melacak status login user
                     <span class="font-semibold text-base sm:text-lg tracking-tight text-white transition-colors duration-300" id="nav-logo-text">Darma Rakhaa</span>
                 </a>
 
-                <div class="hidden md:flex items-center gap-6 lg:gap-8">
+                <div class="hidden xl:flex items-center gap-5 2xl:gap-7">
                     <a href="#about" class="nav-link text-sm font-medium text-white/80 hover:text-white transition-colors" data-i18n="nav.about">Tentang</a>
                     <a href="#experience" class="nav-link text-sm font-medium text-white/80 hover:text-white transition-colors" data-i18n="nav.experience">Pengalaman</a>
                     <a href="#skills" class="nav-link text-sm font-medium text-white/80 hover:text-white transition-colors" data-i18n="nav.skills">Keahlian</a>
                     <a href="#certifications" class="nav-link text-sm font-medium text-white/80 hover:text-white transition-colors" data-i18n="nav.certificates">Sertifikat</a>
                     <a href="#projects" class="nav-link text-sm font-medium text-white/80 hover:text-white transition-colors" data-i18n="nav.projects">Proyek</a>
                     <a href="Bisnis/" class="nav-link text-sm font-medium text-white/80 hover:text-white transition-colors" data-i18n="nav.business">Bisnis</a>
+                    <a href="/Belajar/Index.php" class="nav-link text-sm font-medium text-white/80 hover:text-white transition-colors" data-i18n="nav.learn">Belajar</a>
 
                     <div class="lang-toggle" id="lang-toggle-desktop">
                         <button class="lang-btn" data-lang="id" onclick="switchLang('id')">ID</button>
@@ -125,15 +126,15 @@ session_start(); // Wajib di baris pertama untuk melacak status login user
                     <?php endif; ?>
                 </div>
 
-                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 flex items-center justify-center rounded-lg text-white hover:bg-white/10 active:bg-white/20 transition-colors z-10" aria-label="Menu">
+                <button id="mobile-menu-btn" class="xl:hidden w-10 h-10 flex items-center justify-center rounded-lg text-white hover:bg-white/10 active:bg-white/20 transition-colors z-10" aria-label="Menu">
                     <i data-lucide="menu" class="w-5 h-5" id="menu-icon-open"></i>
                     <i data-lucide="x" class="w-5 h-5 hidden" id="menu-icon-close"></i>
                 </button>
             </div>
         </div>
 
-        <div id="mobile-menu-overlay" class="md:hidden fixed inset-0 bg-black/50 z-40 hidden opacity-0 transition-opacity duration-300"></div>
-        <div id="mobile-menu" class="md:hidden fixed top-0 right-0 bottom-0 w-[280px] max-w-[80vw] bg-navy-950 z-50 transform translate-x-full transition-transform duration-300 ease-in-out shadow-2xl">
+        <div id="mobile-menu-overlay" class="xl:hidden fixed inset-0 bg-black/50 z-40 hidden opacity-0 transition-opacity duration-300"></div>
+        <div id="mobile-menu" class="xl:hidden fixed top-0 right-0 bottom-0 w-[280px] max-w-[80vw] bg-navy-950 z-50 transform translate-x-full transition-transform duration-300 ease-in-out shadow-2xl">
             <div class="pt-20 pb-6 px-6 h-full flex flex-col">
                 <div class="flex justify-center mb-4">
                     <div class="lang-toggle" id="lang-toggle-mobile">
@@ -160,6 +161,9 @@ session_start(); // Wajib di baris pertama untuk melacak status login user
                     </a>
                     <a href="Bisnis/" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
                         <span class="flex items-center gap-3"><i data-lucide="pie-chart" class="w-4 h-4 opacity-50"></i><span data-i18n="nav.business">Bisnis</span></span>
+                    </a>
+                    <a href="/Belajar/Index.php" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
+                        <span class="flex items-center gap-3"><i data-lucide="book-open" class="w-4 h-4 opacity-50"></i><span data-i18n="nav.learn">Belajar</span></span>
                     </a>
                 </div>
                 
