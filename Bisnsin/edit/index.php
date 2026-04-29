@@ -23,9 +23,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_product'])) {
     $newProduct = [
         'id' => time(),
         'title' => htmlspecialchars($_POST['title']),
+        'title_en' => htmlspecialchars($_POST['title_en'] ?? ''),
         'price' => htmlspecialchars($_POST['price']),
         'shortDesc' => htmlspecialchars($_POST['shortDesc']),
+        'shortDesc_en' => htmlspecialchars($_POST['shortDesc_en'] ?? ''),
         'fullDesc' => $_POST['fullDesc'], // Bisa berisi HTML
+        'fullDesc_en' => $_POST['fullDesc_en'] ?? '',
         'images' => []
     ];
 
@@ -108,6 +111,10 @@ if (isset($_GET['delete'])) {
                             <input type="text" name="title" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
                         </div>
                         <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Product / Service Name (EN)</label>
+                            <input type="text" name="title_en" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
+                        </div>
+                        <div>
                             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Harga (Teks)</label>
                             <input type="text" name="price" placeholder="Contoh: Rp 500.000" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
                         </div>
@@ -116,8 +123,16 @@ if (isset($_GET['delete'])) {
                             <textarea name="shortDesc" rows="2" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
                         </div>
                         <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Short Description (EN)</label>
+                            <textarea name="shortDesc_en" rows="2" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
+                        </div>
+                        <div>
                             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Deskripsi Lengkap (HTML)</label>
                             <textarea name="fullDesc" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Full Description (EN HTML)</label>
+                            <textarea name="fullDesc_en" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
                         </div>
                         <div>
                             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Upload File (JPG, JPEG, PNG, PDF)</label>
@@ -125,7 +140,7 @@ if (isset($_GET['delete'])) {
                                 <input type="file" name="files[]" multiple accept=".jpg,.jpeg,.pdf,.png" class="absolute inset-0 opacity-0 cursor-pointer">
                                 <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
                                 <p class="text-xs text-slate-500">Klik atau seret file ke sini</p>
-                                <p class="text-[10px] text-slate-400 mt-1">Urutan file penting: file pertama jadi cover katalog. PDF tetap bisa ditampilkan saat detail dibuka.</p>
+                                <p class="text-[10px] text-slate-400 mt-1">Cover otomatis pakai file gambar pertama (JPG/JPEG/PNG). Jika semua file PDF, kartu akan tampil sebagai dokumen PDF.</p>
                             </div>
                         </div>
                         <button type="submit" name="save_product" class="w-full py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-600/20">
@@ -152,7 +167,12 @@ if (isset($_GET['delete'])) {
                             <div class="w-24 h-24 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
                                 <?php if (!empty($p['images'])): ?>
                                     <?php 
-                                        $ext = pathinfo($p['images'][0], PATHINFO_EXTENSION);
+                                        $coverPath = $p['images'][0];
+                                        foreach ($p['images'] as $filePath) {
+                                            $candidateExt = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+                                            if (in_array($candidateExt, ['jpg', 'jpeg', 'png'])) { $coverPath = $filePath; break; }
+                                        }
+                                        $ext = strtolower(pathinfo($coverPath, PATHINFO_EXTENSION));
                                         if ($ext === 'pdf'):
                                     ?>
                                         <div class="w-full h-full flex flex-col items-center justify-center text-red-500">
@@ -160,7 +180,7 @@ if (isset($_GET['delete'])) {
                                             <span class="text-[10px] font-bold">PDF</span>
                                         </div>
                                     <?php else: ?>
-                                        <img src="<?php echo $p['images'][0]; ?>" class="w-full h-full object-cover">
+                                        <img src="<?php echo $coverPath; ?>" class="w-full h-full object-cover">
                                     <?php endif; ?>
                                 <?php endif; ?>
                             </div>
