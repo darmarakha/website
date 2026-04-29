@@ -144,11 +144,12 @@ const toolBadges = ['Ms. Office','Ms. Excel','Data Entry','HR Administration','P
 
 const certsData = [
     {
-        // coverSrc = foto cover di index, pdfSrc = file PDF untuk popup (opsional)
-        // Jika pdfSrc kosong, popup akan memakai fullSrc / coverSrc.
-        coverSrc:'edit/uploads/certificate-bnsp1.jpg',
-        fullSrc:'edit/uploads/certificate-bnsp1.jpg',
-        pdfSrc:'',
+        // CONTOH REAL (cover foto + PDF popup):
+        // - coverSrc: pakai foto upload yang sudah ada di server
+        // - pdfSrc: pakai link PDF (ganti dengan file upload PDF kamu sendiri bila sudah ada)
+        coverSrc:'edit/uploads/1777446476_WhatsAppImage20260429at13.57.11.jpeg',
+        fullSrc:'edit/uploads/1777446476_WhatsAppImage20260429at13.57.11.jpeg',
+        pdfSrc:'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
         tagKey:'cert.tagBNSP', tagIcon:'award',
         titleKey:'cert.t1', descKey:'cert.d1',
         featured: false, span: ''
