@@ -87,7 +87,7 @@ const T = {
     // --- Certifications ---
     'cert.label':    { id:'Bukti Kompetensi', en:'Proof of Competence' },
     'cert.title':    { id:'Sertifikat Saya',  en:'My Certificates' },
-    'cert.subtitle': { id:'Klik pada setiap kartu untuk melihat gambar sertifikat secara lengkap.', en:'Click on each card to view the full certificate image.' },
+    'cert.subtitle': { id:'Klik pada setiap kartu untuk melihat sertifikat (gambar / PDF) secara lengkap.', en:'Click on each card to view the full certificate (image / PDF).' },
     'cert.viewBtn':  { id:'Lihat Sertifikat', en:'View Certificate' },
     'cert.featured': { id:'Unggulan',        en:'Featured' },
 
