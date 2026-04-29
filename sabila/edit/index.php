@@ -69,19 +69,19 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
 
             <div class="p-5">
                 <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <i data-lucide="image" class="w-3.5 h-3.5"></i> Upload Gambar Baru
+                    <i data-lucide="file-up" class="w-3.5 h-3.5"></i> Upload File Sertifikat
                 </h2>
                 <div class="bg-[#161b22] border border-[#30363d] rounded-md p-4 text-center border-dashed">
-                    <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="uploadImage()">
-                    <label for="image-upload" class="cursor-pointer flex flex-col items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                    <input type="file" id="asset-upload" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" class="hidden" onchange="uploadAsset()">
+                    <label for="asset-upload" class="cursor-pointer flex flex-col items-center gap-2 text-gray-400 hover:text-white transition-colors">
                         <i data-lucide="upload-cloud" class="w-6 h-6"></i>
-                        <span class="text-xs font-medium" id="upload-text">Klik untuk pilih gambar</span>
+                        <span class="text-xs font-medium" id="upload-text">Klik untuk pilih JPG/JPEG/PNG/PDF</span>
                     </label>
                 </div>
                 
-                <div id="image-result" class="mt-4 hidden">
-                    <p class="text-[10px] text-gray-400 mb-1">URL Gambar (Copy paste ke data.js):</p>
-                    <input type="text" id="image-url" readonly class="w-full bg-[#0d1117] border border-[#30363d] text-xs rounded-md px-2 py-1.5 text-blue-400 cursor-copy" onclick="this.select(); document.execCommand('copy'); alert('Link disalin!');">
+                <div id="asset-result" class="mt-4 hidden">
+                    <p class="text-[10px] text-gray-400 mb-1">URL File (copy ke data.js):</p>
+                    <input type="text" id="asset-url" readonly class="w-full bg-[#0d1117] border border-[#30363d] text-xs rounded-md px-2 py-1.5 text-blue-400 cursor-copy" onclick="this.select(); document.execCommand('copy'); alert('Link disalin!');">
                 </div>
             </div>
         </aside>
@@ -152,8 +152,8 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
             }
         }
 
-        async function uploadImage() {
-            const fileInput = document.getElementById('image-upload');
+        async function uploadAsset() {
+            const fileInput = document.getElementById('asset-upload');
             const file = fileInput.files[0];
             if(!file) return;
 
@@ -162,23 +162,22 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
 
             try {
                 const fd = new FormData();
-                fd.append('action', 'upload_image');
-                fd.append('image', file);
+                fd.append('action', 'upload_asset');
+                fd.append('asset', file);
 
                 const res = await fetch('api.php', { method: 'POST', body: fd });
                 const data = await res.json();
 
                 if(data.status === 'success') {
-                    document.getElementById('image-result').classList.remove('hidden');
-                    // Tampilkan URL gambar agar bisa dicopy ke data.js
-                    document.getElementById('image-url').value = data.url; 
+                    document.getElementById('asset-result').classList.remove('hidden');
+                    document.getElementById('asset-url').value = data.url; 
                 } else {
                     alert(data.message);
                 }
             } catch(e) {
-                alert('Gagal upload gambar.');
+                alert('Gagal upload file.');
             } finally {
-                text.textContent = 'Klik untuk pilih gambar';
+                text.textContent = 'Klik untuk pilih JPG/JPEG/PNG/PDF';
                 fileInput.value = ''; // Reset input
             }
         }
