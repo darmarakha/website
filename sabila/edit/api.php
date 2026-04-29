@@ -44,10 +44,9 @@ if ($action === 'load_file') {
         echo json_encode(['status' => 'error', 'message' => 'Gagal menyimpan file. Pastikan Permission file di cPanel adalah 0644.']);
     }
 
-} elseif ($action === 'upload_image') {
-    // Memproses unggahan gambar
-    if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
-        echo json_encode(['status' => 'error', 'message' => 'Gagal mengupload gambar.']);
+} elseif ($action === 'upload_asset') {
+    if (!isset($_FILES['asset']) || $_FILES['asset']['error'] !== UPLOAD_ERR_OK) {
+        echo json_encode(['status' => 'error', 'message' => 'Gagal mengupload file.']);
         exit;
     }
 
@@ -58,14 +57,27 @@ if ($action === 'load_file') {
     }
 
     // Bersihkan nama file agar aman dan tidak menimpa file lama
-    $fileName = time() . '_' . preg_replace("/[^a-zA-Z0-9.]/", "", basename($_FILES['image']['name']));
+    $originalName = basename($_FILES['asset']['name']);
+    $safeName = preg_replace("/[^a-zA-Z0-9._-]/", "", $originalName);
+    $ext = strtolower(pathinfo($safeName, PATHINFO_EXTENSION));
+    $allowedExt = ['jpg', 'jpeg', 'png', 'pdf'];
+
+    if (!in_array($ext, $allowedExt, true)) {
+        echo json_encode(['status' => 'error', 'message' => 'Format file tidak didukung. Gunakan JPG, JPEG, PNG, atau PDF.']);
+        exit;
+    }
+
+    $fileName = time() . '_' . $safeName;
     $targetPath = $uploadDir . $fileName;
 
-    if (move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
-        // Kembalikan path lengkap dari root website (misal: edit/uploads/gambar.jpg)
-        echo json_encode(['status' => 'success', 'url' => 'edit/' . $targetPath]);
+    if (move_uploaded_file($_FILES['asset']['tmp_name'], $targetPath)) {
+        echo json_encode([
+            'status' => 'success',
+            'url' => 'edit/' . $targetPath,
+            'type' => $ext === 'pdf' ? 'pdf' : 'image'
+        ]);
     } else {
-        echo json_encode(['status' => 'error', 'message' => 'Gagal memindahkan file gambar ke server.']);
+        echo json_encode(['status' => 'error', 'message' => 'Gagal memindahkan file ke server.']);
     }
 
 } else {

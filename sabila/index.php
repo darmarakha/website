@@ -430,6 +430,7 @@ session_start(); // Wajib di baris pertama untuk melacak status login user
         <div class="lightbox-img w-full max-w-5xl max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
             <p id="lightbox-title" class="text-white text-center font-semibold mb-2 sm:mb-4 text-sm sm:text-lg flex-shrink-0 px-8"></p>
             <img id="lightbox-img" src="" alt="" class="w-full h-auto max-h-[80vh] object-contain rounded-lg sm:rounded-xl shadow-2xl">
+            <iframe id="lightbox-pdf" src="" class="hidden w-full h-[80vh] rounded-lg sm:rounded-xl shadow-2xl bg-white" title="Certificate PDF"></iframe>
         </div>
     </div>
 

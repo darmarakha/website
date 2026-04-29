@@ -87,7 +87,7 @@ const T = {
     // --- Certifications ---
     'cert.label':    { id:'Bukti Kompetensi', en:'Proof of Competence' },
     'cert.title':    { id:'Sertifikat Saya',  en:'My Certificates' },
-    'cert.subtitle': { id:'Klik pada setiap kartu untuk melihat gambar sertifikat secara lengkap.', en:'Click on each card to view the full certificate image.' },
+    'cert.subtitle': { id:'Klik pada setiap kartu untuk melihat sertifikat (gambar / PDF) secara lengkap.', en:'Click on each card to view the full certificate (image / PDF).' },
     'cert.viewBtn':  { id:'Lihat Sertifikat', en:'View Certificate' },
     'cert.featured': { id:'Unggulan',        en:'Featured' },
 
@@ -143,27 +143,45 @@ const skillsI18n = {
 const toolBadges = ['Ms. Office','Ms. Excel','Data Entry','HR Administration','Public Speaking','Interviewing'];
 
 const certsData = [
+    // ============================================================
+    // TEMPLATE SERTIFIKAT (RAPIH + MUDAH DI-COPY)
+    // ============================================================
+    // coverSrc : gambar yang tampil di kartu index
+    // fullSrc  : fallback gambar full (kalau pdfSrc kosong)
+    // pdfSrc   : file PDF untuk popup ketika kartu di-klik
     {
-        // TODO: Ganti URL gambar sertifikat BNSP Staff SDM
-        imgSeed:'certificate-bnsp1', fullSeed:'certificate-bnsp1',
-        tagKey:'cert.tagBNSP', tagIcon:'award',
-        titleKey:'cert.t1', descKey:'cert.d1',
-        featured: false, span: ''
+        coverSrc: 'edit/uploads/1777446476_WhatsAppImage20260429at13.57.11.jpeg',
+        fullSrc: 'edit/uploads/1777446476_WhatsAppImage20260429at13.57.11.jpeg',
+        pdfSrc: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        tagKey: 'cert.tagBNSP',
+        tagIcon: 'award',
+        titleKey: 'cert.t1',
+        descKey: 'cert.d1',
+        featured: true,
+        span: ''
     },
     {
-        // TODO: Ganti URL gambar sertifikat BNSP Supervisor SDM
-        imgSeed:'certificate-bnsp2', fullSeed:'certificate-bnsp2',
-        tagKey:'cert.tagBNSP', tagIcon:'award',
-        titleKey:'cert.t2', descKey:'cert.d2',
-        featured: true, span: ''
+        coverSrc: 'edit/uploads/1777446476_WhatsAppImage20260429at13.57.11.jpeg',
+        fullSrc: 'edit/uploads/1777446476_WhatsAppImage20260429at13.57.11.jpeg',
+        pdfSrc: '',
+        tagKey: 'cert.tagBNSP',
+        tagIcon: 'award',
+        titleKey: 'cert.t2',
+        descKey: 'cert.d2',
+        featured: false,
+        span: ''
     },
     {
-        // TODO: Ganti URL gambar sertifikat magang KJSS
-        imgSeed:'certificate-magang', fullSeed:'certificate-magang',
-        tagKey:'cert.tagMagang', tagIcon:'briefcase',
-        titleKey:'cert.t3', descKey:'cert.d3',
-        featured: false, span: 'sm:col-span-2 md:col-span-1'
-    },
+        coverSrc: 'edit/uploads/1777446476_WhatsAppImage20260429at13.57.11.jpeg',
+        fullSrc: 'edit/uploads/1777446476_WhatsAppImage20260429at13.57.11.jpeg',
+        pdfSrc: '',
+        tagKey: 'cert.tagMagang',
+        tagIcon: 'briefcase',
+        titleKey: 'cert.t3',
+        descKey: 'cert.d3',
+        featured: false,
+        span: 'sm:col-span-2 md:col-span-1'
+    }
 ];
 
 const certsI18n = {
