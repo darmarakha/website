@@ -250,12 +250,18 @@ session_start(); // Wajib untuk melacak status login user
                     const ext = src.split('.').pop().toLowerCase();
                     if (ext === 'pdf') {
                         return `
-                            <div class="gallery-img w-full h-full flex flex-col items-center justify-center absolute inset-0 m-auto ${i === 0 ? 'active' : ''}">
-                                <i data-lucide="file-text" class="w-16 h-16 text-white mb-4"></i>
-                                <a href="edit/${src}" target="_blank" class="px-4 py-2 bg-accent-500 text-white rounded font-bold text-sm hover:bg-accent-600">Buka PDF di Tab Baru</a>
+                            <div class="gallery-img w-full h-full absolute inset-0 m-auto ${i === 0 ? 'active' : ''}">
+                                <iframe
+                                    src="edit/${src}#toolbar=0&navpanes=0&scrollbar=0&view=FitH"
+                                    class="w-full h-full bg-white rounded-xl"
+                                    title="Dokumen PDF ${i + 1}"
+                                    loading="lazy"
+                                    sandbox="allow-same-origin allow-scripts"
+                                    referrerpolicy="no-referrer"
+                                ></iframe>
                             </div>`;
                     } else {
-                        return `<img src="edit/${src}" class="gallery-img w-full h-full object-contain absolute inset-0 m-auto ${i === 0 ? 'active' : ''}">`;
+                        return `<img src="edit/${src}" class="gallery-img w-full h-full object-contain absolute inset-0 m-auto ${i === 0 ? 'active' : ''}" oncontextmenu="return false;">`;
                     }
                 }).join('');
                 lucide.createIcons();
