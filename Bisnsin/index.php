@@ -8,6 +8,7 @@ session_start(); // Wajib untuk melacak status login user
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Katalog Bisnis — Darma Alif Rakhaa</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -41,6 +42,8 @@ session_start(); // Wajib untuk melacak status login user
         .lightbox.active .lightbox-content{transform:translateY(0) scale(1)}
         .gallery-img{display:none; animation: fadeIn 0.4s ease}
         .gallery-img.active{display:block}
+        .pdf-pages canvas{max-width:100%;height:auto;display:block;margin:0 auto 10px auto;border-radius:8px}
+        .pdf-pages{overflow:auto;height:100%;padding:8px}
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .lang-btn{padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700}
         .lang-btn.active{background:#0ea5e9;color:#fff}
@@ -263,6 +266,36 @@ session_start(); // Wajib untuk melacak status login user
         const mIndicators = document.getElementById('modal-indicators');
         let currentImages = [], currentSlide = 0;
 
+        if (window['pdfjsLib']) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
+        async function renderPdfToCanvas(containerEl, pdfUrl) {
+            containerEl.innerHTML = '<div class="text-white/80 text-sm p-4">Memuat PDF...</div>';
+            try {
+                const task = pdfjsLib.getDocument({ url: pdfUrl, disableAutoFetch: false, disableStream: false });
+                const pdf = await task.promise;
+                const pagesWrap = document.createElement('div');
+                pagesWrap.className = 'pdf-pages';
+
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    const page = await pdf.getPage(pageNum);
+                    const viewport = page.getViewport({ scale: 1.25 });
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d', { alpha: false });
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    await page.render({ canvasContext: ctx, viewport }).promise;
+                    canvas.oncontextmenu = () => false;
+                    pagesWrap.appendChild(canvas);
+                }
+                containerEl.innerHTML = '';
+                containerEl.appendChild(pagesWrap);
+            } catch (e) {
+                containerEl.innerHTML = '<div class="text-center text-white p-6">PDF gagal dimuat.</div>';
+            }
+        }
+
         function openProduct(id) {
             const prod = products.find(p => p.id === id);
             if(!prod) return;
@@ -280,19 +313,15 @@ session_start(); // Wajib untuk melacak status login user
                     if (ext === 'pdf') {
                         return `
                             <div class="gallery-img w-full h-full absolute inset-0 m-auto p-2 ${i === 0 ? 'active' : ''}">
-                                <object data="edit/${src}#view=FitH" type="application/pdf" class="w-full h-full bg-white rounded-xl">
-                                    <embed src="edit/${src}#view=FitH" type="application/pdf" class="w-full h-full rounded-xl" />
-                                    <div class="text-center text-white p-6">
-                                        <p class="mb-2">PDF tidak bisa dibuka langsung di browser ini.</p>
-                                        <a class="underline font-semibold" href="edit/${src}" target="_blank" rel="noopener">Buka PDF di tab baru</a>
-                                    </div>
-                                </object>
+                                <div class="w-full h-full bg-navy-800 rounded-xl" data-pdf-src="edit/${src}"></div>
                             </div>`;
                     } else {
                         return `<img src="edit/${src}" class="gallery-img w-full h-full object-contain absolute inset-0 m-auto ${i === 0 ? 'active' : ''}" oncontextmenu="return false;">`;
                     }
                 }).join('');
                 lucide.createIcons();
+                const firstSlide = mGallery.querySelector('.gallery-img.active [data-pdf-src]');
+                if (firstSlide) renderPdfToCanvas(firstSlide, firstSlide.dataset.pdfSrc);
             } else {
                 mGallery.innerHTML = `<div class="text-navy-400">${tr('card.noFile')}</div>`;
             }
@@ -312,6 +341,11 @@ session_start(); // Wajib untuk melacak status login user
                 if(i === currentSlide) img.classList.add('active');
                 else img.classList.remove('active');
             });
+            const activePdf = mGallery.querySelector('.gallery-img.active [data-pdf-src]');
+            if (activePdf && !activePdf.dataset.rendered) {
+                activePdf.dataset.rendered = '1';
+                renderPdfToCanvas(activePdf, activePdf.dataset.pdfSrc);
+            }
             updateIndicators();
         }
         
