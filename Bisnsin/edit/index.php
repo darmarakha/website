@@ -120,12 +120,12 @@ if (isset($_GET['delete'])) {
                             <textarea name="fullDesc" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Upload File (JPG, JPEG, PDF)</label>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Upload File (JPG, JPEG, PNG, PDF)</label>
                             <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:border-red-500 transition-colors relative">
                                 <input type="file" name="files[]" multiple accept=".jpg,.jpeg,.pdf,.png" class="absolute inset-0 opacity-0 cursor-pointer">
                                 <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
                                 <p class="text-xs text-slate-500">Klik atau seret file ke sini</p>
-                                <p class="text-[10px] text-slate-400 mt-1">Bisa pilih banyak file</p>
+                                <p class="text-[10px] text-slate-400 mt-1">Urutan file penting: file pertama jadi cover katalog. PDF tetap bisa ditampilkan saat detail dibuka.</p>
                             </div>
                         </div>
                         <button type="submit" name="save_product" class="w-full py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-600/20">
