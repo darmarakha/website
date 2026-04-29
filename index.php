@@ -231,7 +231,7 @@ session_start(); // Wajib di baris pertama untuk melacak status login user
                         <p class="text-xs sm:text-sm text-navy-400 mt-0.5 sm:mt-1 i18n-fade" data-i18n="hero.stat1">Sertifikat</p>
                     </div>
                     <div>
-                        <p class="text-2xl sm:text-3xl md:text-4xl font-bold text-white">3</p>
+                        <p class="text-2xl sm:text-3xl md:text-4xl font-bold text-white">2</p>
                         <p class="text-xs sm:text-sm text-navy-400 mt-0.5 sm:mt-1 i18n-fade" data-i18n="hero.stat2">Proyek</p>
                     </div>
                     <div class="min-w-0">
