@@ -92,10 +92,10 @@ function renderCerts() {
     const grid = document.getElementById('cert-grid');
     grid.innerHTML = certsData.map((c, i) => `
         <div class="cert-card group cursor-pointer bg-white/5 border ${c.featured ? 'border-accent-500/30' : 'border-white/10'} rounded-xl sm:rounded-2xl overflow-hidden backdrop-blur-sm reveal visible ${c.span}"
-             onclick="openLightbox('${c.fullSrc}','${certsI18n[c.titleKey][currentLang]}')">
+             onclick="openLightbox('${c.fullSrc || c.coverSrc || c.imgSrc || ''}','${certsI18n[c.titleKey][currentLang]}','${c.pdfSrc || ''}')">
             ${c.featured ? `<div class="relative"><div class="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-10 px-2 sm:px-3 py-0.5 sm:py-1 bg-accent-500 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-lg">${t('cert.featured')}</div>` : '<div>'}
             <div class="aspect-[4/3] overflow-hidden">
-                <img src="${c.imgSrc}" alt="${certsI18n[c.titleKey][currentLang]}" class="w-full h-full object-cover transition-transform duration-500" loading="lazy">
+                <img src="${c.coverSrc || c.imgSrc || c.fullSrc || ''}" alt="${certsI18n[c.titleKey][currentLang]}" class="w-full h-full object-cover transition-transform duration-500" loading="lazy">
             </div>
             ${c.featured ? '</div>' : '</div>'}
             <div class="p-4 sm:p-6">
@@ -235,11 +235,26 @@ document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
 
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightbox-img');
+const lightboxPdf = document.getElementById('lightbox-pdf');
 const lightboxTitle = document.getElementById('lightbox-title');
 
-function openLightbox(src, title) {
-    lightboxImg.src = src;
-    lightboxImg.alt = title;
+function openLightbox(src, title, pdfSrc = '') {
+    const hasPdf = typeof pdfSrc === 'string' && pdfSrc.trim().toLowerCase().endsWith('.pdf');
+    const source = (hasPdf ? pdfSrc : src || pdfSrc || '').trim();
+
+    if (!source) return;
+
+    if (hasPdf) {
+        lightboxImg.classList.add('hidden');
+        lightboxPdf.classList.remove('hidden');
+        lightboxPdf.src = `${source}#toolbar=0&navpanes=0&scrollbar=0`;
+    } else {
+        lightboxPdf.classList.add('hidden');
+        lightboxImg.classList.remove('hidden');
+        lightboxImg.src = source;
+        lightboxImg.alt = title;
+    }
+
     lightboxTitle.textContent = title;
     lightbox.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -248,7 +263,12 @@ function closeLightbox(e) {
     if (e && e.target !== lightbox && !e.target.closest('button')) return;
     lightbox.classList.remove('active');
     document.body.style.overflow = '';
-    setTimeout(() => { lightboxImg.src = ''; }, 300);
+    setTimeout(() => {
+        lightboxImg.src = '';
+        lightboxPdf.src = '';
+        lightboxPdf.classList.add('hidden');
+        lightboxImg.classList.remove('hidden');
+    }, 300);
 }
 let touchStartY = 0;
 lightbox.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
