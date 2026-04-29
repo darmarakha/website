@@ -42,6 +42,8 @@ session_start(); // Wajib untuk melacak status login user
         .gallery-img{display:none; animation: fadeIn 0.4s ease}
         .gallery-img.active{display:block}
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .lang-btn{padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700}
+        .lang-btn.active{background:#0ea5e9;color:#fff}
     </style>
 </head>
 <body class="bg-navy-50 text-navy-900 antialiased">
@@ -57,7 +59,11 @@ session_start(); // Wajib untuk melacak status login user
                 </a>
 
                 <div class="hidden md:flex items-center gap-6 lg:gap-8">
-                    <a href="../index.php#about" class="text-sm font-medium text-navy-600 hover:text-navy-900 transition-colors">Kembali ke Profil</a>
+                    <a href="../index.php#about" class="text-sm font-medium text-navy-600 hover:text-navy-900 transition-colors" data-i18n="nav.back">Kembali ke Profil</a>
+                    <div class="flex items-center gap-1 border border-navy-200 rounded-lg p-1 bg-navy-50">
+                        <button class="lang-btn active" data-lang="id" onclick="switchLang('id')">ID</button>
+                        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+                    </div>
                     
                     <?php if(isset($_SESSION['user_name'])): ?>
                         <?php if(isset($_SESSION['user_role']) && strtolower($_SESSION['user_role']) === 'owner'): ?>
@@ -79,7 +85,7 @@ session_start(); // Wajib untuk melacak status login user
                             </a>
                         </div>
                     <?php else: ?>
-                        <button onclick="openAuthModal()" class="px-4 py-1.5 border border-navy-200 text-navy-900 text-sm font-medium rounded-lg hover:bg-navy-50 transition-colors duration-200">Login / Sign Up</button>
+                        <button onclick="openAuthModal()" class="px-4 py-1.5 border border-navy-200 text-navy-900 text-sm font-medium rounded-lg hover:bg-navy-50 transition-colors duration-200" data-i18n="auth.login">Login / Sign Up</button>
                     <?php endif; ?>
                 </div>
             </div>
@@ -88,11 +94,11 @@ session_start(); // Wajib untuk melacak status login user
 
     <section class="pt-28 pb-12 sm:pt-32 sm:pb-16 md:pt-40 md:pb-20 bg-white border-b border-navy-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 text-center">
-            <p class="text-accent-600 font-semibold text-xs sm:text-sm tracking-widest uppercase mb-3">Layanan & Produk</p>
+            <p class="text-accent-600 font-semibold text-xs sm:text-sm tracking-widest uppercase mb-3" data-i18n="hero.label">Layanan & Produk</p>
             <h1 class="font-serif text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-navy-900 mb-4">
-                Katalog Bisnis
+                <span data-i18n="hero.title">Katalog Bisnis</span>
             </h1>
-            <p class="text-sm sm:text-base text-navy-600 max-w-2xl mx-auto">
+            <p class="text-sm sm:text-base text-navy-600 max-w-2xl mx-auto" data-i18n="hero.desc">
                 Eksplorasi layanan dan produk digital yang saya tawarkan. Dikerjakan dengan dedikasi, presisi, dan standar kualitas terbaik.
             </p>
         </div>
@@ -158,16 +164,16 @@ session_start(); // Wajib untuk melacak status login user
             </div>
             <div class="w-full md:w-2/5 p-6 sm:p-8 flex flex-col overflow-y-auto">
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 text-green-600 text-xs font-bold w-fit mb-4">
-                    <i data-lucide="tag" class="w-3 h-3"></i> Tersedia
+                    <i data-lucide="tag" class="w-3 h-3"></i> <span data-i18n="modal.available">Tersedia</span>
                 </div>
                 <h2 id="modal-title" class="font-serif text-2xl sm:text-3xl font-bold text-navy-900 mb-2"></h2>
                 <p id="modal-price" class="text-xl font-bold text-accent-600 mb-6"></p>
                 <div class="h-px w-full bg-navy-100 mb-6"></div>
-                <h3 class="text-sm font-bold text-navy-900 mb-2">Deskripsi Produk</h3>
+                <h3 class="text-sm font-bold text-navy-900 mb-2" data-i18n="modal.desc">Deskripsi Produk</h3>
                 <div id="modal-desc" class="text-sm text-navy-600 leading-relaxed space-y-3 flex-1"></div>
                 <div class="mt-8 pt-6 border-t border-navy-100">
                     <a id="modal-buy-btn" href="#" target="_blank" class="w-full flex items-center justify-center gap-2 py-3.5 bg-navy-900 text-white font-semibold rounded-xl hover:bg-navy-800 active:scale-[0.98] transition-all shadow-lg shadow-navy-900/20">
-                        <i data-lucide="message-circle" class="w-4 h-4"></i> Pesan via WhatsApp
+                        <i data-lucide="message-circle" class="w-4 h-4"></i> <span data-i18n="modal.order">Pesan via WhatsApp</span>
                     </a>
                 </div>
             </div>
@@ -176,7 +182,7 @@ session_start(); // Wajib untuk melacak status login user
 
     <footer class="bg-navy-950 text-white py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 text-center">
-            <p class="text-sm text-navy-400">&copy; 2026 Darma Alif Rakhaa. Divisi Bisnis & Layanan Profesional.</p>
+            <p class="text-sm text-navy-400" data-i18n="footer.copy">&copy; 2026 Darma Alif Rakhaa. Divisi Bisnis & Layanan Profesional.</p>
         </div>
     </footer>
 
@@ -185,26 +191,47 @@ session_start(); // Wajib untuk melacak status login user
 
         // 1. DATA & LOGIKA PRODUK DARI PHP JSON
         const products = <?php echo file_exists('edit/produk.json') ? file_get_contents('edit/produk.json') : '[]'; ?>;
+        let currentLang = localStorage.getItem('biz-catalog-lang') || 'id';
+        const I18N = {
+            'nav.back': {id:'Kembali ke Profil', en:'Back to Profile'},
+            'auth.login': {id:'Login / Sign Up', en:'Login / Sign Up'},
+            'hero.label': {id:'Layanan & Produk', en:'Services & Products'},
+            'hero.title': {id:'Katalog Bisnis', en:'Business Catalog'},
+            'hero.desc': {id:'Eksplorasi layanan dan produk digital yang saya tawarkan. Dikerjakan dengan dedikasi, presisi, dan standar kualitas terbaik.', en:'Explore the services and digital products I offer. Crafted with dedication, precision, and high quality standards.'},
+            'modal.available': {id:'Tersedia', en:'Available'},
+            'modal.desc': {id:'Deskripsi Produk', en:'Product Description'},
+            'modal.order': {id:'Pesan via WhatsApp', en:'Order via WhatsApp'},
+            'card.detail': {id:'Lihat Detail', en:'View Details'},
+            'card.empty': {id:'Belum ada produk yang ditambahkan.', en:'No products have been added yet.'},
+            'card.noFile': {id:'Tidak ada file/gambar', en:'No file/image available'},
+            'card.file': {id:'File', en:'File'},
+            'card.pdf': {id:'Dokumen PDF', en:'PDF Document'},
+            'footer.copy': {id:'© 2026 Darma Alif Rakhaa. Divisi Bisnis & Layanan Profesional.', en:'© 2026 Darma Alif Rakhaa. Business Division & Professional Services.'}
+        };
+        const tr = key => (I18N[key]?.[currentLang] || I18N[key]?.id || key);
+        const pickLang = (p, key) => p[`${key}_en`] && currentLang === 'en' ? p[`${key}_en`] : (p[key] || '');
 
         const container = document.getElementById('product-container');
         
-        if (products.length === 0) {
-            container.innerHTML = `<div class="col-span-full text-center py-10 text-navy-400 font-medium">Belum ada produk yang ditambahkan.</div>`;
-        } else {
+        function renderProducts() {
+            if (products.length === 0) {
+            container.innerHTML = `<div class="col-span-full text-center py-10 text-navy-400 font-medium">${tr('card.empty')}</div>`;
+            } else {
             container.innerHTML = products.map(p => {
                 // Menentukan gambar cover (atau icon PDF)
                 let coverImg = '';
                 if (p.images && p.images.length > 0) {
-                    const ext = p.images[0].split('.').pop().toLowerCase();
+                    const coverPath = p.images.find(f => !f.toLowerCase().endsWith('.pdf')) || p.images[0];
+                    const ext = coverPath.split('.').pop().toLowerCase();
                     if (ext === 'pdf') {
                         // Jika cover adalah PDF, tampilkan placeholder cantik
                         coverImg = `
                             <div class="w-full h-full flex flex-col items-center justify-center bg-navy-100 text-navy-400">
                                 <i data-lucide="file-text" class="w-12 h-12 mb-2"></i>
-                                <span class="text-xs font-bold uppercase tracking-widest">Dokumen PDF</span>
+                                <span class="text-xs font-bold uppercase tracking-widest">${tr('card.pdf')}</span>
                             </div>`;
                     } else {
-                        coverImg = `<img src="edit/${p.images[0]}" alt="${p.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">`;
+                        coverImg = `<img src="edit/${coverPath}" alt="${pickLang(p,'title')}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">`;
                     }
                 } else {
                     coverImg = `<div class="w-full h-full bg-navy-200"></div>`;
@@ -214,19 +241,21 @@ session_start(); // Wajib untuk melacak status login user
                 <div class="product-card bg-white border border-navy-100 rounded-2xl overflow-hidden flex flex-col cursor-pointer" onclick="openProduct(${p.id})">
                     <div class="aspect-[4/3] bg-navy-50 relative overflow-hidden group">
                         ${coverImg}
-                        ${p.images && p.images.length > 1 ? `<div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1"><i data-lucide="images" class="w-3 h-3"></i> ${p.images.length} File</div>` : ''}
+                        ${p.images && p.images.length > 1 ? `<div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1"><i data-lucide="images" class="w-3 h-3"></i> ${p.images.length} ${tr('card.file')}</div>` : ''}
                     </div>
                     <div class="p-5 flex-1 flex flex-col">
-                        <h3 class="text-lg font-bold text-navy-900 mb-1 line-clamp-1">${p.title}</h3>
+                        <h3 class="text-lg font-bold text-navy-900 mb-1 line-clamp-1">${pickLang(p,'title')}</h3>
                         <p class="text-accent-600 font-bold mb-3">${p.price}</p>
-                        <p class="text-sm text-navy-500 leading-relaxed mb-4 flex-1 line-clamp-2">${p.shortDesc}</p>
-                        <div class="pt-4 border-t border-navy-50 text-sm font-semibold text-navy-900 flex items-center gap-2 group-hover:text-accent-600 transition-colors">Lihat Detail <i data-lucide="arrow-right" class="w-4 h-4"></i></div>
+                        <p class="text-sm text-navy-500 leading-relaxed mb-4 flex-1 line-clamp-2">${pickLang(p,'shortDesc')}</p>
+                        <div class="pt-4 border-t border-navy-50 text-sm font-semibold text-navy-900 flex items-center gap-2 group-hover:text-accent-600 transition-colors">${tr('card.detail')} <i data-lucide="arrow-right" class="w-4 h-4"></i></div>
                     </div>
                 </div>
                 `;
             }).join('');
             lucide.createIcons();
+            }
         }
+        renderProducts();
 
         // 2. LOGIKA MODAL PRODUK
         const pModal = document.getElementById('product-modal');
@@ -237,10 +266,10 @@ session_start(); // Wajib untuk melacak status login user
         function openProduct(id) {
             const prod = products.find(p => p.id === id);
             if(!prod) return;
-            document.getElementById('modal-title').textContent = prod.title;
+            document.getElementById('modal-title').textContent = pickLang(prod,'title');
             document.getElementById('modal-price').textContent = prod.price;
-            document.getElementById('modal-desc').innerHTML = prod.fullDesc;
-            document.getElementById('modal-buy-btn').href = `https://wa.me/6285810518855?text=${encodeURIComponent('Halo, saya tertarik dengan: ' + prod.title)}`;
+            document.getElementById('modal-desc').innerHTML = pickLang(prod,'fullDesc');
+            document.getElementById('modal-buy-btn').href = `https://wa.me/6285810518855?text=${encodeURIComponent('Halo, saya tertarik dengan: ' + pickLang(prod,'title'))}`;
             
             currentImages = prod.images || []; 
             currentSlide = 0;
@@ -250,15 +279,14 @@ session_start(); // Wajib untuk melacak status login user
                     const ext = src.split('.').pop().toLowerCase();
                     if (ext === 'pdf') {
                         return `
-                            <div class="gallery-img w-full h-full absolute inset-0 m-auto ${i === 0 ? 'active' : ''}">
-                                <iframe
-                                    src="edit/${src}#toolbar=0&navpanes=0&scrollbar=0&view=FitH"
-                                    class="w-full h-full bg-white rounded-xl"
-                                    title="Dokumen PDF ${i + 1}"
-                                    loading="lazy"
-                                    sandbox="allow-same-origin allow-scripts"
-                                    referrerpolicy="no-referrer"
-                                ></iframe>
+                            <div class="gallery-img w-full h-full absolute inset-0 m-auto p-2 ${i === 0 ? 'active' : ''}">
+                                <object data="edit/${src}#view=FitH" type="application/pdf" class="w-full h-full bg-white rounded-xl">
+                                    <embed src="edit/${src}#view=FitH" type="application/pdf" class="w-full h-full rounded-xl" />
+                                    <div class="text-center text-white p-6">
+                                        <p class="mb-2">PDF tidak bisa dibuka langsung di browser ini.</p>
+                                        <a class="underline font-semibold" href="edit/${src}" target="_blank" rel="noopener">Buka PDF di tab baru</a>
+                                    </div>
+                                </object>
                             </div>`;
                     } else {
                         return `<img src="edit/${src}" class="gallery-img w-full h-full object-contain absolute inset-0 m-auto ${i === 0 ? 'active' : ''}" oncontextmenu="return false;">`;
@@ -266,7 +294,7 @@ session_start(); // Wajib untuk melacak status login user
                 }).join('');
                 lucide.createIcons();
             } else {
-                mGallery.innerHTML = '<div class="text-navy-400">Tidak ada file/gambar</div>';
+                mGallery.innerHTML = `<div class="text-navy-400">${tr('card.noFile')}</div>`;
             }
             
             updateIndicators();
@@ -352,6 +380,15 @@ session_start(); // Wajib untuk melacak status login user
         authModal.addEventListener('click', e => {
             if (e.target === authModal) closeAuthModal();
         });
+        function switchLang(lang) {
+            currentLang = lang;
+            localStorage.setItem('biz-catalog-lang', lang);
+            document.documentElement.lang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
+            document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = tr(el.dataset.i18n));
+            renderProducts();
+        }
+        switchLang(currentLang);
 
         // Menghubungkan form ke ../auth.php (di root) menggunakan Fetch (AJAX)
         document.getElementById('auth-form').addEventListener('submit', async e => {
