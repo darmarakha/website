@@ -17,15 +17,19 @@ if (!is_dir($uploadDir)) {
 
 // Baca data produk yang ada
 $products = file_exists($dataFile) ? json_decode(file_get_contents($dataFile), true) : [];
+$uploadResults = [];
 
 // Logika Simpan Produk Baru
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_product'])) {
     $newProduct = [
         'id' => time(),
         'title' => htmlspecialchars($_POST['title']),
+        'title_en' => htmlspecialchars($_POST['title_en'] ?? ''),
         'price' => htmlspecialchars($_POST['price']),
         'shortDesc' => htmlspecialchars($_POST['shortDesc']),
+        'shortDesc_en' => htmlspecialchars($_POST['shortDesc_en'] ?? ''),
         'fullDesc' => $_POST['fullDesc'], // Bisa berisi HTML
+        'fullDesc_en' => $_POST['fullDesc_en'] ?? '',
         'images' => []
     ];
 
@@ -40,6 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_product'])) {
             if (in_array($fileType, ['jpg', 'jpeg', 'pdf', 'png'])) {
                 if (move_uploaded_file($tmp_name, $targetPath)) {
                     $newProduct['images'][] = $targetPath;
+                    $uploadResults[] = ['file' => $_FILES['files']['name'][$key], 'ok' => true];
+                } else {
+                    $uploadResults[] = ['file' => $_FILES['files']['name'][$key], 'ok' => false];
                 }
             }
         }
@@ -47,7 +54,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_product'])) {
 
     $products[] = $newProduct;
     file_put_contents($dataFile, json_encode($products, JSON_PRETTY_PRINT));
+    $_SESSION['upload_results'] = $uploadResults;
     header("Location: index.php?status=success");
+    exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rename_file'])) {
+    $oldName = basename($_POST['old_name'] ?? '');
+    $newNameRaw = trim($_POST['new_name'] ?? '');
+    $newName = preg_replace('/[^A-Za-z0-9._-]/', '_', $newNameRaw);
+    $oldPath = $uploadDir . $oldName;
+    $newPath = $uploadDir . $newName;
+    $oldExt = strtolower(pathinfo($oldName, PATHINFO_EXTENSION));
+    $newExt = strtolower(pathinfo($newName, PATHINFO_EXTENSION));
+
+    if ($oldName && $newName && file_exists($oldPath) && $oldExt === $newExt && !file_exists($newPath) && rename($oldPath, $newPath)) {
+        foreach ($products as &$p) {
+            foreach ($p['images'] as &$imgPath) {
+                if ($imgPath === $oldPath) $imgPath = $newPath;
+            }
+        }
+        unset($p, $imgPath);
+        file_put_contents($dataFile, json_encode($products, JSON_PRETTY_PRINT));
+        header("Location: index.php?status=renamed");
+        exit();
+    }
+    header("Location: index.php?status=rename_failed");
     exit();
 }
 
@@ -95,6 +127,8 @@ if (isset($_GET['delete'])) {
     </nav>
 
     <main class="max-w-5xl mx-auto px-4 py-8">
+        <?php $existingFiles = array_values(array_filter(scandir($uploadDir), fn($f) => $f !== '.' && $f !== '..')); ?>
+        <?php $lastUploads = $_SESSION['upload_results'] ?? []; unset($_SESSION['upload_results']); ?>
         <div class="grid lg:grid-cols-3 gap-8">
             
             <div class="lg:col-span-1">
@@ -108,6 +142,10 @@ if (isset($_GET['delete'])) {
                             <input type="text" name="title" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
                         </div>
                         <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Product / Service Name (EN)</label>
+                            <input type="text" name="title_en" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
+                        </div>
+                        <div>
                             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Harga (Teks)</label>
                             <input type="text" name="price" placeholder="Contoh: Rp 500.000" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
                         </div>
@@ -116,8 +154,16 @@ if (isset($_GET['delete'])) {
                             <textarea name="shortDesc" rows="2" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
                         </div>
                         <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Short Description (EN)</label>
+                            <textarea name="shortDesc_en" rows="2" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
+                        </div>
+                        <div>
                             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Deskripsi Lengkap (HTML)</label>
                             <textarea name="fullDesc" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Full Description (EN HTML)</label>
+                            <textarea name="fullDesc_en" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
                         </div>
                         <div>
                             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Upload File (JPG, JPEG, PNG, PDF)</label>
@@ -125,13 +171,25 @@ if (isset($_GET['delete'])) {
                                 <input type="file" name="files[]" multiple accept=".jpg,.jpeg,.pdf,.png" class="absolute inset-0 opacity-0 cursor-pointer">
                                 <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
                                 <p class="text-xs text-slate-500">Klik atau seret file ke sini</p>
-                                <p class="text-[10px] text-slate-400 mt-1">Urutan file penting: file pertama jadi cover katalog. PDF tetap bisa ditampilkan saat detail dibuka.</p>
+                                <p class="text-[10px] text-slate-400 mt-1">Cover otomatis pakai file gambar pertama (JPG/JPEG/PNG). Jika semua file PDF, kartu akan tampil sebagai dokumen PDF.</p>
                             </div>
                         </div>
                         <button type="submit" name="save_product" class="w-full py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-600/20">
                             Simpan Produk
                         </button>
                     </form>
+                    <?php if (!empty($lastUploads)): ?>
+                        <div class="mt-5 border-t pt-4">
+                            <p class="text-xs font-bold uppercase text-slate-500 mb-2">Status Upload Terakhir</p>
+                            <div class="space-y-1">
+                                <?php foreach ($lastUploads as $item): ?>
+                                    <div class="text-xs <?php echo $item['ok'] ? 'text-green-600' : 'text-red-600'; ?>">
+                                        <?php echo $item['ok'] ? '✓' : '✗'; ?> <?php echo htmlspecialchars($item['file']); ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -152,7 +210,12 @@ if (isset($_GET['delete'])) {
                             <div class="w-24 h-24 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
                                 <?php if (!empty($p['images'])): ?>
                                     <?php 
-                                        $ext = pathinfo($p['images'][0], PATHINFO_EXTENSION);
+                                        $coverPath = $p['images'][0];
+                                        foreach ($p['images'] as $filePath) {
+                                            $candidateExt = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+                                            if (in_array($candidateExt, ['jpg', 'jpeg', 'png'])) { $coverPath = $filePath; break; }
+                                        }
+                                        $ext = strtolower(pathinfo($coverPath, PATHINFO_EXTENSION));
                                         if ($ext === 'pdf'):
                                     ?>
                                         <div class="w-full h-full flex flex-col items-center justify-center text-red-500">
@@ -160,7 +223,7 @@ if (isset($_GET['delete'])) {
                                             <span class="text-[10px] font-bold">PDF</span>
                                         </div>
                                     <?php else: ?>
-                                        <img src="<?php echo $p['images'][0]; ?>" class="w-full h-full object-cover">
+                                        <img src="<?php echo $coverPath; ?>" class="w-full h-full object-cover">
                                     <?php endif; ?>
                                 <?php endif; ?>
                             </div>
@@ -181,6 +244,23 @@ if (isset($_GET['delete'])) {
                             </div>
                         </div>
                     <?php endforeach; ?>
+                </div>
+
+                <div class="mt-8 bg-white border rounded-2xl p-4">
+                    <h3 class="font-bold mb-3">File di Folder Upload (<?php echo count($existingFiles); ?>)</h3>
+                    <?php if (empty($existingFiles)): ?>
+                        <p class="text-sm text-slate-500">Belum ada file.</p>
+                    <?php else: ?>
+                        <div class="space-y-2">
+                            <?php foreach ($existingFiles as $file): ?>
+                                <form method="POST" class="flex items-center gap-2 p-2 rounded-lg bg-slate-50">
+                                    <input type="hidden" name="old_name" value="<?php echo htmlspecialchars($file); ?>">
+                                    <input type="text" name="new_name" value="<?php echo htmlspecialchars($file); ?>" class="flex-1 px-2 py-1.5 border rounded text-sm">
+                                    <button type="submit" name="rename_file" class="px-3 py-1.5 text-xs font-bold bg-slate-800 text-white rounded">Rename</button>
+                                </form>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
