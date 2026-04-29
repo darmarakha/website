@@ -83,6 +83,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rename_file'])) {
     exit();
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rename_file'])) {
+    $oldName = basename($_POST['old_name'] ?? '');
+    $newNameRaw = trim($_POST['new_name'] ?? '');
+    $newName = preg_replace('/[^A-Za-z0-9._-]/', '_', $newNameRaw);
+    $oldPath = $uploadDir . $oldName;
+    $newPath = $uploadDir . $newName;
+    $oldExt = strtolower(pathinfo($oldName, PATHINFO_EXTENSION));
+    $newExt = strtolower(pathinfo($newName, PATHINFO_EXTENSION));
+
+    if ($oldName && $newName && file_exists($oldPath) && $oldExt === $newExt && !file_exists($newPath) && rename($oldPath, $newPath)) {
+        foreach ($products as &$p) {
+            foreach ($p['images'] as &$imgPath) {
+                if ($imgPath === $oldPath) $imgPath = $newPath;
+            }
+        }
+        unset($p, $imgPath);
+        file_put_contents($dataFile, json_encode($products, JSON_PRETTY_PRINT));
+        header("Location: index.php?status=renamed");
+        exit();
+    }
+    header("Location: index.php?status=rename_failed");
+    exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rename_file'])) {
+    $oldName = basename($_POST['old_name'] ?? '');
+    $newNameRaw = trim($_POST['new_name'] ?? '');
+    $newName = preg_replace('/[^A-Za-z0-9._-]/', '_', $newNameRaw);
+    $oldPath = $uploadDir . $oldName;
+    $newPath = $uploadDir . $newName;
+    $oldExt = strtolower(pathinfo($oldName, PATHINFO_EXTENSION));
+    $newExt = strtolower(pathinfo($newName, PATHINFO_EXTENSION));
+
+    if ($oldName && $newName && file_exists($oldPath) && $oldExt === $newExt && !file_exists($newPath) && rename($oldPath, $newPath)) {
+        foreach ($products as &$p) {
+            foreach ($p['images'] as &$imgPath) {
+                if ($imgPath === $oldPath) $imgPath = $newPath;
+            }
+        }
+        unset($p, $imgPath);
+        file_put_contents($dataFile, json_encode($products, JSON_PRETTY_PRINT));
+        header("Location: index.php?status=renamed");
+        exit();
+    }
+    header("Location: index.php?status=rename_failed");
+    exit();
+}
+
 // Logika Hapus Produk
 if (isset($_GET['delete'])) {
     $idToDelete = $_GET['delete'];
@@ -146,6 +194,14 @@ if (isset($_GET['delete'])) {
                             <input type="text" name="title_en" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
                         </div>
                         <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Product / Service Name (EN)</label>
+                            <input type="text" name="title_en" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Product / Service Name (EN)</label>
+                            <input type="text" name="title_en" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
+                        </div>
+                        <div>
                             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Harga (Teks)</label>
                             <input type="text" name="price" placeholder="Contoh: Rp 500.000" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
                         </div>
@@ -160,6 +216,14 @@ if (isset($_GET['delete'])) {
                         <div>
                             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Deskripsi Lengkap (HTML)</label>
                             <textarea name="fullDesc" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Full Description (EN HTML)</label>
+                            <textarea name="fullDesc_en" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Full Description (EN HTML)</label>
+                            <textarea name="fullDesc_en" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
                         </div>
                         <div>
                             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Full Description (EN HTML)</label>
