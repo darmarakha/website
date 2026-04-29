@@ -17,6 +17,7 @@ if (!is_dir($uploadDir)) {
 
 // Baca data produk yang ada
 $products = file_exists($dataFile) ? json_decode(file_get_contents($dataFile), true) : [];
+$uploadResults = [];
 
 // Logika Simpan Produk Baru
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_product'])) {
@@ -43,6 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_product'])) {
             if (in_array($fileType, ['jpg', 'jpeg', 'pdf', 'png'])) {
                 if (move_uploaded_file($tmp_name, $targetPath)) {
                     $newProduct['images'][] = $targetPath;
+                    $uploadResults[] = ['file' => $_FILES['files']['name'][$key], 'ok' => true];
+                } else {
+                    $uploadResults[] = ['file' => $_FILES['files']['name'][$key], 'ok' => false];
                 }
             }
         }
@@ -50,7 +54,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_product'])) {
 
     $products[] = $newProduct;
     file_put_contents($dataFile, json_encode($products, JSON_PRETTY_PRINT));
+    $_SESSION['upload_results'] = $uploadResults;
     header("Location: index.php?status=success");
+    exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rename_file'])) {
+    $oldName = basename($_POST['old_name'] ?? '');
+    $newNameRaw = trim($_POST['new_name'] ?? '');
+    $newName = preg_replace('/[^A-Za-z0-9._-]/', '_', $newNameRaw);
+    $oldPath = $uploadDir . $oldName;
+    $newPath = $uploadDir . $newName;
+    $oldExt = strtolower(pathinfo($oldName, PATHINFO_EXTENSION));
+    $newExt = strtolower(pathinfo($newName, PATHINFO_EXTENSION));
+
+    if ($oldName && $newName && file_exists($oldPath) && $oldExt === $newExt && !file_exists($newPath) && rename($oldPath, $newPath)) {
+        foreach ($products as &$p) {
+            foreach ($p['images'] as &$imgPath) {
+                if ($imgPath === $oldPath) $imgPath = $newPath;
+            }
+        }
+        unset($p, $imgPath);
+        file_put_contents($dataFile, json_encode($products, JSON_PRETTY_PRINT));
+        header("Location: index.php?status=renamed");
+        exit();
+    }
+    header("Location: index.php?status=rename_failed");
     exit();
 }
 
@@ -98,6 +127,8 @@ if (isset($_GET['delete'])) {
     </nav>
 
     <main class="max-w-5xl mx-auto px-4 py-8">
+        <?php $existingFiles = array_values(array_filter(scandir($uploadDir), fn($f) => $f !== '.' && $f !== '..')); ?>
+        <?php $lastUploads = $_SESSION['upload_results'] ?? []; unset($_SESSION['upload_results']); ?>
         <div class="grid lg:grid-cols-3 gap-8">
             
             <div class="lg:col-span-1">
@@ -147,6 +178,18 @@ if (isset($_GET['delete'])) {
                             Simpan Produk
                         </button>
                     </form>
+                    <?php if (!empty($lastUploads)): ?>
+                        <div class="mt-5 border-t pt-4">
+                            <p class="text-xs font-bold uppercase text-slate-500 mb-2">Status Upload Terakhir</p>
+                            <div class="space-y-1">
+                                <?php foreach ($lastUploads as $item): ?>
+                                    <div class="text-xs <?php echo $item['ok'] ? 'text-green-600' : 'text-red-600'; ?>">
+                                        <?php echo $item['ok'] ? '✓' : '✗'; ?> <?php echo htmlspecialchars($item['file']); ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -201,6 +244,23 @@ if (isset($_GET['delete'])) {
                             </div>
                         </div>
                     <?php endforeach; ?>
+                </div>
+
+                <div class="mt-8 bg-white border rounded-2xl p-4">
+                    <h3 class="font-bold mb-3">File di Folder Upload (<?php echo count($existingFiles); ?>)</h3>
+                    <?php if (empty($existingFiles)): ?>
+                        <p class="text-sm text-slate-500">Belum ada file.</p>
+                    <?php else: ?>
+                        <div class="space-y-2">
+                            <?php foreach ($existingFiles as $file): ?>
+                                <form method="POST" class="flex items-center gap-2 p-2 rounded-lg bg-slate-50">
+                                    <input type="hidden" name="old_name" value="<?php echo htmlspecialchars($file); ?>">
+                                    <input type="text" name="new_name" value="<?php echo htmlspecialchars($file); ?>" class="flex-1 px-2 py-1.5 border rounded text-sm">
+                                    <button type="submit" name="rename_file" class="px-3 py-1.5 text-xs font-bold bg-slate-800 text-white rounded">Rename</button>
+                                </form>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 

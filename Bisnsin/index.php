@@ -279,15 +279,14 @@ session_start(); // Wajib untuk melacak status login user
                     const ext = src.split('.').pop().toLowerCase();
                     if (ext === 'pdf') {
                         return `
-                            <div class="gallery-img w-full h-full absolute inset-0 m-auto ${i === 0 ? 'active' : ''}">
-                                <iframe
-                                    src="edit/${src}#toolbar=0&navpanes=0&scrollbar=0&view=FitH"
-                                    class="w-full h-full bg-white rounded-xl"
-                                    title="Dokumen PDF ${i + 1}"
-                                    loading="lazy"
-                                    sandbox="allow-same-origin allow-scripts"
-                                    referrerpolicy="no-referrer"
-                                ></iframe>
+                            <div class="gallery-img w-full h-full absolute inset-0 m-auto p-2 ${i === 0 ? 'active' : ''}">
+                                <object data="edit/${src}#view=FitH" type="application/pdf" class="w-full h-full bg-white rounded-xl">
+                                    <embed src="edit/${src}#view=FitH" type="application/pdf" class="w-full h-full rounded-xl" />
+                                    <div class="text-center text-white p-6">
+                                        <p class="mb-2">PDF tidak bisa dibuka langsung di browser ini.</p>
+                                        <a class="underline font-semibold" href="edit/${src}" target="_blank" rel="noopener">Buka PDF di tab baru</a>
+                                    </div>
+                                </object>
                             </div>`;
                     } else {
                         return `<img src="edit/${src}" class="gallery-img w-full h-full object-contain absolute inset-0 m-auto ${i === 0 ? 'active' : ''}" oncontextmenu="return false;">`;
