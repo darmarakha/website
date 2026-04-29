@@ -87,7 +87,7 @@ const T = {
     // --- Certifications ---
     'cert.label':    { id:'Bukti Kompetensi', en:'Proof of Competence' },
     'cert.title':    { id:'Sertifikat Saya',  en:'My Certificates' },
-    'cert.subtitle': { id:'Klik pada setiap kartu untuk melihat gambar sertifikat secara lengkap.', en:'Click on each card to view the full certificate image.' },
+    'cert.subtitle': { id:'Klik pada setiap kartu untuk melihat sertifikat (gambar / PDF) secara lengkap.', en:'Click on each card to view the full certificate (image / PDF).' },
     'cert.viewBtn':  { id:'Lihat Sertifikat', en:'View Certificate' },
     'cert.featured': { id:'Unggulan',        en:'Featured' },
 
@@ -144,22 +144,27 @@ const toolBadges = ['Ms. Office','Ms. Excel','Data Entry','HR Administration','P
 
 const certsData = [
     {
-        // TODO: Ganti URL gambar sertifikat BNSP Staff SDM
-        imgSeed:'certificate-bnsp1', fullSeed:'certificate-bnsp1',
+        // coverSrc = foto cover di index, pdfSrc = file PDF untuk popup (opsional)
+        // Jika pdfSrc kosong, popup akan memakai fullSrc / coverSrc.
+        coverSrc:'edit/uploads/certificate-bnsp1.jpg',
+        fullSrc:'edit/uploads/certificate-bnsp1.jpg',
+        pdfSrc:'',
         tagKey:'cert.tagBNSP', tagIcon:'award',
         titleKey:'cert.t1', descKey:'cert.d1',
         featured: false, span: ''
     },
     {
-        // TODO: Ganti URL gambar sertifikat BNSP Supervisor SDM
-        imgSeed:'certificate-bnsp2', fullSeed:'certificate-bnsp2',
+        coverSrc:'edit/uploads/certificate-bnsp2.jpg',
+        fullSrc:'edit/uploads/certificate-bnsp2.jpg',
+        pdfSrc:'',
         tagKey:'cert.tagBNSP', tagIcon:'award',
         titleKey:'cert.t2', descKey:'cert.d2',
         featured: true, span: ''
     },
     {
-        // TODO: Ganti URL gambar sertifikat magang KJSS
-        imgSeed:'certificate-magang', fullSeed:'certificate-magang',
+        coverSrc:'edit/uploads/certificate-magang.jpg',
+        fullSrc:'edit/uploads/certificate-magang.jpg',
+        pdfSrc:'',
         tagKey:'cert.tagMagang', tagIcon:'briefcase',
         titleKey:'cert.t3', descKey:'cert.d3',
         featured: false, span: 'sm:col-span-2 md:col-span-1'
