@@ -96,10 +96,6 @@ function renderCerts() {
             ${c.featured ? `<div class="relative"><div class="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-10 px-2 sm:px-3 py-0.5 sm:py-1 bg-accent-500 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-lg">${t('cert.featured')}</div>` : '<div>'}
             <div class="aspect-[4/3] overflow-hidden">
                 <img src="${c.coverSrc || c.imgSrc || c.fullSrc || ''}" alt="${certsI18n[c.titleKey][currentLang]}" class="w-full h-full object-cover transition-transform duration-500" loading="lazy">
-             onclick="openLightbox('${c.fullSrc}','${certsI18n[c.titleKey][currentLang]}','${c.pdfSrc || ''}')">
-            ${c.featured ? `<div class="relative"><div class="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-10 px-2 sm:px-3 py-0.5 sm:py-1 bg-accent-500 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-lg">${t('cert.featured')}</div>` : '<div>'}
-            <div class="aspect-[4/3] overflow-hidden">
-                <img src="${c.imgSrc}" alt="${certsI18n[c.titleKey][currentLang]}" class="w-full h-full object-cover transition-transform duration-500" loading="lazy">
             </div>
             ${c.featured ? '</div>' : '</div>'}
             <div class="p-4 sm:p-6">

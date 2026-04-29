@@ -144,32 +144,29 @@ const toolBadges = ['Ms. Office','Ms. Excel','Data Entry','HR Administration','P
 
 const certsData = [
     {
-        // CONTOH REAL (cover foto + PDF popup):
-        // - coverSrc: pakai foto upload yang sudah ada di server
-        // - pdfSrc: pakai link PDF (ganti dengan file upload PDF kamu sendiri bila sudah ada)
-        coverSrc:'edit/uploads/1777446476_WhatsAppImage20260429at13.57.11.jpeg',
-        fullSrc:'edit/uploads/1777446476_WhatsAppImage20260429at13.57.11.jpeg',
-        pdfSrc:'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-        tagKey:'cert.tagBNSP', tagIcon:'award',
-        titleKey:'cert.t1', descKey:'cert.d1',
-        featured: false, span: ''
-    },
-    {
-        coverSrc:'edit/uploads/certificate-bnsp2.jpg',
-        fullSrc:'edit/uploads/certificate-bnsp2.jpg',
-        pdfSrc:'',
-        tagKey:'cert.tagBNSP', tagIcon:'award',
-        titleKey:'cert.t2', descKey:'cert.d2',
-        featured: true, span: ''
-    },
-    {
-        coverSrc:'edit/uploads/certificate-magang.jpg',
-        fullSrc:'edit/uploads/certificate-magang.jpg',
-        pdfSrc:'',
-        tagKey:'cert.tagMagang', tagIcon:'briefcase',
-        titleKey:'cert.t3', descKey:'cert.d3',
-        featured: false, span: 'sm:col-span-2 md:col-span-1'
-    },
+        coverSrc: 'edit/uploads/1777446476_WhatsAppImage20260429at13.57.11.jpeg',
+        fullSrc: 'edit/uploads/1777446476_WhatsAppImage20260429at13.57.11.jpeg',
+        pdfSrc: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        tagKey: 'cert.tagBNSP',
+        tagIcon: 'award',
+        titleKey: 'cert.t1',
+        descKey: 'cert.d1',
+        featured: true,
+        span: ''
+    }
+
+    // Template copy cepat:
+    // {
+    //     coverSrc: 'edit/uploads/nama-file-cover.jpg',
+    //     fullSrc: 'edit/uploads/nama-file-cover.jpg',
+    //     pdfSrc: 'edit/uploads/nama-file-sertifikat.pdf',
+    //     tagKey: 'cert.tagBNSP',
+    //     tagIcon: 'award',
+    //     titleKey: 'cert.t2',
+    //     descKey: 'cert.d2',
+    //     featured: false,
+    //     span: ''
+    // }
 ];
 
 const certsI18n = {
