@@ -1,0 +1,4 @@
+[26-Apr-2026 18:02:21 Asia/Jakarta] PHP Fatal error:  Uncaught TypeError: count(): Argument #1 ($value) must be of type Countable|array, null given in /home/httpgemu/public_html/Bisnis/edit/index.php:140
+Stack trace:
+#0 {main}
+  thrown in /home/httpgemu/public_html/Bisnis/edit/index.php on line 140
