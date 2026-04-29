@@ -165,9 +165,6 @@ session_start(); // Wajib di baris pertama untuk melacak status login user
                     <a href="Bisnis/" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
                         <span class="flex items-center gap-3"><i data-lucide="pie-chart" class="w-4 h-4 opacity-50"></i><span>Bisnis</span></span>
                     </a>
-                    <a href="/Belajar/Index.php" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
-                        <span class="flex items-center gap-3"><i data-lucide="book-open" class="w-4 h-4 opacity-50"></i><span data-i18n="nav.learn">Belajar</span></span>
-                    </a>
                 </div>
                 
                 <div class="space-y-3 pt-6 border-t border-white/10">
