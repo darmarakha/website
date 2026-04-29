@@ -7,6 +7,7 @@ const T = {
     'nav.skills':       { id:'Keahlian',        en:'Skills' },
     'nav.certificates': { id:'Sertifikat',      en:'Certificates' },
     'nav.projects':     { id:'Proyek',          en:'Projects' },
+    'nav.learn':        { id:'Belajar',         en:'Learning' },
     'nav.business':       { id:'Bisnis',        en:'Business' },
     'nav.login':        { id:'Masuk / Daftar',  en:'Login / Sign Up' },
     'nav.contact':      { id:'Hubungi',         en:'Contact' },
