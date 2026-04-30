@@ -60,7 +60,7 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
 
     <main class="max-w-6xl mx-auto px-4 py-6 md:py-10 space-y-6 relative">
         
-        <!-- HEADER & STATUS LOGIN (DIPERTAHANKAN SESUAI ASLINYA) -->
+        <!-- HEADER & STATUS LOGIN -->
         <header class="rounded-2xl border border-slate-700 bg-slate-900 p-4 md:p-6 flex flex-col md:flex-row md:items-center gap-4 md:justify-between shadow-lg">
             <div>
                 <h1 class="text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
@@ -144,7 +144,7 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
         const isLoggedIn = document.body.getAttribute('data-logged-in') === 'true';
 
         // ==========================================
-        // 1. LOGIKA KIRIM SKOR (DIPERTAHANKAN ASLI)
+        // 1. LOGIKA KIRIM SKOR 
         // ==========================================
         function sendScore(correct, wrong, points) {
             if (!isLoggedIn) return; // Jangan kirim jika belum login
@@ -161,7 +161,6 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
             aiUserLevel = newLevel;
             if (!isLoggedIn) return; // Hanya simpan jika user sudah login
             
-            // Kita akan mengirim data ke file PHP baru atau disatukan di backend Anda
             fetch('save_level.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -225,7 +224,7 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
         const allKana = [...dataGojuuon, ...dataDakuon, ...dataYoon].filter(item => item.k !== '');
 
         // ==========================================
-        // 3. DATA CERITA AI MEMBACA (TINGKATAN)
+        // 3. DATA CERITA AI MEMBACA (LENGKAP DGN BUNPOU LATEX)
         // ==========================================
         const aiReadingData = {
             pemula: [
@@ -288,12 +287,12 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
         // State Aplikasi
         const contentDiv = document.getElementById('content-container');
 
-        // AI Reading State (Ditarik dari atribut body hasil PHP Session)
-        let aiUserLevel = document.body.getAttribute('data-ai-level') || 'pemula'; // Level: pemula, mahir, pro
+        // AI Reading State
+        let aiUserLevel = document.body.getAttribute('data-ai-level') || 'pemula'; 
         let aiCurrentStory = null;
         let aiTimerInterval = null;
-        let aiTimeElapsed = 0; // Stopwatch for Pemula
-        let aiTimeRemaining = 0; // Countdown for Mahir/Pro
+        let aiTimeElapsed = 0; 
+        let aiTimeRemaining = 0; 
         let aiTimerStarted = false;
         let aiFinished = false;
 
@@ -354,7 +353,7 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
             contentDiv.innerHTML = `
                 <div class="tab-content space-y-8">
                     
-                    <!-- Latihan Cepat Terintegrasi Leaderboard API (Mobile Friendly) -->
+                    <!-- Latihan Cepat -->
                     <section class="mt-2 rounded-2xl border border-indigo-500/40 bg-indigo-500/10 p-5 sm:p-6 shadow-md backdrop-blur-sm">
                         <h2 class="text-xl sm:text-2xl font-black flex items-center gap-2 text-indigo-400">
                             <span>⚡</span> Latihan Cepat
@@ -412,7 +411,7 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
         };
 
         // ==========================================
-        // 6. FLASHCARD ACAK (FISHER-YATES)
+        // 6. FLASHCARD ACAK DGN SISTEM ENTER/SUBMIT
         // ==========================================
         let flashcardSequence = [];
         let currentFlashcardIndex = 0;
@@ -442,10 +441,10 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
                 <div class="flex flex-col items-center justify-center py-6 tab-content animate-[fadeIn_0.3s_ease-out]">
                     <div class="mb-4 text-center">
                         <span class="bg-emerald-900/50 text-emerald-400 font-bold px-3 py-1 rounded-full text-sm border border-emerald-800">Mode Acak | Kartu ${currentFlashcardIndex + 1} / ${flashcardSequence.length}</span>
-                        <p class="text-slate-400 mt-2 text-sm">Ketik Romaji dari huruf di bawah ini! (Urutan sudah diacak AI)</p>
+                        <p class="text-slate-400 mt-2 text-sm">Ketik Romaji lalu klik tombol Kirim atau Enter!</p>
                     </div>
                     
-                    <div class="perspective-1000 w-64 h-80 mb-6 cursor-pointer ${isCardFlipped ? 'flipped' : ''}" onclick="toggleFlashcard()">
+                    <div class="perspective-1000 w-64 h-80 mb-2 cursor-pointer ${isCardFlipped ? 'flipped' : ''}" onclick="toggleFlashcard()">
                         <div class="flip-card-inner relative w-full h-full transform-style-3d shadow-2xl rounded-2xl">
                             <!-- Sisi Depan -->
                             <div class="absolute w-full h-full backface-hidden bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-slate-700 rounded-2xl flex items-center justify-center">
@@ -454,20 +453,27 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
                             <!-- Sisi Belakang (Jawaban Benar) -->
                             <div class="absolute w-full h-full backface-hidden rotate-y-180 bg-gradient-to-br from-cyan-900 to-slate-900 border-2 border-cyan-500 rounded-2xl flex flex-col items-center justify-center">
                                 <span class="text-4xl mb-2">🎉</span>
-                                <span class="text-xl text-cyan-200 mb-1 font-bold">Benar Sekali!</span>
+                                <span class="text-xl text-cyan-200 mb-1 font-bold" id="fc-result-title">Benar Sekali!</span>
                                 <span class="text-6xl font-black text-white font-mono uppercase">${currentItem.r}</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Input Interaktif -->
-                    <div class="w-64 relative mb-6 mt-4">
-                        <input type="text" id="fc-input" 
-                            class="w-full bg-slate-900 border-2 border-slate-700 rounded-xl px-4 py-3 text-center text-xl font-bold text-white focus:outline-none focus:border-emerald-500 transition shadow-inner"
-                            placeholder="Ketik romaji disini..." autocomplete="off" autocapitalize="none"
-                            ${isCardFlipped ? 'disabled' : ''}
-                            oninput="checkFCInput(event)">
-                        ${isCardFlipped ? '<div class="absolute right-4 top-3.5 text-cyan-400 font-black text-xl">✓</div>' : ''}
+                    <!-- Input Interaktif dengan Tombol Submit -->
+                    <div class="flex flex-col items-center w-full max-w-xs mx-auto mb-6 mt-4">
+                        <div class="flex w-full gap-2 relative">
+                            <input type="text" id="fc-input" 
+                                class="flex-1 w-full bg-slate-900 border-2 border-slate-700 rounded-xl px-4 py-3 text-center text-xl font-bold text-white focus:outline-none focus:border-emerald-500 transition shadow-inner"
+                                placeholder="Ketik romaji..." autocomplete="off" autocapitalize="none"
+                                ${isCardFlipped ? 'disabled' : ''}
+                                oninput="document.getElementById('fc-msg').innerHTML=''"
+                                onkeydown="if(event.key === 'Enter') { event.preventDefault(); submitFCAnswer(); }">
+                            <button onclick="submitFCAnswer()" class="bg-emerald-600 hover:bg-emerald-500 text-white p-3 rounded-xl transition flex items-center justify-center shadow-lg" ${isCardFlipped ? 'disabled' : ''}>
+                                <i data-lucide="send" class="w-6 h-6"></i>
+                            </button>
+                            ${isCardFlipped ? '<div class="absolute right-[4.5rem] top-3.5 text-cyan-400 font-black text-xl">✓</div>' : ''}
+                        </div>
+                        <p id="fc-msg" class="h-6 mt-2 text-sm font-bold text-rose-400 text-center"></p>
                     </div>
 
                     <div class="flex gap-4">
@@ -476,10 +482,9 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
                 </div>
             `;
             
-            if (!isCardFlipped) {
-                if(window.innerWidth > 640) {
-                    setTimeout(() => { const el = document.getElementById('fc-input'); if(el) el.focus(); }, 100);
-                }
+            lucide.createIcons();
+            if (!isCardFlipped && window.innerWidth > 640) {
+                setTimeout(() => { const el = document.getElementById('fc-input'); if(el) el.focus(); }, 100);
             }
         }
 
@@ -488,22 +493,40 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
             renderFlashcard();
         };
 
-        window.checkFCInput = (e) => {
-            const val = e.target.value.trim().toLowerCase();
+        window.submitFCAnswer = () => {
+            if(isCardFlipped) return; // Jika sudah terjawab
+            
+            const inputEl = document.getElementById('fc-input');
+            const msgEl = document.getElementById('fc-msg');
+            const val = inputEl.value.trim().toLowerCase();
             const currentItem = flashcardSequence[currentFlashcardIndex];
+            
+            if (val === '') {
+                msgEl.innerText = "⚠️ Jawaban tidak boleh kosong.";
+                return;
+            }
+
             if (val === currentItem.r) {
+                // Jawaban Benar
+                msgEl.className = "h-6 mt-2 text-sm font-bold text-emerald-400 text-center";
+                msgEl.innerText = "✅ Benar!";
                 isCardFlipped = true;
                 sendScore(1, 0, 10);
                 renderFlashcard();
                 setTimeout(() => {
                     if(isCardFlipped) advanceFlashcard();
                 }, 1500);
+            } else {
+                // Jawaban Salah - Feedback Diberikan
+                msgEl.className = "h-6 mt-2 text-sm font-bold text-rose-400 text-center";
+                msgEl.innerText = "❌ Salah, coba lagi!";
+                sendScore(0, 1, -3); // Penalti
+                inputEl.value = '';
+                inputEl.focus();
             }
         };
 
-        window.skipFlashcard = () => {
-            advanceFlashcard();
-        }
+        window.skipFlashcard = () => advanceFlashcard();
 
         function advanceFlashcard() {
             isCardFlipped = false;
@@ -515,7 +538,7 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
         }
 
         // ==========================================
-        // 7. AI MEMBACA CERITA (MACHINE LEARNING ALGORITHM)
+        // 7. AI MEMBACA CERITA (DGN SUBMIT/ENTER & TIMER)
         // ==========================================
         function normalizeRomaji(str) {
             return str.toLowerCase()
@@ -529,21 +552,17 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
         }
 
         function initAIReading() {
-            // Pilih cerita sesuai tingkatan level pengguna
             const availableStories = aiReadingData[aiUserLevel];
             aiCurrentStory = availableStories[Math.floor(Math.random() * availableStories.length)];
             
             aiTimerStarted = false;
             aiFinished = false;
             
-            // Set Timer limits
             if(aiUserLevel === 'pemula') {
-                aiTimeElapsed = 0; // Stopwatch
+                aiTimeElapsed = 0; 
             } else if (aiUserLevel === 'mahir') {
-                // Waktu toleransi 2.5 detik per huruf normal (sekitar 30-40 detik)
                 aiTimeRemaining = Math.floor(aiCurrentStory.romaji.replace(/[^a-z]/g, '').length * 2.5);
             } else if (aiUserLevel === 'pro') {
-                // Waktu lebih ketat, 1.2 detik per huruf (sekitar 20-30 detik)
                 aiTimeRemaining = Math.floor(aiCurrentStory.romaji.replace(/[^a-z]/g, '').length * 1.2);
             }
             
@@ -551,24 +570,24 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
             renderAIReading();
         }
 
-        function startAITimer() {
-            aiTimerStarted = true;
-            if(aiUserLevel === 'pemula') {
-                aiTimerInterval = setInterval(() => {
-                    aiTimeElapsed++;
-                    updateTimerUI();
-                }, 1000);
-            } else {
-                aiTimerInterval = setInterval(() => {
-                    aiTimeRemaining--;
-                    updateTimerUI();
-                    if(aiTimeRemaining <= 0) {
-                        handleAITimeout();
-                    }
-                }, 1000);
+        window.startAITimerIfNeeded = () => {
+            if(!aiTimerStarted && !aiFinished) {
+                aiTimerStarted = true;
+                if(aiUserLevel === 'pemula') {
+                    aiTimerInterval = setInterval(() => {
+                        aiTimeElapsed++;
+                        updateTimerUI();
+                    }, 1000);
+                } else {
+                    aiTimerInterval = setInterval(() => {
+                        aiTimeRemaining--;
+                        updateTimerUI();
+                        if(aiTimeRemaining <= 0) handleAITimeout();
+                    }, 1000);
+                }
+                updateTimerUI();
             }
-            updateTimerUI();
-        }
+        };
 
         function updateTimerUI() {
             const timerEl = document.getElementById('ai-timer-display');
@@ -590,9 +609,8 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
         function handleAITimeout() {
             clearInterval(aiTimerInterval);
             aiFinished = { status: 'timeout' };
-            sendScore(0, 1, -5); // Hukuman timeout
+            sendScore(0, 1, -5); 
             
-            // AI Demote Logic & Sinkronisasi SQL
             if(aiUserLevel === 'pro') saveAILevel('mahir');
             else if (aiUserLevel === 'mahir') saveAILevel('pemula');
             
@@ -600,60 +618,72 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
             if (window.MathJax) MathJax.typesetPromise();
         }
 
-        window.checkAIReadingInput = (e) => {
+        window.submitAIAnswer = () => {
             if(aiFinished) return;
-            if(!aiTimerStarted) startAITimer();
+            
+            const inputEl = document.getElementById('ai-read-input');
+            const msgEl = document.getElementById('ai-msg');
+            let userVal = inputEl.value;
+            
+            if(userVal.trim() === '') {
+                msgEl.innerText = "⚠️ Anda belum mengetik apapun.";
+                return;
+            }
 
-            let userVal = e.target.value;
             let normalizedUser = normalizeRomaji(userVal);
             let normalizedTarget = normalizeRomaji(aiCurrentStory.romaji);
 
             if(normalizedUser === normalizedTarget) {
-                // User Success!
+                // Jawaban Benar
                 clearInterval(aiTimerInterval);
                 aiFinished = { status: 'success' };
                 
-                // AI Machine Learning Promote Logic & Sinkronisasi SQL
                 let charCount = normalizedTarget.length;
                 if(aiUserLevel === 'pemula') {
                     sendScore(1, 0, 15);
-                    // Kecepatan membaca > 1 huruf per detik -> Naik ke Mahir
                     if(charCount / aiTimeElapsed > 1.0) saveAILevel('mahir');
                 } else if (aiUserLevel === 'mahir') {
                     sendScore(1, 0, 25);
-                    // Sisa waktu lebih dari 30% batas awal -> Naik ke Pro
                     let maxTime = Math.floor(charCount * 2.5);
                     if(aiTimeRemaining > (maxTime * 0.3)) saveAILevel('pro');
                 } else {
                     sendScore(1, 0, 40);
-                    // Tetap di pro
                 }
 
                 renderAIReading();
                 if (window.MathJax) MathJax.typesetPromise();
+            } else {
+                // Jawaban Salah - Feedback Diberikan
+                msgEl.innerText = "❌ Jawaban kurang tepat atau ada typo. Ayo periksa lagi!";
+                sendScore(0, 1, -2); // Penalti salah tebak kalimat
             }
-        }
+        };
 
         function renderAIReading() {
             let feedbackHtml = '';
             let inputSectionHtml = '';
 
             if (!aiFinished) {
-                // Reading Mode
-                let timerLabel = aiUserLevel === 'pemula' ? `⏱️ Mulai mengetik...` : `⏳ Waktu Target: ${aiTimeRemaining}s`;
+                let timerLabel = aiUserLevel === 'pemula' ? `⏱️ Ketik huruf pertama untuk memulai waktu...` : `⏳ Waktu Target: ${aiTimeRemaining}s`;
                 
                 inputSectionHtml = `
-                    <div class="mt-6 flex flex-col items-center">
+                    <div class="mt-6 flex flex-col items-center w-full">
                         <div id="ai-timer-display" class="text-xl font-mono font-bold text-slate-400 mb-3">${timerLabel}</div>
-                        <textarea id="ai-read-input" rows="3" 
-                            class="w-full max-w-2xl bg-slate-900 border-2 border-slate-700 rounded-2xl p-4 text-xl sm:text-2xl text-white focus:outline-none focus:border-cyan-500 transition shadow-inner font-bold"
-                            placeholder="Ketik romaji tanpa spasi dan tanda baca..." autocomplete="off" autocapitalize="none" spellcheck="false"
-                            oninput="checkAIReadingInput(event)"></textarea>
-                        <p class="text-xs text-slate-500 mt-3 text-center">*Abaikan spasi, tanda koma, dan titik. Ketik romaji huruf hiragana di atas.</p>
+                        <div class="flex flex-col sm:flex-row w-full max-w-2xl gap-3">
+                            <textarea id="ai-read-input" rows="2" 
+                                class="flex-1 w-full bg-slate-900 border-2 border-slate-700 rounded-2xl p-4 text-xl sm:text-2xl text-white focus:outline-none focus:border-cyan-500 transition shadow-inner font-bold resize-none"
+                                placeholder="Ketik romaji di sini..." autocomplete="off" autocapitalize="none" spellcheck="false"
+                                oninput="startAITimerIfNeeded(); document.getElementById('ai-msg').innerHTML=''"
+                                onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); submitAIAnswer(); }"></textarea>
+                            <button onclick="submitAIAnswer()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-4 rounded-2xl transition flex items-center justify-center shadow-lg sm:w-auto w-full font-bold gap-2">
+                                <i data-lucide="send" class="w-5 h-5"></i> Kirim
+                            </button>
+                        </div>
+                        <p id="ai-msg" class="h-6 mt-2 text-sm font-bold text-rose-400"></p>
+                        <p class="text-xs text-slate-500 mt-2 text-center">*Abaikan spasi/tanda baca. Anda bisa menekan tombol <strong>Enter</strong> untuk mengirim jawaban.</p>
                     </div>
                 `;
             } else {
-                // Pembahasan & Feedback Mode
                 let statusHeader = '';
                 if(aiFinished.status === 'success') {
                     statusHeader = `<h3 class="text-2xl sm:text-3xl font-black text-emerald-400 mb-2 flex items-center gap-2 justify-center"><i data-lucide="check-circle-2" class="w-8 h-8"></i> Membaca Selesai!</h3>`;
@@ -662,7 +692,7 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
                 }
 
                 feedbackHtml = `
-                    <div class="mt-8 bg-slate-800 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-xl tab-content">
+                    <div class="mt-8 bg-slate-800 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-xl tab-content w-full">
                         ${statusHeader}
                         <p class="text-center text-slate-300 mb-8">Kalimat asli: <strong class="text-white">"${aiCurrentStory.indo}"</strong></p>
                         
@@ -690,14 +720,13 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
                 `;
             }
 
-            // Tentukan Badge Level
             let badgeClass = aiUserLevel === 'pemula' ? 'bg-cyan-900/50 border-cyan-500/50 text-cyan-400' :
                              aiUserLevel === 'mahir' ? 'bg-indigo-900/50 border-indigo-500/50 text-indigo-400' :
                              'bg-rose-900/50 border-rose-500/50 text-rose-400';
 
             contentDiv.innerHTML = `
-                <div class="max-w-4xl mx-auto py-4 tab-content px-2 sm:px-0">
-                    <div class="mb-6 flex justify-between items-center bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-md">
+                <div class="max-w-4xl mx-auto py-4 tab-content px-2 sm:px-0 flex flex-col items-center w-full">
+                    <div class="mb-6 flex justify-between items-center bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-md w-full">
                         <div class="flex items-center gap-3">
                             <i data-lucide="brain-circuit" class="w-6 h-6 text-emerald-400"></i>
                             <div>
@@ -710,7 +739,7 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
                         </span>
                     </div>
                     
-                    <div class="bg-slate-800/80 border-t border-slate-700/50 rounded-3xl p-6 sm:p-10 mb-2 shadow-2xl relative overflow-hidden text-center backdrop-blur-sm">
+                    <div class="bg-slate-800/80 border-t border-slate-700/50 rounded-3xl p-6 sm:p-10 mb-2 shadow-2xl relative overflow-hidden text-center backdrop-blur-sm w-full">
                         <h2 class="text-slate-400 text-xs sm:text-sm font-bold tracking-widest uppercase mb-6 flex items-center justify-center gap-2"><i data-lucide="glasses" class="w-4 h-4"></i> Baca Huruf di Bawah Ini</h2>
                         <div class="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-relaxed sm:leading-loose filter drop-shadow-md break-keep">
                             ${aiCurrentStory.hiragana}
@@ -722,12 +751,10 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
                 </div>
             `;
 
-            if (!aiFinished) {
-                if(window.innerWidth > 640) {
-                    setTimeout(() => { const el = document.getElementById('ai-read-input'); if(el) el.focus(); }, 100);
-                }
-            }
             lucide.createIcons();
+            if (!aiFinished && window.innerWidth > 640) {
+                setTimeout(() => { const el = document.getElementById('ai-read-input'); if(el) el.focus(); }, 100);
+            }
         }
 
         // Mulai aplikasi
