@@ -1,4 +1,11 @@
 <?php
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'secure' => isset($_SERVER['HTTPS']),
+    'httponly' => true,
+    'samesite' => 'Lax',
+]);
 session_start();
 
 $leaderboardFile = __DIR__ . '/leaderboard.json';
@@ -15,7 +22,10 @@ if (isset($_GET['logout'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
-    $_SESSION['belajar_user'] = trim($_POST['username']);
+    $username = trim($_POST['username']);
+    if ($username !== '') {
+        $_SESSION['belajar_user'] = $username;
+    }
     header('Location: Index.php');
     exit;
 }
