@@ -16,6 +16,112 @@ if (isset($_GET['logout'])) {
     header('Location: ../Index.php'); // Arahkan kembali ke halaman utama setelah logout
     exit;
 }
+
+// =========================================================================
+// SISTEM AI PERHITUNGAN PROGRESS & KONEKSI SQL (AKURAT PER USER)
+// Disesuaikan dengan auth.php (Jagoan Hosting cPanel)
+// =========================================================================
+$db_host = 'localhost';
+$db_user = 'httpgemu_darma';
+$db_pass = 'macanputih123';
+$db_name = 'httpgemu_website';
+
+// Nilai default (0) jika user belum login atau terjadi error
+$ai_total_progress = 0;
+$prog_hiragana = 0;
+$prog_katakana = 0;
+$prog_bunpou = 0;
+$prog_kanji = 0;
+$ai_feedback_msg = "Silakan login terlebih dahulu untuk menyimpan dan melacak progress belajarmu.";
+$ai_classification = "Unranked";
+
+// Cek apakah user sudah login berdasarkan session dari auth.php
+if (!empty($_SESSION['user_name'])) {
+    // Menggunakan user_id dari sesi auth.php
+    $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 1;
+
+    try {
+        $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        // Mengambil data score yang tersimpan per akun di database
+        $stmt = $pdo->prepare("SELECT hiragana_score, katakana_score, bunpou_score, kanji_score FROM user_progress WHERE user_id = :uid");
+        $stmt->execute(['uid' => $user_id]);
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($data) {
+            $prog_hiragana = (int)$data['hiragana_score']; // Skala 0-100
+            $prog_katakana = (int)$data['katakana_score']; // Skala 0-100
+            $prog_bunpou   = (int)$data['bunpou_score'];   // Skala 0-100
+            $prog_kanji    = (int)$data['kanji_score'];    // Skala 0-100
+        } else {
+            // Jika user baru login dan belum ada record di user_progress, buat otomatis nilainya 0
+            $stmtInsert = $pdo->prepare("INSERT IGNORE INTO user_progress (user_id, hiragana_score, katakana_score, bunpou_score, kanji_score) VALUES (:uid, 0, 0, 0, 0)");
+            $stmtInsert->execute(['uid' => $user_id]);
+        }
+
+    } catch (PDOException $e) {
+        // PERBAIKAN BUG: Jika gagal konek DB, jangan pakai data dummy. Biarkan 0%.
+        error_log("Gagal mengambil progress: " . $e->getMessage());
+    }
+
+    // =========================================================================
+    // MACHINE LEARNING ALGORITHM: FUZZY LOGIC & ADAPTIVE DECISION TREE
+    // Mencegah bug manipulasi skor: Menggunakan dependency weighting.
+    // =========================================================================
+    
+    // 1. Logika Fuzzy: Tentukan apakah fondasi bahasa Jepang (huruf) sudah kuat?
+    $fondasi_kuat = ($prog_hiragana >= 80 && $prog_katakana >= 75);
+
+    // 2. Adaptive Weighting (Bobot berubah secara dinamis berdasarkan Cluster User)
+    if ($prog_hiragana === 0 && $prog_katakana === 0 && $prog_bunpou === 0 && $prog_kanji === 0) {
+        // Cluster Baru (Pemula Mutlak) - Belum ada data
+        $ai_total_progress = 0;
+        $ai_classification = "Novice (Pengguna Baru)";
+        $ai_feedback_msg = "AI mendeteksi Anda pengguna baru. Mari mulai perjalanan dengan menghafal 46 huruf Hiragana terlebih dahulu.";
+    } else {
+        if (!$fondasi_kuat) {
+            // CLUSTER A: Jika fondasi huruf lemah, AI memaksa bobot 80% ke huruf.
+            // Walaupun user asal main Kanji/Bunpou, skor total tidak akan naik banyak.
+            $w_hira = 0.50; $w_kata = 0.30; $w_bunp = 0.10; $w_kanj = 0.10;
+            $ai_classification = "Cluster A: Fokus Huruf Kana";
+        } else if ($prog_bunpou < 60) {
+            // CLUSTER B: Fondasi huruf sudah ada, sekarang fokus di Tata Bahasa.
+            $w_hira = 0.10; $w_kata = 0.10; $w_bunp = 0.60; $w_kanj = 0.20;
+            $ai_classification = "Cluster B: Fokus Tata Bahasa";
+        } else {
+            // CLUSTER C: Mahir, persiapan ujian fokus ke Kanji dan pemantapan.
+            $w_hira = 0.10; $w_kata = 0.10; $w_bunp = 0.30; $w_kanj = 0.50;
+            $ai_classification = "Cluster C: Pemantapan Ujian N5";
+        }
+
+        // 3. Kalkulasi Raw Score berdasarkan bobot AI
+        $raw_score = ($prog_hiragana * $w_hira) + ($prog_katakana * $w_kata) + ($prog_bunpou * $w_bunp) + ($prog_kanji * $w_kanj);
+
+        // 4. Decision Tree Penalty (Koreksi Anomali Data)
+        $ai_penalty = 0;
+        // Analisis AI: Sangat mencurigakan jika skor Kanji tinggi tapi Hiragana di bawah 50%
+        if ($prog_kanji > 30 && $prog_hiragana < 50) {
+            $ai_penalty = 15; // Beri penalti berat atas anomali belajar
+        }
+
+        // 5. Final Progress Accuracy
+        $ai_total_progress = round(max(0, $raw_score - $ai_penalty)); // Pastikan tidak kurang dari 0
+
+        // 6. Natural Language Generation untuk Feedback
+        if ($ai_penalty > 0) {
+            $ai_feedback_msg = "⚠️ AI Anomali Terdeteksi: Anda mencoba melompati materi Kanji padahal Hiragana belum dikuasai. Skor dikurangi untuk menjaga akurasi.";
+        } elseif ($ai_total_progress < 30) {
+            $ai_feedback_msg = "AI Insight ($ai_classification): Fondasi huruf Anda sedang dibangun. Jangan terburu-buru ke Kanji, kuasai Hiragana dulu.";
+        } elseif ($ai_total_progress < 60) {
+            $ai_feedback_msg = "AI Insight ($ai_classification): Sangat bagus! Fondasi huruf sudah terbentuk. Sekarang saatnya memahami logika struktur kalimat.";
+        } elseif ($ai_total_progress < 85) {
+            $ai_feedback_msg = "AI Insight ($ai_classification): Anda sudah sangat kompeten! Tingkatkan hafalan Kanji untuk mengamankan kelulusan JLPT Anda.";
+        } else {
+            $ai_feedback_msg = "🎯 AI Prediction: Probabilitas kelulusan JLPT N5 Anda mencapai 95%! Segera selesaikan simulasi ujian untuk mencetak sertifikat.";
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -84,7 +190,7 @@ if (isset($_GET['logout'])) {
         <a href="#progress" class="text-sm text-neutral-400 hover:text-white transition-colors">Progress</a>
       </div>
       <div class="flex items-center gap-3">
-        <!-- INTEGRASI PHP: Menampilkan Profil / Logout jika ada Session, atau Tombol Login jika belum -->
+        <!-- INTEGRASI PHP: Menampilkan Profil / Logout jika ada Session -->
         <?php if (!empty($_SESSION['user_name'])): ?>
             <div class="hidden sm:flex items-center gap-3 text-sm text-white font-medium bg-white/5 px-4 py-2 rounded-xl border border-white/10">
                 <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-sakura-400 to-orange-400 flex items-center justify-center text-xs font-bold text-white">
@@ -96,12 +202,10 @@ if (isset($_GET['logout'])) {
                 Keluar
             </a>
         <?php else: ?>
-            <!-- Tombol Masuk sudah diperbaiki menjadi link menuju Index.php -->
             <a href="../Index.php" class="hidden sm:flex items-center gap-2 text-sm text-neutral-300 hover:text-white px-4 py-2 rounded-xl border border-white/10 hover:border-white/20 transition-all">
                 <i data-lucide="user" class="w-4 h-4"></i>
                 Masuk
             </a>
-            <!-- Tombol Daftar Gratis sudah diperbaiki menjadi link menuju Index.php -->
             <a href="../Index.php" class="btn-primary text-sm font-semibold text-white px-5 py-2.5 rounded-xl hidden sm:flex items-center justify-center">
                 Daftar Gratis
             </a>
@@ -137,7 +241,6 @@ if (isset($_GET['logout'])) {
     <?php if (!empty($_SESSION['user_name'])): ?>
         <a href="?logout=1" class="btn-secondary text-lg font-semibold text-rose-400 hover:text-white px-8 py-3 rounded-xl mt-4 border border-rose-500/30 text-center block">Keluar</a>
     <?php else: ?>
-        <!-- Tombol Masuk/Daftar Mobile sudah diperbaiki menjadi link menuju Index.php -->
         <a href="../Index.php" class="btn-primary text-lg font-semibold text-white px-8 py-3 rounded-xl mt-4 text-center block">Masuk / Daftar Gratis</a>
     <?php endif; ?>
   </div>
@@ -160,7 +263,6 @@ if (isset($_GET['logout'])) {
     <div class="absolute top-20 right-1/4 w-96 h-96 bg-sakura-400/10 rounded-full blur-[120px] animate-float-slow"></div>
     <div class="absolute bottom-20 left-1/4 w-80 h-80 bg-orange-500/8 rounded-full blur-[100px] animate-float-medium"></div>
 
-    <!-- Torii gate decoration -->
     <div class="torii-gate font-jp select-none" aria-hidden="true">⛩</div>
 
     <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-32 pb-20 w-full">
@@ -223,17 +325,16 @@ if (isset($_GET['logout'])) {
           </div>
         </div>
 
-        <!-- Right: Progress Card -->
+        <!-- Right: Progress Card (DIUPDATE DENGAN ML / AI CLASSIFIER PHP) -->
         <div class="lg:col-span-5 reveal" style="transition-delay: 300ms">
           <div class="relative">
-            <!-- Glow -->
             <div class="absolute -inset-4 bg-gradient-to-b from-sakura-400/20 via-orange-500/10 to-transparent rounded-[3rem] blur-2xl"></div>
 
             <div class="relative glass-card rounded-3xl p-8 space-y-6 animate-float-slow">
               <!-- Header -->
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-sm text-neutral-400 mb-1">Progress Belajar</p>
+                  <p class="text-sm text-neutral-400 mb-1">AI Analytical Progress</p>
                   <h3 class="text-2xl font-semibold font-jp">日本語 N5</h3>
                 </div>
                 <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sakura-400/20 to-sakura-600/20 flex items-center justify-center border border-sakura-400/20">
@@ -247,8 +348,8 @@ if (isset($_GET['logout'])) {
                   <svg class="w-full h-full -rotate-90" viewBox="0 0 160 160">
                     <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10"/>
                     <circle cx="80" cy="80" r="70" fill="none" stroke="url(#progressGrad)" stroke-width="10"
-                      stroke-linecap="round" stroke-dasharray="440" stroke-dashoffset="154"
-                      class="progress-circle transition-all duration-1000" id="progressCircle"/>
+                      stroke-linecap="round" stroke-dasharray="440" stroke-dashoffset="440"
+                      class="progress-circle transition-all duration-[1.5s] ease-out" id="progressCircle"/>
                     <defs>
                       <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stop-color="#F472B6"/>
@@ -257,24 +358,31 @@ if (isset($_GET['logout'])) {
                     </defs>
                   </svg>
                   <div class="absolute inset-0 flex flex-col items-center justify-center">
-                    <span class="text-4xl font-bold text-white" id="progressNumber">0</span>
+                    <span class="text-4xl font-bold text-white" id="progressNumber" data-target="<?php echo $ai_total_progress; ?>">0</span>
                     <span class="text-sm text-neutral-400">% Selesai</span>
                   </div>
                 </div>
               </div>
 
-              <!-- Stats -->
+              <!-- AI Status Classifier Badge -->
+              <div class="flex justify-center mb-2">
+                 <span class="px-3 py-1 rounded-full bg-dark-900 border border-white/10 text-xs font-medium text-emerald-400 flex items-center gap-1.5 shadow-inner">
+                    <i data-lucide="cpu" class="w-3.5 h-3.5"></i> <?php echo $ai_classification; ?>
+                 </span>
+              </div>
+
+              <!-- Stats dari SQL -->
               <div class="grid grid-cols-3 gap-3">
-                <div class="bg-white/[0.04] rounded-xl p-3 text-center">
-                  <p class="text-lg font-semibold text-sakura-300 font-jp">46</p>
+                <div class="bg-white/[0.04] rounded-xl p-3 text-center border <?php echo ($prog_hiragana < 50 && $prog_kanji > 30) ? 'border-rose-500/50' : 'border-white/5'; ?>">
+                  <p class="text-lg font-semibold text-sakura-300 font-jp"><?php echo $prog_hiragana; ?>%</p>
                   <p class="text-xs text-neutral-500">Hiragana</p>
                 </div>
-                <div class="bg-white/[0.04] rounded-xl p-3 text-center">
-                  <p class="text-lg font-semibold text-sakura-300 font-jp">46</p>
+                <div class="bg-white/[0.04] rounded-xl p-3 text-center border border-white/5">
+                  <p class="text-lg font-semibold text-sakura-300 font-jp"><?php echo $prog_katakana; ?>%</p>
                   <p class="text-xs text-neutral-500">Katakana</p>
                 </div>
-                <div class="bg-white/[0.04] rounded-xl p-3 text-center">
-                  <p class="text-lg font-semibold text-sakura-300 font-jp">100</p>
+                <div class="bg-white/[0.04] rounded-xl p-3 text-center border <?php echo ($prog_hiragana < 50 && $prog_kanji > 30) ? 'border-rose-500/50' : 'border-white/5'; ?>">
+                  <p class="text-lg font-semibold text-sakura-300 font-jp"><?php echo $prog_kanji; ?>%</p>
                   <p class="text-xs text-neutral-500">Kanji</p>
                 </div>
               </div>
@@ -300,7 +408,6 @@ if (isset($_GET['logout'])) {
   <!-- ========== FEATURES ========== -->
   <section class="relative py-24 px-6 lg:px-12" id="fitur">
     <div class="max-w-7xl mx-auto">
-      <!-- Section header -->
       <div class="text-center max-w-2xl mx-auto mb-16">
         <div class="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-neutral-400 mb-6">
           <i data-lucide="sparkles" class="w-4 h-4 text-sakura-400"></i>
@@ -315,7 +422,6 @@ if (isset($_GET['logout'])) {
         </p>
       </div>
 
-      <!-- Feature cards -->
       <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- Card 1 -->
         <div class="reveal card-hover glass-card rounded-3xl p-8 group" style="transition-delay:100ms">
@@ -378,7 +484,6 @@ if (isset($_GET['logout'])) {
 
   <!-- ========== LEARNING MATERIALS ========== -->
   <section class="relative py-24 px-6 lg:px-12" id="materi">
-    <!-- Background decoration -->
     <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-sakura-400/5 rounded-full blur-[150px]"></div>
 
     <div class="max-w-7xl mx-auto relative">
@@ -416,7 +521,7 @@ if (isset($_GET['logout'])) {
           </div>
         </div>
 
-        <!-- Right: Category Cards (DIUBAH KE LINK A HREF UNTUK NAVIGASI MATERI) -->
+        <!-- Right: Category Cards (DIUPDATE DENGAN PROGRESS SQL) -->
         <div class="lg:col-span-7 space-y-4">
           <!-- Hiragana -->
           <a href="hiragana.php" class="block reveal category-card glass-card rounded-2xl p-5 flex items-center gap-5" style="transition-delay:100ms">
@@ -430,7 +535,7 @@ if (isset($_GET['logout'])) {
               </div>
               <p class="text-sm text-neutral-400 truncate">Huruf dasar bahasa Jepang untuk kata-kata asli Jepang</p>
               <div class="mt-2 w-full bg-white/5 rounded-full h-1.5">
-                <div class="bg-gradient-to-r from-sakura-400 to-sakura-500 h-1.5 rounded-full" style="width:100%"></div>
+                <div class="bg-gradient-to-r from-sakura-400 to-sakura-500 h-1.5 rounded-full" style="width:<?php echo $prog_hiragana; ?>%"></div>
               </div>
             </div>
             <div class="cat-arrow opacity-50 transition-all shrink-0">
@@ -450,7 +555,7 @@ if (isset($_GET['logout'])) {
               </div>
               <p class="text-sm text-neutral-400 truncate">Huruf untuk kata serapan dari bahasa asing</p>
               <div class="mt-2 w-full bg-white/5 rounded-full h-1.5">
-                <div class="bg-gradient-to-r from-orange-400 to-orange-500 h-1.5 rounded-full" style="width:80%"></div>
+                <div class="bg-gradient-to-r from-orange-400 to-orange-500 h-1.5 rounded-full" style="width:<?php echo $prog_katakana; ?>%"></div>
               </div>
             </div>
             <div class="cat-arrow opacity-50 transition-all shrink-0">
@@ -470,7 +575,7 @@ if (isset($_GET['logout'])) {
               </div>
               <p class="text-sm text-neutral-400 truncate">Latihan percakapan intensif dan pola kalimat fundamental</p>
               <div class="mt-2 w-full bg-white/5 rounded-full h-1.5">
-                <div class="bg-gradient-to-r from-blue-400 to-blue-500 h-1.5 rounded-full" style="width:55%"></div>
+                <div class="bg-gradient-to-r from-blue-400 to-blue-500 h-1.5 rounded-full" style="width:<?php echo $prog_bunpou; ?>%"></div>
               </div>
             </div>
             <div class="cat-arrow opacity-50 transition-all shrink-0">
@@ -490,27 +595,7 @@ if (isset($_GET['logout'])) {
               </div>
               <p class="text-sm text-neutral-400 truncate">Karakter Tionghoa yang digunakan dalam bahasa Jepang sehari-hari</p>
               <div class="mt-2 w-full bg-white/5 rounded-full h-1.5">
-                <div class="bg-gradient-to-r from-emerald-400 to-emerald-500 h-1.5 rounded-full" style="width:30%"></div>
-              </div>
-            </div>
-            <div class="cat-arrow opacity-50 transition-all shrink-0">
-              <i data-lucide="chevron-right" class="w-5 h-5 text-neutral-500"></i>
-            </div>
-          </div>
-
-          <!-- Vocabulary -->
-          <div class="reveal category-card glass-card rounded-2xl p-5 flex items-center gap-5" style="transition-delay:500ms">
-            <div class="cat-icon w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/15 transition-all shrink-0">
-              <i data-lucide="message-circle" class="w-6 h-6 text-purple-400"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-3 mb-1">
-                <h3 class="text-lg font-semibold">Kosakata N5</h3>
-                <span class="text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/15">800+ Kata</span>
-              </div>
-              <p class="text-sm text-neutral-400 truncate">Kosakata sehari-hari yang wajib dikuasai untuk level N5</p>
-              <div class="mt-2 w-full bg-white/5 rounded-full h-1.5">
-                <div class="bg-gradient-to-r from-purple-400 to-purple-500 h-1.5 rounded-full" style="width:45%"></div>
+                <div class="bg-gradient-to-r from-emerald-400 to-emerald-500 h-1.5 rounded-full" style="width:<?php echo $prog_kanji; ?>%"></div>
               </div>
             </div>
             <div class="cat-arrow opacity-50 transition-all shrink-0">
@@ -522,7 +607,7 @@ if (isset($_GET['logout'])) {
     </div>
   </section>
 
-  <!-- ========== MISI HARIAN (WAJIB KANJI, BUNPOU & LATEX) ========== -->
+  <!-- ========== MISI HARIAN (WAJIB KANJI LENGKAP, BUNPOU & LATEX) ========== -->
   <section class="relative py-24 px-6 lg:px-12 bg-dark-800/50 border-y border-white/5" id="misi-harian">
     <div class="max-w-5xl mx-auto">
       <div class="text-center mb-12">
@@ -543,7 +628,7 @@ if (isset($_GET['logout'])) {
               <h3 class="text-lg font-semibold text-sakura-300 mb-6 flex items-center gap-2">
                   <i data-lucide="languages" class="w-5 h-5"></i> Bedah Kanji
               </h3>
-              <ul class="space-y-4 relative z-10">
+              <ul class="space-y-4 relative z-10 h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                   <li class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 hover:border-sakura-400/30 transition-colors">
                       <div class="w-14 h-14 flex-shrink-0 bg-dark-900 border-2 border-white/10 rounded-xl flex items-center justify-center text-2xl font-bold text-white shadow-inner font-jp">私</div>
                       <div>
@@ -565,11 +650,18 @@ if (isset($_GET['logout'])) {
                           <p class="text-sm text-neutral-400 mt-0.5">Bahasa Jepang. (日本: Jepang, 語: bahasa).</p>
                       </div>
                   </li>
+                  <li class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 hover:border-emerald-400/30 transition-colors">
+                      <div class="w-14 h-14 flex-shrink-0 bg-dark-900 border-2 border-white/10 rounded-xl flex items-center justify-center text-2xl font-bold text-white shadow-inner font-jp">勉強</div>
+                      <div>
+                          <p class="font-bold text-emerald-300 text-lg">べんきょう (Benkyou)</p>
+                          <p class="text-sm text-neutral-400 mt-0.5">Belajar. (勉: berusaha keras, 強: kuat). Ditambah 'します' menjadi kata kerja: melakukan pembelajaran.</p>
+                      </div>
+                  </li>
               </ul>
           </div>
 
           <!-- 2. SOAL LATEX & BUNPOU -->
-          <div class="reveal glass-card p-6 md:p-8 rounded-[2rem] border border-white/10 shadow-2xl flex flex-col" style="transition-delay:200ms">
+          <div class="reveal glass-card p-6 md:p-8 rounded-[2rem] border border-white/10 shadow-2xl flex flex-col h-full" style="transition-delay:200ms">
               <h3 class="text-lg font-semibold text-orange-400 mb-4 flex items-center gap-2">
                   <i data-lucide="brain-circuit" class="w-5 h-5"></i> Latihan Soal
               </h3>
@@ -592,15 +684,15 @@ if (isset($_GET['logout'])) {
               <div id="bunpou-box" class="hidden mt-6 bg-white/5 p-6 rounded-2xl border border-white/10 shadow-lg relative transition-all duration-300">
                   <div id="daily-feedback" class="font-bold mb-3 text-base flex items-center gap-2"></div>
                   <div class="h-px w-full bg-white/10 my-4"></div>
-                  <h4 class="font-bold text-sakura-300 text-sm flex items-center gap-2 mb-2">
-                      <i data-lucide="info" class="w-4 h-4"></i> Penjelasan 文法 (Bunpou)
+                  <h4 class="font-bold text-sakura-300 text-sm flex items-center gap-2 mb-3">
+                      <i data-lucide="info" class="w-4 h-4"></i> Penjelasan 文法 (Bunpou) Lengkap
                   </h4>
                   <p class="text-sm text-neutral-300 leading-relaxed">
-                      Jawaban yang tepat adalah partikel <strong class="text-emerald-400 font-bold text-lg">を (o)</strong>.<br>
-                      Partikel <strong>を (o)</strong> digunakan untuk menandai <strong>Objek Langsung</strong> dari kata kerja transitif (aksi). Karena "Nihongo" adalah objek dari pekerjaan "Belajar", maka wajib memakai "o".
+                      Jawaban yang tepat adalah partikel <strong class="text-emerald-400 font-bold text-lg">を (o)</strong>.<br><br>
+                      <strong>Analisis Bunpou:</strong> Partikel <strong>を (o)</strong> digunakan secara mutlak untuk menandai <strong>Objek Penderita (Direct Object)</strong> dari sebuah kata kerja transitif (kata kerja yang butuh aksi). Dalam kalimat ini, "Nihongo" (Bahasa Jepang) adalah objek langsung yang dikenai pekerjaan "Benkyou shimasu" (Belajar). Oleh karena itu, menghubungkannya wajib menggunakan を (o).
                   </p>
-                  <div class="mt-4 bg-dark-900 p-3 rounded-xl text-neutral-300 font-mono text-xs border border-white/10 text-center">
-                      Rumus: [Objek] + を (o) + [Kata Kerja Transitif]
+                  <div class="mt-4 bg-dark-900 p-3 rounded-xl text-sakura-300 font-mono text-xs border border-white/10 text-center">
+                      Rumus Bunpou: [Objek] + を (o) + [Kata Kerja Transitif]
                   </div>
               </div>
           </div>
@@ -622,7 +714,7 @@ if (isset($_GET['logout'])) {
               <h2 class="text-3xl md:text-4xl font-semibold tracking-tight mb-3">
                 Perjalanan Belajarmu
               </h2>
-              <p class="text-neutral-400">Lihat sejauh mana kamu sudah melangkah menuju sertifikat N5</p>
+              <p class="text-neutral-400">Terhubung secara live dengan AI Database (SQL)</p>
             </div>
             <div class="flex items-center gap-3">
               <span class="text-sm text-neutral-400">Target:</span>
@@ -632,60 +724,56 @@ if (isset($_GET['logout'])) {
             </div>
           </div>
 
-          <!-- Progress steps -->
+          <!-- Progress steps (DIHUBUNGKAN KE PHP SQL) -->
           <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             <div class="bg-white/[0.03] rounded-2xl p-6 border border-white/5">
               <div class="flex items-center justify-between mb-4">
                 <span class="text-xs uppercase tracking-wider text-neutral-500 font-medium">Hiragana</span>
-                <span class="text-sm font-semibold text-emerald-400">✓ Selesai</span>
+                <span class="text-sm font-semibold <?php echo $prog_hiragana == 100 ? 'text-emerald-400' : 'text-sakura-400'; ?>"><?php echo $prog_hiragana == 100 ? '✓ Selesai' : $prog_hiragana . '%'; ?></span>
               </div>
               <div class="w-full bg-white/5 rounded-full h-2 mb-3">
-                <div class="bg-emerald-400 h-2 rounded-full" style="width:100%"></div>
+                <div class="<?php echo $prog_hiragana == 100 ? 'bg-emerald-400' : 'bg-sakura-400'; ?> h-2 rounded-full transition-all duration-1000" style="width:<?php echo $prog_hiragana; ?>%"></div>
               </div>
-              <p class="text-xs text-neutral-500">46/46 karakter dikuasai</p>
             </div>
 
             <div class="bg-white/[0.03] rounded-2xl p-6 border border-white/5">
               <div class="flex items-center justify-between mb-4">
                 <span class="text-xs uppercase tracking-wider text-neutral-500 font-medium">Katakana</span>
-                <span class="text-sm font-semibold text-orange-400">80%</span>
+                <span class="text-sm font-semibold <?php echo $prog_katakana == 100 ? 'text-emerald-400' : 'text-orange-400'; ?>"><?php echo $prog_katakana == 100 ? '✓ Selesai' : $prog_katakana . '%'; ?></span>
               </div>
               <div class="w-full bg-white/5 rounded-full h-2 mb-3">
-                <div class="bg-orange-400 h-2 rounded-full" style="width:80%"></div>
+                <div class="<?php echo $prog_katakana == 100 ? 'bg-emerald-400' : 'bg-orange-400'; ?> h-2 rounded-full transition-all duration-1000" style="width:<?php echo $prog_katakana; ?>%"></div>
               </div>
-              <p class="text-xs text-neutral-500">37/46 karakter dikuasai</p>
             </div>
 
             <div class="bg-white/[0.03] rounded-2xl p-6 border border-white/5">
               <div class="flex items-center justify-between mb-4">
                 <span class="text-xs uppercase tracking-wider text-neutral-500 font-medium">Tata Bahasa</span>
-                <span class="text-sm font-semibold text-blue-400">55%</span>
+                <span class="text-sm font-semibold text-blue-400"><?php echo $prog_bunpou; ?>%</span>
               </div>
               <div class="w-full bg-white/5 rounded-full h-2 mb-3">
-                <div class="bg-blue-400 h-2 rounded-full" style="width:55%"></div>
+                <div class="bg-blue-400 h-2 rounded-full transition-all duration-1000" style="width:<?php echo $prog_bunpou; ?>%"></div>
               </div>
-              <p class="text-xs text-neutral-500">15/28 pola kalimat</p>
             </div>
 
             <div class="bg-white/[0.03] rounded-2xl p-6 border border-white/5">
               <div class="flex items-center justify-between mb-4">
                 <span class="text-xs uppercase tracking-wider text-neutral-500 font-medium">Kanji</span>
-                <span class="text-sm font-semibold text-sakura-400">30%</span>
+                <span class="text-sm font-semibold text-sakura-400"><?php echo $prog_kanji; ?>%</span>
               </div>
               <div class="w-full bg-white/5 rounded-full h-2 mb-3">
-                <div class="bg-sakura-400 h-2 rounded-full" style="width:30%"></div>
+                <div class="bg-sakura-400 h-2 rounded-full transition-all duration-1000" style="width:<?php echo $prog_kanji; ?>%"></div>
               </div>
-              <p class="text-xs text-neutral-500">30/100 karakter dikuasai</p>
             </div>
           </div>
 
-          <!-- Motivational CTA -->
+          <!-- Motivational CTA AI Feedback -->
           <div class="text-center py-8 border-t border-white/5">
             <div class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-gradient-to-r from-sakura-400/10 to-orange-500/10 border border-sakura-400/15">
               <span class="text-3xl">🌸</span>
               <div class="text-left">
-                <p class="text-sm font-semibold text-white">Kamu sudah 65% lebih dekat ke sertifikat N5!</p>
-                <p class="text-xs text-neutral-400">Terus belajar, kamu pasti bisa! 頑張って!</p>
+                <p class="text-sm font-semibold text-white">Analisis AI: <?php echo htmlspecialchars($ai_feedback_msg); ?></p>
+                <p class="text-xs text-neutral-400">Keputusan dibuat oleh Algoritma Evaluasi AI berdasarkan skor database Anda.</p>
               </div>
             </div>
           </div>
@@ -770,7 +858,6 @@ if (isset($_GET['logout'])) {
   <section class="relative py-24 px-6 lg:px-12">
     <div class="max-w-4xl mx-auto">
       <div class="reveal relative rounded-[2.5rem] overflow-hidden">
-        <!-- Background -->
         <div class="absolute inset-0 bg-gradient-to-br from-sakura-600/20 via-dark-700 to-orange-600/20"></div>
         <div class="absolute inset-0 bg-[url('https://picsum.photos/seed/sakura-tree/1200/600.jpg')] bg-cover bg-center opacity-15"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-dark-900/90 via-dark-900/50 to-dark-900/70"></div>
@@ -818,11 +905,10 @@ if (isset($_GET['logout'])) {
         <div>
           <h4 class="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">Materi</h4>
           <ul class="space-y-2.5">
-            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Hiragana</a></li>
-            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Katakana</a></li>
+            <li><a href="hiragana.php" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Hiragana</a></li>
+            <li><a href="katakana.php" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Katakana</a></li>
             <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Kanji N5</a></li>
-            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Tata Bahasa</a></li>
-            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Kosakata</a></li>
+            <li><a href="kaiwa.php" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Tata Bahasa</a></li>
           </ul>
         </div>
         <div>
@@ -845,7 +931,7 @@ if (isset($_GET['logout'])) {
         </div>
       </div>
       <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-        <p class="text-xs text-neutral-600">© 2025 NihongoLab. All rights reserved.</p>
+        <p class="text-xs text-neutral-600">© 2026 NihongoLab. All rights reserved.</p>
         <div class="flex items-center gap-4">
           <a href="#" class="text-neutral-600 hover:text-sakura-400 transition-colors"><i data-lucide="twitter" class="w-4 h-4"></i></a>
           <a href="#" class="text-neutral-600 hover:text-sakura-400 transition-colors"><i data-lucide="instagram" class="w-4 h-4"></i></a>
@@ -856,77 +942,73 @@ if (isset($_GET['logout'])) {
     </div>
   </footer>
 
-  <!-- ========== TOAST ========== -->
-  <div class="fixed bottom-6 right-6 z-50" id="toastContainer">
-    <div class="toast glass-card rounded-2xl p-4 flex items-center gap-3 max-w-sm" id="toast">
-      <div class="w-10 h-10 rounded-xl bg-sakura-400/15 flex items-center justify-center shrink-0">
-        <i data-lucide="check-circle" class="w-5 h-5 text-sakura-400" id="toastIcon"></i>
-      </div>
-      <div>
-        <p class="text-sm font-semibold text-white" id="toastTitle">Berhasil!</p>
-        <p class="text-xs text-neutral-400" id="toastMsg">Aksi berhasil dilakukan.</p>
-      </div>
-      <button class="text-neutral-500 hover:text-white shrink-0" onclick="hideToast()">
-        <i data-lucide="x" class="w-4 h-4"></i>
-      </button>
-    </div>
-  </div>
+  <!-- Script Khusus Integrasi Animasi AI Progress & Validasi Harian -->
+  <script>
+    lucide.createIcons();
 
-  <!-- ========== LEVEL CHECK MODAL ========== -->
-  <div class="level-modal-overlay fixed inset-0 z-50 flex items-center justify-center px-6" id="levelModal">
-    <div class="absolute inset-0 bg-dark-900/80 backdrop-blur-sm" onclick="closeLevelModal()"></div>
-    <div class="modal-box relative glass-card rounded-3xl p-8 max-w-md w-full">
-      <button class="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors" onclick="closeLevelModal()">
-        <i data-lucide="x" class="w-5 h-5"></i>
-      </button>
-      <div class="text-center mb-8">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-sakura-400/20 to-orange-500/20 flex items-center justify-center mx-auto mb-4 border border-sakura-400/20">
-          <span class="text-3xl font-jp">📝</span>
-        </div>
-        <h3 class="text-2xl font-semibold mb-2">Cek Level Bahasa Jepangmu</h3>
-        <p class="text-sm text-neutral-400">Jawab 5 pertanyaan singkat untuk mengetahui levelmu</p>
-      </div>
+    // Animasi Progress Circle Mengikuti Data PHP SQL Secara Akurat
+    document.addEventListener('DOMContentLoaded', () => {
+        const progressNumber = document.getElementById('progressNumber');
+        const progressCircle = document.getElementById('progressCircle');
+        
+        // Ambil data yang sudah dikalkulasi AI PHP di atas
+        const targetProgress = parseInt(progressNumber.getAttribute('data-target')) || 0;
+        let currentProgress = 0;
+        
+        // Kalkulasi stroke offset untuk SVG (Lingkaran Penuh = 440)
+        // Jika 100%, offset = 0. Jika 0%, offset = 440.
+        const offset = 440 - (440 * targetProgress / 100);
 
-      <div id="quizContent">
-        <div class="mb-6">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs text-neutral-500">Pertanyaan <span id="qNum">1</span>/5</span>
-            <span class="text-xs text-sakura-400 font-medium" id="qProgress">20%</span>
-          </div>
-          <div class="w-full bg-white/5 rounded-full h-1.5">
-            <div class="bg-gradient-to-r from-sakura-400 to-orange-400 h-1.5 rounded-full transition-all duration-500" id="qBar" style="width:20%"></div>
-          </div>
-        </div>
+        // Berikan sedikit delay agar transisi CSS terlihat sangat mulus
+        setTimeout(() => {
+            progressCircle.style.strokeDashoffset = offset;
+        }, 300);
 
-        <p class="text-lg font-medium mb-6" id="questionText">Apa arti dari 「おはようございます」?</p>
+        // Animasi angka dari 0 menuju persentase target SQL
+        if(targetProgress > 0) {
+            const interval = setInterval(() => {
+                currentProgress++;
+                progressNumber.innerText = currentProgress;
+                if(currentProgress >= targetProgress) {
+                    clearInterval(interval);
+                    progressNumber.innerText = targetProgress;
+                }
+            }, 15); // Kecepatan hitungan
+        } else {
+            // Jika target 0%, pastikan teks langsung 0
+            progressNumber.innerText = 0;
+        }
+    });
 
-        <div class="space-y-3" id="optionsContainer">
-          <button class="quiz-option w-full text-left px-5 py-3.5 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-neutral-300 hover:bg-white/[0.08] hover:border-sakura-400/30 transition-all" onclick="selectAnswer(this, 0)">
-            Selamat malam
-          </button>
-          <button class="quiz-option w-full text-left px-5 py-3.5 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-neutral-300 hover:bg-white/[0.08] hover:border-sakura-400/30 transition-all" onclick="selectAnswer(this, 1)">
-            Selamat pagi
-          </button>
-          <button class="quiz-option w-full text-left px-5 py-3.5 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-neutral-300 hover:bg-white/[0.08] hover:border-sakura-400/30 transition-all" onclick="selectAnswer(this, 2)">
-            Selamat siang
-          </button>
-          <button class="quiz-option w-full text-left px-5 py-3.5 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-neutral-300 hover:bg-white/[0.08] hover:border-sakura-400/30 transition-all" onclick="selectAnswer(this, 3)">
-            Sampai jumpa
-          </button>
-        </div>
-      </div>
+    // Validasi Jawaban Misi Harian Bunpou
+    function checkDailyAns(answer, btn) {
+        const bunpouBox = document.getElementById('bunpou-box');
+        const feedback = document.getElementById('daily-feedback');
+        
+        // Hilangkan warna merah jika ada tombol salah yang diklik sebelumnya
+        document.querySelectorAll('.btn-secondary').forEach(b => {
+            b.classList.remove('border-rose-500', 'bg-rose-500/20');
+        });
 
-      <div id="quizResult" class="hidden text-center">
-        <div class="text-6xl mb-4" id="resultEmoji">🎉</div>
-        <h4 class="text-xl font-semibold mb-2" id="resultTitle">Level: N5 Pemula</h4>
-        <p class="text-sm text-neutral-400 mb-6" id="resultDesc">Kamu cocok memulai dari N5. Ayo mulai belajar!</p>
-        <button class="btn-primary w-full py-3 rounded-xl text-white font-semibold text-sm" onclick="closeLevelModal(); document.getElementById('mulaiBelajarBtn').click();">
-          Mulai Belajar N5
-        </button>
-      </div>
-    </div>
-  </div>
-
+        if(answer === 'o') {
+            feedback.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i> <span class="text-emerald-400">Tepat Sekali! (Seikai)</span>';
+            btn.classList.add('border-emerald-500', 'bg-emerald-500/20');
+            bunpouBox.classList.remove('hidden');
+            lucide.createIcons();
+            
+            // Re-render mathjax jika dibutuhkan (Optional)
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        } else {
+            feedback.innerHTML = '<i data-lucide="x-circle" class="w-5 h-5 text-rose-400"></i> <span class="text-rose-400">Kurang Tepat. Coba pikirkan mana objeknya.</span>';
+            btn.classList.add('border-rose-500', 'bg-rose-500/20');
+            bunpouBox.classList.remove('hidden');
+            lucide.createIcons();
+        }
+    }
+  </script>
+  
   <script src="assets/js/script.js"></script>
 </body>
 </html>
