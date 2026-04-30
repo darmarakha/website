@@ -22,99 +22,1381 @@ if (isset($_GET['logout'])) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bahasa Jepang - Pusat Belajar</title>
+  <title>Belajar Bahasa Jepang Mulai dari N5</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- MathJax untuk Render LaTeX Murni -->
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            orange: { 450: '#FF5A1F', 500: '#F74E09', 600: '#D93D00' },
+            sakura: { 300: '#F9A8D4', 400: '#F472B6', 500: '#EC4899', 600: '#DB2777' },
+            dark: { 900: '#0a0a0a', 800: '#111111', 700: '#1a1a1a', 600: '#242424', 500: '#2e2e2e' }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            jp: ['Noto Sans JP', 'sans-serif']
+          },
+          animation: {
+            'float-slow': 'floatSlow 8s ease-in-out infinite',
+            'float-medium': 'floatMedium 6s ease-in-out infinite',
+            'float-fast': 'floatFast 4s ease-in-out infinite',
+            'fall-1': 'fall1 12s linear infinite',
+            'fall-2': 'fall2 10s linear infinite',
+            'fall-3': 'fall3 14s linear infinite',
+            'fall-4': 'fall4 9s linear infinite',
+            'fall-5': 'fall5 11s linear infinite',
+            'fall-6': 'fall6 13s linear infinite',
+            'spin-slow': 'spin 20s linear infinite',
+            'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
+            'progress-fill': 'progressFill 2s ease-out forwards',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #ffffff; overflow-x: hidden; }
+
+    /* Fix LaTeX display on Dark Mode */
+    .mjx-chtml { color: #ffffff !important; font-size: 115% !important; font-weight: bold; }
+
+    /* Sakura Petals */
+    @keyframes fall1 {
+      0% { transform: translate(0, -10%) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.8; }
+      90% { opacity: 0.6; }
+      100% { transform: translate(80px, 110vh) rotate(360deg); opacity: 0; }
+    }
+    @keyframes fall2 {
+      0% { transform: translate(0, -10%) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.7; }
+      90% { opacity: 0.5; }
+      100% { transform: translate(-60px, 110vh) rotate(-300deg); opacity: 0; }
+    }
+    @keyframes fall3 {
+      0% { transform: translate(0, -10%) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.9; }
+      90% { opacity: 0.4; }
+      100% { transform: translate(100px, 110vh) rotate(420deg); opacity: 0; }
+    }
+    @keyframes fall4 {
+      0% { transform: translate(0, -10%) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.5; }
+      100% { transform: translate(-90px, 110vh) rotate(-380deg); opacity: 0; }
+    }
+    @keyframes fall5 {
+      0% { transform: translate(0, -10%) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.8; }
+      90% { opacity: 0.3; }
+      100% { transform: translate(50px, 110vh) rotate(280deg); opacity: 0; }
+    }
+    @keyframes fall6 {
+      0% { transform: translate(0, -10%) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.7; }
+      90% { opacity: 0.5; }
+      100% { transform: translate(-40px, 110vh) rotate(-450deg); opacity: 0; }
+    }
+
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(3deg); }
+    }
+    @keyframes floatMedium {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-15px) rotate(-2deg); }
+    }
+    @keyframes floatFast {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 20px rgba(244,114,182,0.3); }
+      50% { box-shadow: 0 0 40px rgba(244,114,182,0.6); }
+    }
+    @keyframes progressFill {
+      from { width: 0%; }
+      to { width: 65%; }
+    }
+
+    .sakura-petal {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: radial-gradient(ellipse at center, #F9A8D4 0%, #F472B6 50%, transparent 70%);
+      border-radius: 50% 0 50% 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .card-hover {
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .card-hover:hover {
+      transform: translateY(-8px) scale(1.02);
+    }
+
+    .hero-bg {
+      background:
+        linear-gradient(135deg, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.7) 40%, rgba(10,10,10,0.85) 70%, #0a0a0a 100%),
+        url('https://picsum.photos/seed/mtfuji-sakura/1920/1080.jpg');
+      background-size: cover;
+      background-position: center 30%;
+    }
+
+    .glass-card {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .progress-bar-fill {
+      animation: progressFill 2s ease-out forwards;
+      animation-play-state: paused;
+    }
+    .progress-bar-fill.animate {
+      animation-play-state: running;
+    }
+
+    .category-card {
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .category-card:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(244,114,182,0.4);
+    }
+    .category-card:hover .cat-icon {
+      transform: scale(1.15);
+      background: rgba(244,114,182,0.15);
+    }
+    .category-card:hover .cat-arrow {
+      transform: translateX(4px);
+      opacity: 1;
+    }
+
+    .torii-gate {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0.04;
+      font-size: 300px;
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #F74E09, #D93D00);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    .btn-primary:hover::before { left: 100%; }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(247,78,9,0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(244,114,182,0.5);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon-wrap {
+      transition: all 0.4s ease;
+    }
+    .card-hover:hover .feature-icon-wrap {
+      transform: rotateY(180deg);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
+    ::-webkit-scrollbar-thumb { background: #2e2e2e; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #F74E09; }
+
+    .toast {
+      transform: translateX(120%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .toast.show {
+      transform: translateX(0);
+    }
+
+    .level-modal-overlay {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .level-modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .level-modal-overlay .modal-box {
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .level-modal-overlay.active .modal-box {
+      transform: scale(1) translateY(0);
+    }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans antialiased">
-  <main class="max-w-5xl mx-auto px-4 py-6 md:py-10 space-y-6">
-    
-    <!-- HEADER & STATUS LOGIN -->
-    <header class="rounded-2xl border border-slate-700 bg-slate-900 p-4 md:p-6 flex flex-col md:flex-row md:items-center gap-4 md:justify-between shadow-lg">
-      <div>
-        <h1 class="text-2xl md:text-4xl font-black text-white">Bahasa Jepang</h1>
-        <p class="text-slate-400 mt-1">Pilih materi per halaman agar rapi.</p>
+<body>
+
+  <!-- ========== NAVBAR ========== -->
+  <nav class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" id="navbar">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12 py-4 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sakura-400 to-sakura-600 flex items-center justify-center font-jp font-bold text-lg text-white shadow-lg">
+          日
+        </div>
+        <span class="text-xl font-semibold tracking-tight">
+          <span class="text-white">Nihongo</span><span class="text-sakura-400">Lab</span>
+        </span>
+      </a>
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#fitur" class="text-sm text-neutral-400 hover:text-white transition-colors">Fitur</a>
+        <a href="#materi" class="text-sm text-neutral-400 hover:text-white transition-colors">Materi</a>
+        <a href="#misi-harian" class="text-sm text-neutral-400 hover:text-white transition-colors">Misi</a>
+        <a href="#progress" class="text-sm text-neutral-400 hover:text-white transition-colors">Progress</a>
       </div>
-      
-      <div class="flex flex-col md:items-end gap-3">
-        <!-- DETEKSI SESSION LOGIN -->
+      <div class="flex items-center gap-3">
+        <!-- INTEGRASI PHP: Menampilkan Profil / Logout jika ada Session, atau Tombol Login jika belum -->
         <?php if (!empty($_SESSION['user_name'])): ?>
-            <div class="flex items-center gap-3 bg-slate-950 px-4 py-2.5 rounded-xl border border-slate-800">
-                <div class="text-right">
-                    <p class="text-xs text-slate-400">Masuk sebagai:</p>
-                    <p class="text-base text-white font-bold tracking-wide"><?php echo htmlspecialchars($_SESSION['user_name']); ?></p>
+            <div class="hidden sm:flex items-center gap-3 text-sm text-white font-medium bg-white/5 px-4 py-2 rounded-xl border border-white/10">
+                <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-sakura-400 to-orange-400 flex items-center justify-center text-xs font-bold text-white">
+                   <?php echo strtoupper(substr($_SESSION['user_name'], 0, 1)); ?>
                 </div>
-                <!-- Tombol Logout -->
-                <a href="?logout=1" class="p-2 rounded-lg bg-rose-600/10 text-rose-400 hover:bg-rose-600 hover:text-white transition-colors" title="Keluar">
-                    <i data-lucide="log-out" class="w-5 h-5"></i>
-                </a>
+                Hai, <?php echo htmlspecialchars($_SESSION['user_name']); ?>
             </div>
+            <a href="?logout=1" class="btn-secondary text-sm font-semibold text-white px-5 py-2.5 rounded-xl border border-rose-500/30 hover:border-rose-500/80 hover:bg-rose-500/20 hidden sm:block">
+                Keluar
+            </a>
         <?php else: ?>
-            <div class="flex items-center gap-2 bg-amber-500/10 px-4 py-2.5 rounded-xl border border-amber-500/20 text-amber-300 text-sm font-medium">
-                <i data-lucide="alert-circle" class="w-4 h-4"></i> Anda belum login (Guest)
-            </div>
+            <button class="hidden sm:flex items-center gap-2 text-sm text-neutral-300 hover:text-white px-4 py-2 rounded-xl border border-white/10 hover:border-white/20 transition-all">
+            <i data-lucide="user" class="w-4 h-4"></i>
+            Masuk
+            </button>
+            <button class="btn-primary text-sm font-semibold text-white px-5 py-2.5 rounded-xl hidden sm:block">
+            Daftar Gratis
+            </button>
         <?php endif; ?>
 
-        <div class="flex gap-2 w-full md:w-auto">
-          <a href="../Index.php" class="flex-1 md:flex-none justify-center px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold transition-colors flex items-center gap-2">
-              <i data-lucide="arrow-left" class="w-4 h-4"></i> Back
-          </a>
-          <a href="/index.php" class="flex-1 md:flex-none justify-center px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition-colors flex items-center gap-2">
-              <i data-lucide="home" class="w-4 h-4"></i> Home
-          </a>
+        <button class="md:hidden text-neutral-400 hover:text-white p-2" id="mobileMenuBtn">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="fixed inset-0 z-40 bg-dark-900/95 backdrop-blur-xl flex flex-col items-center justify-center gap-8 transition-all duration-300 opacity-0 pointer-events-none" id="mobileMenu">
+    <button class="absolute top-6 right-6 text-neutral-400 hover:text-white" id="mobileMenuClose">
+      <i data-lucide="x" class="w-6 h-6"></i>
+    </button>
+
+    <?php if (!empty($_SESSION['user_name'])): ?>
+        <div class="text-center mb-4">
+            <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-tr from-sakura-400 to-orange-400 flex items-center justify-center text-2xl font-bold text-white mb-2">
+                <?php echo strtoupper(substr($_SESSION['user_name'], 0, 1)); ?>
+            </div>
+            <p class="text-xl font-semibold text-white"><?php echo htmlspecialchars($_SESSION['user_name']); ?></p>
+        </div>
+    <?php endif; ?>
+
+    <a href="#fitur" class="text-2xl font-semibold text-neutral-300 hover:text-white transition-colors mobile-link">Fitur</a>
+    <a href="#materi" class="text-2xl font-semibold text-neutral-300 hover:text-white transition-colors mobile-link">Materi</a>
+    <a href="#misi-harian" class="text-2xl font-semibold text-neutral-300 hover:text-white transition-colors mobile-link">Misi Harian</a>
+    <a href="#progress" class="text-2xl font-semibold text-neutral-300 hover:text-white transition-colors mobile-link">Progress</a>
+    
+    <?php if (!empty($_SESSION['user_name'])): ?>
+        <a href="?logout=1" class="btn-secondary text-lg font-semibold text-rose-400 hover:text-white px-8 py-3 rounded-xl mt-4 border border-rose-500/30">Keluar</a>
+    <?php else: ?>
+        <button class="btn-primary text-lg font-semibold text-white px-8 py-3 rounded-xl mt-4">Daftar Gratis</button>
+    <?php endif; ?>
+  </div>
+
+  <!-- ========== HERO ========== -->
+  <section class="hero-bg relative min-h-screen flex items-center overflow-hidden">
+    <!-- Sakura petals -->
+    <div class="sakura-petal animate-fall-1" style="left:5%; top:0; animation-delay:0s; width:10px; height:10px;"></div>
+    <div class="sakura-petal animate-fall-2" style="left:15%; top:0; animation-delay:2s; width:8px; height:8px;"></div>
+    <div class="sakura-petal animate-fall-3" style="left:30%; top:0; animation-delay:4s; width:14px; height:14px;"></div>
+    <div class="sakura-petal animate-fall-4" style="left:50%; top:0; animation-delay:1s; width:9px; height:9px;"></div>
+    <div class="sakura-petal animate-fall-5" style="left:65%; top:0; animation-delay:3s; width:11px; height:11px;"></div>
+    <div class="sakura-petal animate-fall-6" style="left:80%; top:0; animation-delay:5s; width:7px; height:7px;"></div>
+    <div class="sakura-petal animate-fall-1" style="left:90%; top:0; animation-delay:6s; width:12px; height:12px;"></div>
+    <div class="sakura-petal animate-fall-3" style="left:42%; top:0; animation-delay:7s; width:10px; height:10px;"></div>
+    <div class="sakura-petal animate-fall-2" style="left:72%; top:0; animation-delay:8s; width:8px; height:8px;"></div>
+    <div class="sakura-petal animate-fall-5" style="left:25%; top:0; animation-delay:9s; width:13px; height:13px;"></div>
+
+    <!-- Decorative blurred orbs -->
+    <div class="absolute top-20 right-1/4 w-96 h-96 bg-sakura-400/10 rounded-full blur-[120px] animate-float-slow"></div>
+    <div class="absolute bottom-20 left-1/4 w-80 h-80 bg-orange-500/8 rounded-full blur-[100px] animate-float-medium"></div>
+
+    <!-- Torii gate decoration -->
+    <div class="torii-gate font-jp select-none" aria-hidden="true">⛩</div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-32 pb-20 w-full">
+      <div class="grid lg:grid-cols-12 gap-12 items-center">
+        <!-- Left content -->
+        <div class="lg:col-span-7 space-y-8">
+          <div class="reveal">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sakura-400/10 border border-sakura-400/20 text-sakura-300 text-sm font-medium">
+              <span class="w-2 h-2 rounded-full bg-sakura-400 animate-pulse"></span>
+              JLPT N5 · Level Pemula
+            </div>
+          </div>
+
+          <h1 class="reveal text-5xl md:text-7xl lg:text-8xl font-semibold leading-[0.9] tracking-tight" style="transition-delay: 100ms">
+            <span class="text-white">Belajar</span><br>
+            <span class="bg-gradient-to-r from-sakura-300 via-sakura-400 to-orange-400 bg-clip-text text-transparent">Bahasa Jepang</span><br>
+            <span class="text-white/90">Mulai dari</span>
+            <span class="relative inline-block">
+              <span class="text-white font-jp text-6xl md:text-8xl lg:text-9xl">N5</span>
+              <span class="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-sakura-400 to-orange-400 rounded-full"></span>
+            </span>
+          </h1>
+
+          <p class="reveal text-lg md:text-xl text-neutral-400 max-w-lg leading-relaxed" style="transition-delay: 200ms">
+            Kuasai dasar bahasa Jepang dengan metode belajar terstruktur. Dari <span class="text-sakura-300">Hiragana</span>, <span class="text-sakura-300">Katakana</span>, hingga <span class="text-sakura-300">Kanji</span> dasar — semua dalam satu platform.
+          </p>
+
+          <div class="reveal flex flex-wrap gap-4" style="transition-delay: 300ms">
+            <button class="btn-primary text-lg font-semibold text-white px-8 py-4 rounded-2xl flex items-center gap-3" id="mulaiBelajarBtn">
+              <i data-lucide="play" class="w-5 h-5"></i>
+              Mulai Belajar
+              <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </button>
+            <button class="btn-secondary text-lg font-medium text-white px-8 py-4 rounded-2xl flex items-center gap-3" id="cekLevelBtn">
+              <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+              Cek Level
+            </button>
+          </div>
+
+          <div class="reveal flex items-center gap-8 pt-4" style="transition-delay: 400ms">
+            <div class="flex items-center gap-2">
+              <div class="flex -space-x-2">
+                <img src="https://i.pravatar.cc/100?img=11" class="w-8 h-8 rounded-full border-2 border-dark-900" alt="">
+                <img src="https://i.pravatar.cc/100?img=32" class="w-8 h-8 rounded-full border-2 border-dark-900" alt="">
+                <img src="https://i.pravatar.cc/100?img=47" class="w-8 h-8 rounded-full border-2 border-dark-900" alt="">
+                <img src="https://i.pravatar.cc/100?img=23" class="w-8 h-8 rounded-full border-2 border-dark-900" alt="">
+              </div>
+              <span class="text-sm text-neutral-400"><span class="text-white font-semibold">2,400+</span> pelajar</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="flex gap-0.5">
+                <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+                <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+                <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+                <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+                <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+              </div>
+              <span class="text-sm text-neutral-400">4.9/5</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Progress Card -->
+        <div class="lg:col-span-5 reveal" style="transition-delay: 300ms">
+          <div class="relative">
+            <!-- Glow -->
+            <div class="absolute -inset-4 bg-gradient-to-b from-sakura-400/20 via-orange-500/10 to-transparent rounded-[3rem] blur-2xl"></div>
+
+            <div class="relative glass-card rounded-3xl p-8 space-y-6 animate-float-slow">
+              <!-- Header -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-neutral-400 mb-1">Progress Belajar</p>
+                  <h3 class="text-2xl font-semibold font-jp">日本語 N5</h3>
+                </div>
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sakura-400/20 to-sakura-600/20 flex items-center justify-center border border-sakura-400/20">
+                  <span class="text-2xl font-jp">🀄</span>
+                </div>
+              </div>
+
+              <!-- Circular Progress -->
+              <div class="flex items-center justify-center py-4">
+                <div class="relative w-44 h-44">
+                  <svg class="w-full h-full -rotate-90" viewBox="0 0 160 160">
+                    <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10"/>
+                    <circle cx="80" cy="80" r="70" fill="none" stroke="url(#progressGrad)" stroke-width="10"
+                      stroke-linecap="round" stroke-dasharray="440" stroke-dashoffset="154"
+                      class="progress-circle transition-all duration-1000" id="progressCircle"/>
+                    <defs>
+                      <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#F472B6"/>
+                        <stop offset="100%" stop-color="#F74E09"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span class="text-4xl font-bold text-white" id="progressNumber">0</span>
+                    <span class="text-sm text-neutral-400">% Selesai</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Stats -->
+              <div class="grid grid-cols-3 gap-3">
+                <div class="bg-white/[0.04] rounded-xl p-3 text-center">
+                  <p class="text-lg font-semibold text-sakura-300 font-jp">46</p>
+                  <p class="text-xs text-neutral-500">Hiragana</p>
+                </div>
+                <div class="bg-white/[0.04] rounded-xl p-3 text-center">
+                  <p class="text-lg font-semibold text-sakura-300 font-jp">46</p>
+                  <p class="text-xs text-neutral-500">Katakana</p>
+                </div>
+                <div class="bg-white/[0.04] rounded-xl p-3 text-center">
+                  <p class="text-lg font-semibold text-sakura-300 font-jp">100</p>
+                  <p class="text-xs text-neutral-500">Kanji</p>
+                </div>
+              </div>
+
+              <!-- CTA -->
+              <div class="pt-2">
+                <button class="w-full py-3.5 rounded-xl bg-gradient-to-r from-sakura-500 to-orange-500 text-white font-semibold text-sm flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-sakura-500/20 transition-all hover:-translate-y-0.5" id="sertifikatBtn">
+                  <i data-lucide="award" class="w-4 h-4"></i>
+                  Dapatkan Sertifikat N5
+                  <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </header>
+    </div>
 
-    <!-- PILIHAN MATERI -->
-    <section class="grid sm:grid-cols-3 gap-4">
-      <a href="hiragana.php" class="rounded-xl p-5 border border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 transition-all group shadow-lg">
-          <div class="flex items-center justify-between mb-2">
-              <h3 class="font-bold text-cyan-300 group-hover:text-cyan-200 text-lg">Hiragana</h3>
-              <span class="text-cyan-400/50 group-hover:text-cyan-400"><i data-lucide="book-open" class="w-5 h-5"></i></span>
+    <!-- Bottom gradient fade -->
+    <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-dark-900 to-transparent"></div>
+  </section>
+
+  <!-- ========== FEATURES ========== -->
+  <section class="relative py-24 px-6 lg:px-12" id="fitur">
+    <div class="max-w-7xl mx-auto">
+      <!-- Section header -->
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <div class="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-neutral-400 mb-6">
+          <i data-lucide="sparkles" class="w-4 h-4 text-sakura-400"></i>
+          Kenapa Memilih Kami
+        </div>
+        <h2 class="reveal text-4xl md:text-5xl font-semibold tracking-tight mb-4" style="transition-delay:100ms">
+          Cara Belajar yang
+          <span class="bg-gradient-to-r from-sakura-300 to-orange-400 bg-clip-text text-transparent">Efektif</span>
+        </h2>
+        <p class="reveal text-lg text-neutral-400" style="transition-delay:200ms">
+          Empat pilar utama yang memastikan perjalanan belajar bahasa Jepangmu berjalan lancar
+        </p>
+      </div>
+
+      <!-- Feature cards -->
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Card 1 -->
+        <div class="reveal card-hover glass-card rounded-3xl p-8 group" style="transition-delay:100ms">
+          <div class="feature-icon-wrap w-14 h-14 rounded-2xl bg-sakura-400/10 flex items-center justify-center mb-6 border border-sakura-400/20" style="perspective:800px">
+            <i data-lucide="book-open" class="w-6 h-6 text-sakura-400"></i>
           </div>
-          <p class="text-xs text-slate-400">Belajar huruf dasar asli Jepang.</p>
-      </a>
-      <a href="katakana.php" class="rounded-xl p-5 border border-fuchsia-500/40 bg-fuchsia-500/10 hover:bg-fuchsia-500/20 transition-all group shadow-lg">
-          <div class="flex items-center justify-between mb-2">
-              <h3 class="font-bold text-fuchsia-300 group-hover:text-fuchsia-200 text-lg">Katakana</h3>
-              <span class="text-fuchsia-400/50 group-hover:text-fuchsia-400"><i data-lucide="pen-tool" class="w-5 h-5"></i></span>
+          <h3 class="text-xl font-semibold mb-3">Materi Terstruktur</h3>
+          <p class="text-neutral-400 text-sm leading-relaxed">
+            Kurikulum N5 yang disusun sistematis dari dasar hingga mahir, mengikuti standar JLPT resmi.
+          </p>
+          <div class="mt-6 flex items-center gap-2 text-sakura-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+            Pelajari <i data-lucide="arrow-right" class="w-4 h-4"></i>
           </div>
-          <p class="text-xs text-slate-400">Belajar huruf serapan bahasa asing.</p>
-      </a>
-      <a href="kaiwa.php" class="rounded-xl p-5 border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all group shadow-lg">
-          <div class="flex items-center justify-between mb-2">
-              <h3 class="font-bold text-emerald-300 group-hover:text-emerald-200 text-lg">Kaiwa</h3>
-              <span class="text-emerald-400/50 group-hover:text-emerald-400"><i data-lucide="message-circle" class="w-5 h-5"></i></span>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="reveal card-hover glass-card rounded-3xl p-8 group" style="transition-delay:200ms">
+          <div class="feature-icon-wrap w-14 h-14 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-6 border border-orange-500/20" style="perspective:800px">
+            <i data-lucide="gamepad-2" class="w-6 h-6 text-orange-400"></i>
           </div>
-          <p class="text-xs text-slate-400">Latihan percakapan intensif 2 hari.</p>
-      </a>
-    </section>
+          <h3 class="text-xl font-semibold mb-3">Latihan Interaktif</h3>
+          <p class="text-neutral-400 text-sm leading-relaxed">
+            Quiz, flashcard, dan drag-and-drop exercise yang membuat belajar terasa menyenangkan.
+          </p>
+          <div class="mt-6 flex items-center gap-2 text-orange-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+            Coba sekarang <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </div>
+        </div>
 
-    <!-- MAINTENANCE -->
-    <section class="rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/10 to-transparent p-5 shadow-lg">
-      <h2 class="font-bold text-amber-400 flex items-center gap-2 mb-2">
-          <i data-lucide="settings" class="w-5 h-5 animate-spin-slow"></i> AI Maintenance Check
-      </h2>
-      <p id="maint" class="text-sm text-amber-200/80">Checking...</p>
-    </section>
+        <!-- Card 3 -->
+        <div class="reveal card-hover glass-card rounded-3xl p-8 group" style="transition-delay:300ms">
+          <div class="feature-icon-wrap w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-6 border border-blue-500/20" style="perspective:800px">
+            <i data-lucide="file-check" class="w-6 h-6 text-blue-400"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Simulasi Ujian</h3>
+          <p class="text-neutral-400 text-sm leading-relaxed">
+            Try out JLPT N5 yang menyerupai ujian asli dengan timer dan scoring otomatis.
+          </p>
+          <div class="mt-6 flex items-center gap-2 text-blue-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+            Mulai simulasi <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </div>
+        </div>
 
-    <p class="text-center text-sm text-slate-500 pt-4">Credit: <strong class="text-slate-400">By Darma</strong></p>
-  </main>
+        <!-- Card 4 -->
+        <div class="reveal card-hover glass-card rounded-3xl p-8 group" style="transition-delay:400ms">
+          <div class="feature-icon-wrap w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-6 border border-emerald-500/20" style="perspective:800px">
+            <i data-lucide="trending-up" class="w-6 h-6 text-emerald-400"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Lacak Progress</h3>
+          <p class="text-neutral-400 text-sm leading-relaxed">
+            Dashboard visual yang menunjukkan pencapaianmu secara real-time dan area yang perlu diperbaiki.
+          </p>
+          <div class="mt-6 flex items-center gap-2 text-emerald-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+            Lihat progress <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <style>
-      .animate-spin-slow { animation: spin 3s linear infinite; }
-  </style>
+  <!-- ========== LEARNING MATERIALS ========== -->
+  <section class="relative py-24 px-6 lg:px-12" id="materi">
+    <!-- Background decoration -->
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-sakura-400/5 rounded-full blur-[150px]"></div>
+
+    <div class="max-w-7xl mx-auto relative">
+      <div class="grid lg:grid-cols-12 gap-12 items-start">
+        <!-- Left: Title + Image -->
+        <div class="lg:col-span-5 space-y-8">
+          <div class="reveal">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-neutral-400 mb-6">
+              <i data-lucide="library" class="w-4 h-4 text-orange-400"></i>
+              Materi Pembelajaran
+            </div>
+            <h2 class="text-4xl md:text-5xl font-semibold tracking-tight mb-4">
+              Semua yang Kamu
+              <span class="bg-gradient-to-r from-orange-400 to-sakura-400 bg-clip-text text-transparent">Butuhkan</span>
+            </h2>
+            <p class="text-lg text-neutral-400 leading-relaxed">
+              Materi N5 lengkap yang mencakup fondasi bahasa Jepang: dari membaca, menulis, hingga tata bahasa dasar.
+            </p>
+          </div>
+
+          <div class="reveal rounded-3xl overflow-hidden relative group" style="transition-delay:200ms">
+            <img src="https://picsum.photos/seed/japanese-calligraphy/600/400.jpg" alt="Japanese study materials" class="w-full h-64 object-cover rounded-3xl group-hover:scale-105 transition-transform duration-700">
+            <div class="absolute inset-0 bg-gradient-to-t from-dark-900/80 via-transparent to-transparent rounded-3xl"></div>
+            <div class="absolute bottom-6 left-6 right-6">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-sakura-400/20 backdrop-blur-sm flex items-center justify-center">
+                  <i data-lucide="headphones" class="w-5 h-5 text-sakura-300"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-white">Audio Native Speaker</p>
+                  <p class="text-xs text-neutral-400">Pelajari pengucapan yang benar</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Category Cards (DIUBAH KE LINK A HREF UNTUK NAVIGASI MATERI) -->
+        <div class="lg:col-span-7 space-y-4">
+          <!-- Hiragana -->
+          <a href="hiragana.php" class="block reveal category-card glass-card rounded-2xl p-5 flex items-center gap-5" style="transition-delay:100ms">
+            <div class="cat-icon w-16 h-16 rounded-2xl bg-sakura-400/10 flex items-center justify-center border border-sakura-400/15 transition-all shrink-0">
+              <span class="text-2xl font-jp font-semibold text-sakura-300">あ</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 mb-1">
+                <h3 class="text-lg font-semibold text-white">Hiragana</h3>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-sakura-400/10 text-sakura-300 border border-sakura-400/15">46 Karakter</span>
+              </div>
+              <p class="text-sm text-neutral-400 truncate">Huruf dasar bahasa Jepang untuk kata-kata asli Jepang</p>
+              <div class="mt-2 w-full bg-white/5 rounded-full h-1.5">
+                <div class="bg-gradient-to-r from-sakura-400 to-sakura-500 h-1.5 rounded-full" style="width:100%"></div>
+              </div>
+            </div>
+            <div class="cat-arrow opacity-50 transition-all shrink-0">
+              <i data-lucide="chevron-right" class="w-5 h-5 text-neutral-500"></i>
+            </div>
+          </a>
+
+          <!-- Katakana -->
+          <a href="katakana.php" class="block reveal category-card glass-card rounded-2xl p-5 flex items-center gap-5" style="transition-delay:200ms">
+            <div class="cat-icon w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/15 transition-all shrink-0">
+              <span class="text-2xl font-jp font-semibold text-orange-300">ア</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 mb-1">
+                <h3 class="text-lg font-semibold text-white">Katakana</h3>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-300 border border-orange-500/15">46 Karakter</span>
+              </div>
+              <p class="text-sm text-neutral-400 truncate">Huruf untuk kata serapan dari bahasa asing</p>
+              <div class="mt-2 w-full bg-white/5 rounded-full h-1.5">
+                <div class="bg-gradient-to-r from-orange-400 to-orange-500 h-1.5 rounded-full" style="width:80%"></div>
+              </div>
+            </div>
+            <div class="cat-arrow opacity-50 transition-all shrink-0">
+              <i data-lucide="chevron-right" class="w-5 h-5 text-neutral-500"></i>
+            </div>
+          </a>
+
+          <!-- Grammar (Kaiwa) -->
+          <a href="kaiwa.php" class="block reveal category-card glass-card rounded-2xl p-5 flex items-center gap-5" style="transition-delay:300ms">
+            <div class="cat-icon w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/15 transition-all shrink-0">
+              <i data-lucide="puzzle" class="w-6 h-6 text-blue-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 mb-1">
+                <h3 class="text-lg font-semibold text-white">Kaiwa & Tata Bahasa</h3>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/15">Intensif 2 Hari</span>
+              </div>
+              <p class="text-sm text-neutral-400 truncate">Latihan percakapan intensif dan pola kalimat fundamental</p>
+              <div class="mt-2 w-full bg-white/5 rounded-full h-1.5">
+                <div class="bg-gradient-to-r from-blue-400 to-blue-500 h-1.5 rounded-full" style="width:55%"></div>
+              </div>
+            </div>
+            <div class="cat-arrow opacity-50 transition-all shrink-0">
+              <i data-lucide="chevron-right" class="w-5 h-5 text-neutral-500"></i>
+            </div>
+          </a>
+
+          <!-- Kanji -->
+          <div class="reveal category-card glass-card rounded-2xl p-5 flex items-center gap-5" style="transition-delay:400ms">
+            <div class="cat-icon w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/15 transition-all shrink-0">
+              <span class="text-2xl font-jp font-semibold text-emerald-300">漢</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 mb-1">
+                <h3 class="text-lg font-semibold">Kanji Dasar</h3>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/15">100 Karakter</span>
+              </div>
+              <p class="text-sm text-neutral-400 truncate">Karakter Tionghoa yang digunakan dalam bahasa Jepang sehari-hari</p>
+              <div class="mt-2 w-full bg-white/5 rounded-full h-1.5">
+                <div class="bg-gradient-to-r from-emerald-400 to-emerald-500 h-1.5 rounded-full" style="width:30%"></div>
+              </div>
+            </div>
+            <div class="cat-arrow opacity-50 transition-all shrink-0">
+              <i data-lucide="chevron-right" class="w-5 h-5 text-neutral-500"></i>
+            </div>
+          </div>
+
+          <!-- Vocabulary -->
+          <div class="reveal category-card glass-card rounded-2xl p-5 flex items-center gap-5" style="transition-delay:500ms">
+            <div class="cat-icon w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/15 transition-all shrink-0">
+              <i data-lucide="message-circle" class="w-6 h-6 text-purple-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 mb-1">
+                <h3 class="text-lg font-semibold">Kosakata N5</h3>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/15">800+ Kata</span>
+              </div>
+              <p class="text-sm text-neutral-400 truncate">Kosakata sehari-hari yang wajib dikuasai untuk level N5</p>
+              <div class="mt-2 w-full bg-white/5 rounded-full h-1.5">
+                <div class="bg-gradient-to-r from-purple-400 to-purple-500 h-1.5 rounded-full" style="width:45%"></div>
+              </div>
+            </div>
+            <div class="cat-arrow opacity-50 transition-all shrink-0">
+              <i data-lucide="chevron-right" class="w-5 h-5 text-neutral-500"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== MISI HARIAN (WAJIB KANJI, BUNPOU & LATEX) ========== -->
+  <section class="relative py-24 px-6 lg:px-12 bg-dark-800/50 border-y border-white/5" id="misi-harian">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-12">
+        <div class="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sakura-400/10 border border-sakura-400/20 text-sm text-sakura-300 mb-4 font-medium shadow-lg shadow-sakura-500/10">
+          <i data-lucide="star" class="w-4 h-4 fill-sakura-400"></i>
+          Misi Harian (Daily Challenge)
+        </div>
+        <h2 class="reveal text-3xl md:text-5xl font-semibold tracking-tight">
+          Latihan <span class="bg-gradient-to-r from-sakura-300 to-orange-400 bg-clip-text text-transparent">Analisis Kalimat</span>
+        </h2>
+        <p class="reveal text-neutral-400 mt-4">Selesaikan tantangan 漢字 (Kanji) dan 文法 (Bunpou) hari ini!</p>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-8">
+          <!-- 1. BEDAH KANJI -->
+          <div class="reveal glass-card p-6 md:p-8 rounded-[2rem] border border-white/10 shadow-2xl relative overflow-hidden" style="transition-delay:100ms">
+              <div class="absolute top-0 right-0 w-32 h-32 bg-sakura-500/10 rounded-full blur-[50px] pointer-events-none"></div>
+              <h3 class="text-lg font-semibold text-sakura-300 mb-6 flex items-center gap-2">
+                  <i data-lucide="languages" class="w-5 h-5"></i> Bedah Kanji
+              </h3>
+              <ul class="space-y-4 relative z-10">
+                  <li class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 hover:border-sakura-400/30 transition-colors">
+                      <div class="w-14 h-14 flex-shrink-0 bg-dark-900 border-2 border-white/10 rounded-xl flex items-center justify-center text-2xl font-bold text-white shadow-inner font-jp">私</div>
+                      <div>
+                          <p class="font-bold text-sakura-300 text-lg">わたし (Watashi)</p>
+                          <p class="text-sm text-neutral-400 mt-0.5">Saya. Kata ganti orang pertama (sopan).</p>
+                      </div>
+                  </li>
+                  <li class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 hover:border-orange-400/30 transition-colors">
+                      <div class="w-14 h-14 flex-shrink-0 bg-dark-900 border-2 border-white/10 rounded-xl flex items-center justify-center text-2xl font-bold text-white shadow-inner font-jp">毎日</div>
+                      <div>
+                          <p class="font-bold text-orange-300 text-lg">まいにち (Mainichi)</p>
+                          <p class="text-sm text-neutral-400 mt-0.5">Setiap hari. (毎: setiap, 日: hari).</p>
+                      </div>
+                  </li>
+                  <li class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 hover:border-blue-400/30 transition-colors">
+                      <div class="w-14 h-14 flex-shrink-0 bg-dark-900 border-2 border-white/10 rounded-xl flex items-center justify-center text-2xl font-bold text-white shadow-inner font-jp">日本語</div>
+                      <div>
+                          <p class="font-bold text-blue-300 text-lg">にほんご (Nihongo)</p>
+                          <p class="text-sm text-neutral-400 mt-0.5">Bahasa Jepang. (日本: Jepang, 語: bahasa).</p>
+                      </div>
+                  </li>
+              </ul>
+          </div>
+
+          <!-- 2. SOAL LATEX & BUNPOU -->
+          <div class="reveal glass-card p-6 md:p-8 rounded-[2rem] border border-white/10 shadow-2xl flex flex-col" style="transition-delay:200ms">
+              <h3 class="text-lg font-semibold text-orange-400 mb-4 flex items-center gap-2">
+                  <i data-lucide="brain-circuit" class="w-5 h-5"></i> Latihan Soal
+              </h3>
+              <p class="text-sm text-neutral-300 mb-6">Pilih partikel yang tepat untuk melengkapi rumus kalimat di bawah ini:</p>
+              
+              <!-- Render LaTeX (MathJax) -->
+              <div class="bg-dark-900 py-6 px-4 rounded-2xl text-center border border-white/10 shadow-inner mb-8 overflow-x-auto">
+                  $$\text{私} \ \text{は} \ \text{毎日} \ \text{日本語} \ \mathbf{[\ ? \ ]} \ \text{勉強します。}$$
+                  <p class="text-xs text-neutral-500 mt-3 font-mono">(Watashi wa mainichi nihongo [ ? ] benkyou shimasu.)</p>
+              </div>
+
+              <!-- Opsi Jawaban -->
+              <div class="grid grid-cols-3 gap-3 mb-4 mt-auto">
+                  <button onclick="checkDailyAns('ni', this)" class="btn-secondary py-4 rounded-xl text-white font-bold text-lg hover:bg-white/10 hover:border-sakura-400 transition-all">に</button>
+                  <button onclick="checkDailyAns('de', this)" class="btn-secondary py-4 rounded-xl text-white font-bold text-lg hover:bg-white/10 hover:border-sakura-400 transition-all">で</button>
+                  <button onclick="checkDailyAns('o', this)" class="btn-secondary py-4 rounded-xl text-white font-bold text-lg hover:bg-white/10 hover:border-sakura-400 transition-all">を</button>
+              </div>
+
+              <!-- Area Feedback & Bunpou -->
+              <div id="bunpou-box" class="hidden mt-6 bg-white/5 p-6 rounded-2xl border border-white/10 shadow-lg relative transition-all duration-300">
+                  <div id="daily-feedback" class="font-bold mb-3 text-base flex items-center gap-2"></div>
+                  <div class="h-px w-full bg-white/10 my-4"></div>
+                  <h4 class="font-bold text-sakura-300 text-sm flex items-center gap-2 mb-2">
+                      <i data-lucide="info" class="w-4 h-4"></i> Penjelasan 文法 (Bunpou)
+                  </h4>
+                  <p class="text-sm text-neutral-300 leading-relaxed">
+                      Jawaban yang tepat adalah partikel <strong class="text-emerald-400 font-bold text-lg">を (o)</strong>.<br>
+                      Partikel <strong>を (o)</strong> digunakan untuk menandai <strong>Objek Langsung</strong> dari kata kerja transitif (aksi). Karena "Nihongo" adalah objek dari pekerjaan "Belajar", maka wajib memakai "o".
+                  </p>
+                  <div class="mt-4 bg-dark-900 p-3 rounded-xl text-neutral-300 font-mono text-xs border border-white/10 text-center">
+                      Rumus: [Objek] + を (o) + [Kata Kerja Transitif]
+                  </div>
+              </div>
+          </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PROGRESS SECTION ========== -->
+  <section class="relative py-24 px-6 lg:px-12" id="progress">
+    <div class="max-w-7xl mx-auto">
+      <div class="reveal glass-card rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden">
+        <!-- Background decorations -->
+        <div class="absolute top-0 right-0 w-80 h-80 bg-sakura-400/5 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-0 left-0 w-60 h-60 bg-orange-500/5 rounded-full blur-[80px]"></div>
+
+        <div class="relative">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 mb-12">
+            <div>
+              <h2 class="text-3xl md:text-4xl font-semibold tracking-tight mb-3">
+                Perjalanan Belajarmu
+              </h2>
+              <p class="text-neutral-400">Lihat sejauh mana kamu sudah melangkah menuju sertifikat N5</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-sm text-neutral-400">Target:</span>
+              <span class="px-4 py-2 rounded-xl bg-sakura-400/10 border border-sakura-400/20 text-sakura-300 text-sm font-semibold">
+                🎯 Sertifikat JLPT N5
+              </span>
+            </div>
+          </div>
+
+          <!-- Progress steps -->
+          <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div class="bg-white/[0.03] rounded-2xl p-6 border border-white/5">
+              <div class="flex items-center justify-between mb-4">
+                <span class="text-xs uppercase tracking-wider text-neutral-500 font-medium">Hiragana</span>
+                <span class="text-sm font-semibold text-emerald-400">✓ Selesai</span>
+              </div>
+              <div class="w-full bg-white/5 rounded-full h-2 mb-3">
+                <div class="bg-emerald-400 h-2 rounded-full" style="width:100%"></div>
+              </div>
+              <p class="text-xs text-neutral-500">46/46 karakter dikuasai</p>
+            </div>
+
+            <div class="bg-white/[0.03] rounded-2xl p-6 border border-white/5">
+              <div class="flex items-center justify-between mb-4">
+                <span class="text-xs uppercase tracking-wider text-neutral-500 font-medium">Katakana</span>
+                <span class="text-sm font-semibold text-orange-400">80%</span>
+              </div>
+              <div class="w-full bg-white/5 rounded-full h-2 mb-3">
+                <div class="bg-orange-400 h-2 rounded-full" style="width:80%"></div>
+              </div>
+              <p class="text-xs text-neutral-500">37/46 karakter dikuasai</p>
+            </div>
+
+            <div class="bg-white/[0.03] rounded-2xl p-6 border border-white/5">
+              <div class="flex items-center justify-between mb-4">
+                <span class="text-xs uppercase tracking-wider text-neutral-500 font-medium">Tata Bahasa</span>
+                <span class="text-sm font-semibold text-blue-400">55%</span>
+              </div>
+              <div class="w-full bg-white/5 rounded-full h-2 mb-3">
+                <div class="bg-blue-400 h-2 rounded-full" style="width:55%"></div>
+              </div>
+              <p class="text-xs text-neutral-500">15/28 pola kalimat</p>
+            </div>
+
+            <div class="bg-white/[0.03] rounded-2xl p-6 border border-white/5">
+              <div class="flex items-center justify-between mb-4">
+                <span class="text-xs uppercase tracking-wider text-neutral-500 font-medium">Kanji</span>
+                <span class="text-sm font-semibold text-sakura-400">30%</span>
+              </div>
+              <div class="w-full bg-white/5 rounded-full h-2 mb-3">
+                <div class="bg-sakura-400 h-2 rounded-full" style="width:30%"></div>
+              </div>
+              <p class="text-xs text-neutral-500">30/100 karakter dikuasai</p>
+            </div>
+          </div>
+
+          <!-- Motivational CTA -->
+          <div class="text-center py-8 border-t border-white/5">
+            <div class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-gradient-to-r from-sakura-400/10 to-orange-500/10 border border-sakura-400/15">
+              <span class="text-3xl">🌸</span>
+              <div class="text-left">
+                <p class="text-sm font-semibold text-white">Kamu sudah 65% lebih dekat ke sertifikat N5!</p>
+                <p class="text-xs text-neutral-400">Terus belajar, kamu pasti bisa! 頑張って!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== TESTIMONIALS ========== -->
+  <section class="relative py-24 px-6 lg:px-12">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <div class="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-neutral-400 mb-6">
+          <i data-lucide="heart" class="w-4 h-4 text-sakura-400"></i>
+          Testimoni Pelajar
+        </div>
+        <h2 class="reveal text-4xl md:text-5xl font-semibold tracking-tight" style="transition-delay:100ms">
+          Apa Kata
+          <span class="bg-gradient-to-r from-sakura-300 to-orange-400 bg-clip-text text-transparent">Mereka</span>
+        </h2>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="reveal card-hover glass-card rounded-3xl p-8" style="transition-delay:100ms">
+          <div class="flex gap-1 mb-4">
+            <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+          </div>
+          <p class="text-neutral-300 text-sm leading-relaxed mb-6">"Awalnya takut belajar Kanji, tapi di sini cara mengajarkannya sangat mudah dipahami. 3 bulan sudah lulus N5!"</p>
+          <div class="flex items-center gap-3">
+            <img src="https://i.pravatar.cc/100?img=44" class="w-10 h-10 rounded-full" alt="">
+            <div>
+              <p class="text-sm font-semibold">Rina Saputri</p>
+              <p class="text-xs text-neutral-500">Mahasiswa, Jakarta</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="reveal card-hover glass-card rounded-3xl p-8" style="transition-delay:200ms">
+          <div class="flex gap-1 mb-4">
+            <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+          </div>
+          <p class="text-neutral-300 text-sm leading-relaxed mb-6">"Fitur simulasi ujiannya sangat membantu! Saya bisa merasakan suasana ujian JLPT sebelum hari-H. Lulus dengan skor 145!"</p>
+          <div class="flex items-center gap-3">
+            <img src="https://i.pravatar.cc/100?img=12" class="w-10 h-10 rounded-full" alt="">
+            <div>
+              <p class="text-sm font-semibold">Budi Hartono</p>
+              <p class="text-xs text-neutral-500">Karyawan, Bandung</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="reveal card-hover glass-card rounded-3xl p-8" style="transition-delay:300ms">
+          <div class="flex gap-1 mb-4">
+            <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+          </div>
+          <p class="text-neutral-300 text-sm leading-relaxed mb-6">"Suka banget sama flashcard interaktifnya. Belajar sambil main jadi lebih seru. Progress tracking-nya juga memotivasi!"</p>
+          <div class="flex items-center gap-3">
+            <img src="https://i.pravatar.cc/100?img=26" class="w-10 h-10 rounded-full" alt="">
+            <div>
+              <p class="text-sm font-semibold">Dian Ayu</p>
+              <p class="text-xs text-neutral-500">Freelancer, Surabaya</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CTA SECTION ========== -->
+  <section class="relative py-24 px-6 lg:px-12">
+    <div class="max-w-4xl mx-auto">
+      <div class="reveal relative rounded-[2.5rem] overflow-hidden">
+        <!-- Background -->
+        <div class="absolute inset-0 bg-gradient-to-br from-sakura-600/20 via-dark-700 to-orange-600/20"></div>
+        <div class="absolute inset-0 bg-[url('https://picsum.photos/seed/sakura-tree/1200/600.jpg')] bg-cover bg-center opacity-15"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-dark-900/90 via-dark-900/50 to-dark-900/70"></div>
+
+        <div class="relative text-center py-16 md:py-20 px-8">
+          <div class="text-6xl mb-6 font-jp">🏠 日本 🗻</div>
+          <h2 class="text-3xl md:text-5xl font-semibold tracking-tight mb-4">
+            Siap Memulai Perjalanan
+            <span class="bg-gradient-to-r from-sakura-300 to-orange-400 bg-clip-text text-transparent">Jepangmu</span>?
+          </h2>
+          <p class="text-lg text-neutral-400 max-w-lg mx-auto mb-8">
+            Bergabung dengan 2,400+ pelajar lainnya. Daftar gratis dan mulai belajar N5 sekarang.
+          </p>
+          <div class="flex flex-wrap justify-center gap-4">
+            <button class="btn-primary text-lg font-semibold text-white px-10 py-4 rounded-2xl flex items-center gap-3" id="ctaBelajarBtn">
+              <i data-lucide="rocket" class="w-5 h-5"></i>
+              Mulai Gratis Sekarang
+            </button>
+            <button class="btn-secondary text-lg font-medium text-white px-10 py-4 rounded-2xl flex items-center gap-3">
+              <i data-lucide="play-circle" class="w-5 h-5"></i>
+              Lihat Demo
+            </button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-6">Tidak perlu kartu kredit · Akses gratis selamanya untuk materi dasar</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="relative border-t border-white/5 py-16 px-6 lg:px-12">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid md:grid-cols-4 gap-12 mb-12">
+        <div class="md:col-span-1">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sakura-400 to-sakura-600 flex items-center justify-center font-jp font-bold text-lg text-white">
+              日
+            </div>
+            <span class="text-xl font-semibold">
+              <span class="text-white">Nihongo</span><span class="text-sakura-400">Lab</span>
+            </span>
+          </div>
+          <p class="text-sm text-neutral-500 leading-relaxed">Platform belajar bahasa Jepang terstruktur dari N5 hingga N1.</p>
+        </div>
+        <div>
+          <h4 class="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">Materi</h4>
+          <ul class="space-y-2.5">
+            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Hiragana</a></li>
+            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Katakana</a></li>
+            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Kanji N5</a></li>
+            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Tata Bahasa</a></li>
+            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Kosakata</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">Fitur</h4>
+          <ul class="space-y-2.5">
+            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Flashcard</a></li>
+            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Simulasi JLPT</a></li>
+            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Audio Pelajaran</a></li>
+            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Dashboard</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">Lainnya</h4>
+          <ul class="space-y-2.5">
+            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Tentang Kami</a></li>
+            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Blog</a></li>
+            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">FAQ</a></li>
+            <li><a href="#" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Kontak</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+        <p class="text-xs text-neutral-600">© 2025 NihongoLab. All rights reserved.</p>
+        <div class="flex items-center gap-4">
+          <a href="#" class="text-neutral-600 hover:text-sakura-400 transition-colors"><i data-lucide="twitter" class="w-4 h-4"></i></a>
+          <a href="#" class="text-neutral-600 hover:text-sakura-400 transition-colors"><i data-lucide="instagram" class="w-4 h-4"></i></a>
+          <a href="#" class="text-neutral-600 hover:text-sakura-400 transition-colors"><i data-lucide="youtube" class="w-4 h-4"></i></a>
+          <a href="#" class="text-neutral-600 hover:text-sakura-400 transition-colors"><i data-lucide="github" class="w-4 h-4"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========== TOAST ========== -->
+  <div class="fixed bottom-6 right-6 z-50" id="toastContainer">
+    <div class="toast glass-card rounded-2xl p-4 flex items-center gap-3 max-w-sm" id="toast">
+      <div class="w-10 h-10 rounded-xl bg-sakura-400/15 flex items-center justify-center shrink-0">
+        <i data-lucide="check-circle" class="w-5 h-5 text-sakura-400" id="toastIcon"></i>
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-white" id="toastTitle">Berhasil!</p>
+        <p class="text-xs text-neutral-400" id="toastMsg">Aksi berhasil dilakukan.</p>
+      </div>
+      <button class="text-neutral-500 hover:text-white shrink-0" onclick="hideToast()">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== LEVEL CHECK MODAL ========== -->
+  <div class="level-modal-overlay fixed inset-0 z-50 flex items-center justify-center px-6" id="levelModal">
+    <div class="absolute inset-0 bg-dark-900/80 backdrop-blur-sm" onclick="closeLevelModal()"></div>
+    <div class="modal-box relative glass-card rounded-3xl p-8 max-w-md w-full">
+      <button class="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors" onclick="closeLevelModal()">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-sakura-400/20 to-orange-500/20 flex items-center justify-center mx-auto mb-4 border border-sakura-400/20">
+          <span class="text-3xl font-jp">📝</span>
+        </div>
+        <h3 class="text-2xl font-semibold mb-2">Cek Level Bahasa Jepangmu</h3>
+        <p class="text-sm text-neutral-400">Jawab 5 pertanyaan singkat untuk mengetahui levelmu</p>
+      </div>
+
+      <div id="quizContent">
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-neutral-500">Pertanyaan <span id="qNum">1</span>/5</span>
+            <span class="text-xs text-sakura-400 font-medium" id="qProgress">20%</span>
+          </div>
+          <div class="w-full bg-white/5 rounded-full h-1.5">
+            <div class="bg-gradient-to-r from-sakura-400 to-orange-400 h-1.5 rounded-full transition-all duration-500" id="qBar" style="width:20%"></div>
+          </div>
+        </div>
+
+        <p class="text-lg font-medium mb-6" id="questionText">Apa arti dari 「おはようございます」?</p>
+
+        <div class="space-y-3" id="optionsContainer">
+          <button class="quiz-option w-full text-left px-5 py-3.5 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-neutral-300 hover:bg-white/[0.08] hover:border-sakura-400/30 transition-all" onclick="selectAnswer(this, 0)">
+            Selamat malam
+          </button>
+          <button class="quiz-option w-full text-left px-5 py-3.5 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-neutral-300 hover:bg-white/[0.08] hover:border-sakura-400/30 transition-all" onclick="selectAnswer(this, 1)">
+            Selamat pagi
+          </button>
+          <button class="quiz-option w-full text-left px-5 py-3.5 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-neutral-300 hover:bg-white/[0.08] hover:border-sakura-400/30 transition-all" onclick="selectAnswer(this, 2)">
+            Selamat siang
+          </button>
+          <button class="quiz-option w-full text-left px-5 py-3.5 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-neutral-300 hover:bg-white/[0.08] hover:border-sakura-400/30 transition-all" onclick="selectAnswer(this, 3)">
+            Sampai jumpa
+          </button>
+        </div>
+      </div>
+
+      <div id="quizResult" class="hidden text-center">
+        <div class="text-6xl mb-4" id="resultEmoji">🎉</div>
+        <h4 class="text-xl font-semibold mb-2" id="resultTitle">Level: N5 Pemula</h4>
+        <p class="text-sm text-neutral-400 mb-6" id="resultDesc">Kamu cocok memulai dari N5. Ayo mulai belajar!</p>
+        <button class="btn-primary w-full py-3 rounded-xl text-white font-semibold text-sm" onclick="closeLevelModal(); document.getElementById('mulaiBelajarBtn').click();">
+          Mulai Belajar N5
+        </button>
+      </div>
+    </div>
+  </div>
 
   <script>
-    // Inisialisasi Icon Lucide
+    // ===== Init Lucide Icons =====
     lucide.createIcons();
 
-    // Simulasi pengecekan AI maintenance
-    setTimeout(() => {
-        document.getElementById('maint').innerHTML = '<span class="text-emerald-400 flex items-center gap-1"><i data-lucide="check-circle" class="w-4 h-4"></i> Sistem normal, sinkronisasi sesi aktif. Tidak ada error terdeteksi.</span>';
-        lucide.createIcons(); // Re-init icon di dalam innerHTML
-    }, 800);
+    // ===== Navbar scroll effect =====
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        navbar.style.background = 'rgba(10,10,10,0.85)';
+        navbar.style.backdropFilter = 'blur(20px)';
+        navbar.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+      } else {
+        navbar.style.background = 'transparent';
+        navbar.style.backdropFilter = 'none';
+        navbar.style.borderBottom = 'none';
+      }
+    });
+
+    // ===== Mobile Menu =====
+    const mobileMenu = document.getElementById('mobileMenu');
+    document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+      mobileMenu.style.opacity = '1';
+      mobileMenu.style.pointerEvents = 'all';
+    });
+    document.getElementById('mobileMenuClose').addEventListener('click', () => {
+      mobileMenu.style.opacity = '0';
+      mobileMenu.style.pointerEvents = 'none';
+    });
+    document.querySelectorAll('.mobile-link').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.style.opacity = '0';
+        mobileMenu.style.pointerEvents = 'none';
+      });
+    });
+
+    // ===== Reveal on Scroll =====
+    const revealElements = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    revealElements.forEach(el => revealObserver.observe(el));
+
+    // ===== Progress Circle Animation =====
+    let progressAnimated = false;
+    const progressCircle = document.getElementById('progressCircle');
+    const progressNumber = document.getElementById('progressNumber');
+    const progressObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !progressAnimated) {
+          progressAnimated = true;
+          // Animate number
+          let current = 0;
+          const target = 65;
+          const step = target / 60;
+          const interval = setInterval(() => {
+            current += step;
+            if (current >= target) {
+              current = target;
+              clearInterval(interval);
+            }
+            progressNumber.textContent = Math.round(current);
+          }, 25);
+          // Animate circle
+          progressCircle.style.transition = 'stroke-dashoffset 2s ease-out';
+          progressCircle.setAttribute('stroke-dashoffset', '154'); // 65% of 440
+        }
+      });
+    }, { threshold: 0.3 });
+    progressObserver.observe(progressCircle.closest('svg'));
+
+    // ===== Toast =====
+    let toastTimeout;
+    function showToast(title, msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastTitle').textContent = title;
+      document.getElementById('toastMsg').textContent = msg;
+      
+      const icon = document.getElementById('toastIcon');
+      if (type === 'success') {
+          icon.setAttribute('data-lucide', 'check-circle');
+          icon.className = 'w-5 h-5 text-emerald-400';
+          toast.querySelector('.w-10').className = 'w-10 h-10 rounded-xl bg-emerald-400/15 flex items-center justify-center shrink-0';
+      } else {
+          icon.setAttribute('data-lucide', 'info');
+          icon.className = 'w-5 h-5 text-sakura-400';
+          toast.querySelector('.w-10').className = 'w-10 h-10 rounded-xl bg-sakura-400/15 flex items-center justify-center shrink-0';
+      }
+      lucide.createIcons();
+
+      toast.classList.add('show');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(hideToast, 4000);
+    }
+    function hideToast() {
+      document.getElementById('toast').classList.remove('show');
+    }
+
+    // ===== Daily Mission / Misi Harian Logic =====
+    function checkDailyAns(ans, btnElement) {
+        const feedback = document.getElementById('daily-feedback');
+        const bunpouBox = document.getElementById('bunpou-box');
+        
+        // Reset warna semua tombol
+        const allBtns = btnElement.parentElement.querySelectorAll('button');
+        allBtns.forEach(b => {
+            b.className = "btn-secondary py-4 rounded-xl text-white font-bold text-lg hover:bg-white/10 transition-all";
+        });
+
+        bunpouBox.classList.remove('hidden');
+
+        if (ans === 'o') {
+            btnElement.className = "py-4 rounded-xl text-white font-bold text-lg bg-emerald-500/20 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
+            feedback.className = "font-bold mb-3 text-lg flex items-center gap-2 text-emerald-400";
+            feedback.innerHTML = '<i data-lucide="check-circle-2" class="w-6 h-6"></i> Luar Biasa! Jawaban Benar!';
+        } else {
+            btnElement.className = "py-4 rounded-xl text-white font-bold text-lg bg-rose-500/20 border border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.3)]";
+            feedback.className = "font-bold mb-3 text-lg flex items-center gap-2 text-rose-400";
+            feedback.innerHTML = '<i data-lucide="x-circle" class="w-6 h-6"></i> Kurang Tepat, Coba Lagi!';
+        }
+        lucide.createIcons();
+        showToast('Misi Harian', 'Tantangan Bunpou telah dikerjakan!', 'info');
+    }
+
+    // ===== Button Actions =====
+    document.getElementById('mulaiBelajarBtn').addEventListener('click', () => {
+      showToast('よろしくお願いします！', 'Selamat datang! Mari mulai belajar bahasa Jepang.', 'success');
+      document.getElementById('materi').scrollIntoView({ behavior: 'smooth' });
+    });
+    document.getElementById('ctaBelajarBtn')?.addEventListener('click', () => {
+      showToast('Akun Siap!', 'Selamat bergabung! Mulai perjalanan N5-mu sekarang.', 'success');
+    });
+    document.getElementById('sertifikatBtn').addEventListener('click', () => {
+      showToast('Sertifikat N5', 'Selesaikan 100% materi untuk unlock sertifikat.', 'info');
+    });
+
+    // ===== Level Check Quiz =====
+    const quizData = [
+      {
+        q: 'Apa arti dari 「おはようございます」?',
+        opts: ['Selamat malam', 'Selamat pagi', 'Selamat siang', 'Sampai jumpa'],
+        correct: 1
+      },
+      {
+        q: 'Huruf Hiragana 「さ」 dibaca sebagai?',
+        opts: ['sa', 'shi', 'su', 'se'],
+        correct: 0
+      },
+      {
+        q: 'Apa arti kata 「ねこ」?',
+        opts: ['Anjing', 'Burung', 'Kucing', 'Ikan'],
+        correct: 2
+      },
+      {
+        q: 'Partikel 「は」 (wa) berfungsi sebagai?',
+        opts: ['Penunjuk tempat', 'Penanda topik kalimat', 'Penunjuk arah', 'Penanda objek'],
+        correct: 1
+      },
+      {
+        q: 'Bagaimana mengatakan "1" dalam bahasa Jepang?',
+        opts: ['に (ni)', 'さん (san)', 'いち (ichi)', 'よん (yon)'],
+        correct: 2
+      }
+    ];
+    let currentQ = 0;
+    let score = 0;
+
+    document.getElementById('cekLevelBtn').addEventListener('click', () => {
+      currentQ = 0;
+      score = 0;
+      loadQuestion();
+      document.getElementById('levelModal').classList.add('active');
+    });
+
+    function closeLevelModal() {
+      document.getElementById('levelModal').classList.remove('active');
+    }
+
+    function loadQuestion() {
+      if (currentQ >= quizData.length) {
+        showResult();
+        return;
+      }
+      const q = quizData[currentQ];
+      document.getElementById('qNum').textContent = currentQ + 1;
+      document.getElementById('qProgress').textContent = Math.round(((currentQ + 1) / quizData.length) * 100) + '%';
+      document.getElementById('qBar').style.width = ((currentQ + 1) / quizData.length * 100) + '%';
+      document.getElementById('questionText').textContent = q.q;
+
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = '';
+      q.opts.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option w-full text-left px-5 py-3.5 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-neutral-300 hover:bg-white/[0.08] hover:border-sakura-400/30 transition-all';
+        btn.textContent = opt;
+        btn.onclick = () => selectAnswer(btn, i);
+        container.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(btn, idx) {
+      const correct = quizData[currentQ].correct;
+      const allBtns = document.querySelectorAll('.quiz-option');
+
+      allBtns.forEach((b, i) => {
+        b.style.pointerEvents = 'none';
+        if (i === correct) {
+          b.style.background = 'rgba(16,185,129,0.15)';
+          b.style.borderColor = 'rgba(16,185,129,0.5)';
+          b.style.color = '#6ee7b7';
+        } else if (i === idx && idx !== correct) {
+          b.style.background = 'rgba(239,68,68,0.15)';
+          b.style.borderColor = 'rgba(239,68,68,0.5)';
+          b.style.color = '#fca5a5';
+        }
+      });
+
+      if (idx === correct) score++;
+
+      setTimeout(() => {
+        currentQ++;
+        loadQuestion();
+      }, 1000);
+    }
+
+    function showResult() {
+      document.getElementById('quizContent').classList.add('hidden');
+      document.getElementById('quizResult').classList.remove('hidden');
+
+      const emoji = document.getElementById('resultEmoji');
+      const title = document.getElementById('resultTitle');
+      const desc = document.getElementById('resultDesc');
+
+      if (score >= 4) {
+        emoji.textContent = '🏆';
+        title.textContent = 'Level: N5 Intermediate';
+        desc.textContent = 'Hebat! Kamu sudah punya dasar yang bagus. Lanjutkan ke materi lanjutan!';
+      } else if (score >= 2) {
+        emoji.textContent = '💪';
+        title.textContent = 'Level: N5 Pemula';
+        desc.textContent = 'Kamu punya sedikit dasar. Mulai dari Hiragana untuk menguatkan fondasimu!';
+      } else {
+        emoji.textContent = '🌱';
+        title.textContent = 'Level: Pemula Total';
+        desc.textContent = 'Tidak apa-apa! Semua orang mulai dari nol. Ayo mulai perjalanan Jepangmu!';
+      }
+    }
+
+    // ===== Smooth scroll for anchor links =====
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
   </script>
 </body>
 </html>
