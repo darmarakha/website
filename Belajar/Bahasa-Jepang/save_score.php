@@ -1,59 +1,50 @@
 <?php
-session_set_cookie_params([
-    'lifetime' => 0,
-    'path' => '/',
-    'secure' => isset($_SERVER['HTTPS']),
-    'httponly' => true,
-    'samesite' => 'Lax',
-]);
+// Script ini berfungsi untuk menerima data skor dari hiragana.php / katakana.php
+// dan memasukkannya (UPDATE) ke dalam tabel SQL.
+
 session_start();
 header('Content-Type: application/json');
-if (empty($_SESSION['belajar_user'])) { echo json_encode(['ok'=>false, 'message'=>'not_logged_in']); exit; }
-$data = json_decode(file_get_contents('php://input'), true) ?: [];
-$file = __DIR__ . '/../leaderboard.json';
-$list = file_exists($file) ? (json_decode(file_get_contents($file), true) ?: []) : [];
-$name = $_SESSION['belajar_user'];
-$material = strtolower(trim((string)($data['material'] ?? 'umum')));
-$material = preg_replace('/[^a-z0-9_-]/', '', $material) ?: 'umum';
-$found = false;
-foreach ($list as &$row) {
-    if (($row['name'] ?? '') === $name) {
-        if (!isset($row['materials']) || !is_array($row['materials'])) {
-            $row['materials'] = [];
-        }
-        $oldMaterial = $row['materials'][$material] ?? ['correct' => 0, 'wrong' => 0, 'points' => 0];
-        $row['materials'][$material] = [
-            'correct' => max((int)($oldMaterial['correct'] ?? 0), (int)($data['correct'] ?? 0)),
-            'wrong' => max((int)($oldMaterial['wrong'] ?? 0), (int)($data['wrong'] ?? 0)),
-            'points' => max((int)($oldMaterial['points'] ?? 0), (int)($data['points'] ?? 0)),
-        ];
-        $found = true; break;
-    }
-}
-unset($row);
-if (!$found) {
-    $list[] = [
-        'name' => $name,
-        'materials' => [
-            $material => [
-                'correct' => (int)($data['correct'] ?? 0),
-                'wrong' => (int)($data['wrong'] ?? 0),
-                'points' => (int)($data['points'] ?? 0),
-            ]
-        ],
-    ];
+
+// 1. Cek apakah user sudah login
+// Jika belum login (Guest), skor tidak akan disimpan ke database
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['status' => 'error', 'message' => 'Belum login, skor tidak disimpan.']);
+    exit;
 }
 
-foreach ($list as &$row) {
-    $row['correct'] = 0;
-    $row['wrong'] = 0;
-    $row['points'] = 0;
-    foreach (($row['materials'] ?? []) as $stat) {
-        $row['correct'] += (int)($stat['correct'] ?? 0);
-        $row['wrong'] += (int)($stat['wrong'] ?? 0);
-        $row['points'] += (int)($stat['points'] ?? 0);
-    }
+// 2. Ambil data JSON yang dikirim oleh fungsi fetch() di Javascript
+$data = json_decode(file_get_contents('php://input'), true);
+
+if (!$data) {
+    echo json_encode(['status' => 'error', 'message' => 'Data tidak valid.']);
+    exit;
 }
-unset($row);
-file_put_contents($file, json_encode($list, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));
-echo json_encode(['ok'=>true]);
+
+// 3. Ekstrak data
+$correct = isset($data['correct']) ? (int)$data['correct'] : 0;
+$wrong   = isset($data['wrong']) ? (int)$data['wrong'] : 0;
+$points  = isset($data['points']) ? (int)$data['points'] : 0;
+$userId  = $_SESSION['user_id'];
+
+// 4. Konfigurasi Database (Sesuai dengan cPanel Jagoan Hosting Anda)
+$host = 'localhost';
+$db   = 'httpgemu_website';
+$user = 'httpgemu_darma';
+$pass = 'macanputih123';
+
+try {
+    // Buat Koneksi PDO
+    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // 5. Query SQL untuk menambahkan skor yang baru didapat ke skor yang sudah ada di database
+    // Menggunakan user_id agar tepat sasaran ke akun yang sedang login
+    $stmt = $pdo->prepare("UPDATE users SET correct = correct + ?, wrong = wrong + ?, points = points + ? WHERE id = ?");
+    $stmt->execute([$correct, $wrong, $points, $userId]);
+
+    echo json_encode(['status' => 'success', 'message' => 'Skor berhasil diupdate di database!']);
+
+} catch (PDOException $e) {
+    echo json_encode(['status' => 'error', 'message' => 'Koneksi database gagal: ' . $e->getMessage()]);
+}
+?>
