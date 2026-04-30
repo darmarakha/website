@@ -62,8 +62,7 @@ if (isset($_GET['logout'])) {
       }
     }
   </script>
-    <link rel="stylesheet" href="assets/index.css">
-
+  <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
@@ -97,13 +96,15 @@ if (isset($_GET['logout'])) {
                 Keluar
             </a>
         <?php else: ?>
-            <button class="hidden sm:flex items-center gap-2 text-sm text-neutral-300 hover:text-white px-4 py-2 rounded-xl border border-white/10 hover:border-white/20 transition-all">
-            <i data-lucide="user" class="w-4 h-4"></i>
-            Masuk
-            </button>
-            <button class="btn-primary text-sm font-semibold text-white px-5 py-2.5 rounded-xl hidden sm:block">
-            Daftar Gratis
-            </button>
+            <!-- Tombol Masuk sudah diperbaiki menjadi link menuju Index.php -->
+            <a href="../Index.php" class="hidden sm:flex items-center gap-2 text-sm text-neutral-300 hover:text-white px-4 py-2 rounded-xl border border-white/10 hover:border-white/20 transition-all">
+                <i data-lucide="user" class="w-4 h-4"></i>
+                Masuk
+            </a>
+            <!-- Tombol Daftar Gratis sudah diperbaiki menjadi link menuju Index.php -->
+            <a href="../Index.php" class="btn-primary text-sm font-semibold text-white px-5 py-2.5 rounded-xl hidden sm:flex items-center justify-center">
+                Daftar Gratis
+            </a>
         <?php endif; ?>
 
         <button class="md:hidden text-neutral-400 hover:text-white p-2" id="mobileMenuBtn">
@@ -134,9 +135,10 @@ if (isset($_GET['logout'])) {
     <a href="#progress" class="text-2xl font-semibold text-neutral-300 hover:text-white transition-colors mobile-link">Progress</a>
     
     <?php if (!empty($_SESSION['user_name'])): ?>
-        <a href="?logout=1" class="btn-secondary text-lg font-semibold text-rose-400 hover:text-white px-8 py-3 rounded-xl mt-4 border border-rose-500/30">Keluar</a>
+        <a href="?logout=1" class="btn-secondary text-lg font-semibold text-rose-400 hover:text-white px-8 py-3 rounded-xl mt-4 border border-rose-500/30 text-center block">Keluar</a>
     <?php else: ?>
-        <button class="btn-primary text-lg font-semibold text-white px-8 py-3 rounded-xl mt-4">Daftar Gratis</button>
+        <!-- Tombol Masuk/Daftar Mobile sudah diperbaiki menjadi link menuju Index.php -->
+        <a href="../Index.php" class="btn-primary text-lg font-semibold text-white px-8 py-3 rounded-xl mt-4 text-center block">Masuk / Daftar Gratis</a>
     <?php endif; ?>
   </div>
 
@@ -925,8 +927,6 @@ if (isset($_GET['logout'])) {
     </div>
   </div>
 
-    <script src="assets/index.js"></script>
-
-
+  <script src="assets/js/script.js"></script>
 </body>
 </html>
