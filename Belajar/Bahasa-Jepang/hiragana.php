@@ -4,9 +4,65 @@ session_set_cookie_params([
     'httponly' => true, 'samesite' => 'Lax',
 ]);
 session_start();
- $isLoggedIn = !empty($_SESSION['user_name']);
- $userName = $isLoggedIn ? $_SESSION['user_name'] : 'Guest';
- $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
+
+// =========================================================================
+// API HANDLER: MENERIMA SKOR DARI JAVASCRIPT & MENYIMPAN KE SQL
+// =========================================================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    // 1. Logika Update Progress (Skor)
+    if (isset($input['update_progress']) && !empty($_SESSION['user_id'])) {
+        $db_host = 'localhost';
+        $db_user = 'httpgemu_darma';
+        $db_pass = 'macanputih123';
+        $db_name = 'httpgemu_website';
+        
+        try {
+            $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            $points = (int)$input['points'];
+            $userId = $_SESSION['user_id'];
+            
+            // Cek progress saat ini
+            $stmt = $pdo->prepare("SELECT hiragana_score FROM user_progress WHERE user_id = :uid");
+            $stmt->execute(['uid' => $userId]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($row) {
+                $current_score = (int)$row['hiragana_score'];
+                // Tambahkan poin, batas maksimal adalah 100%
+                $new_score = min(100, max(0, $current_score + $points));
+                
+                $updateStmt = $pdo->prepare("UPDATE user_progress SET hiragana_score = :score WHERE user_id = :uid");
+                $updateStmt->execute(['score' => $new_score, 'uid' => $userId]);
+            } else {
+                // Jika belum ada row di user_progress, buat baru
+                $new_score = min(100, max(0, $points));
+                $insertStmt = $pdo->prepare("INSERT INTO user_progress (user_id, hiragana_score, katakana_score, bunpou_score, kanji_score) VALUES (:uid, :score, 0, 0, 0)");
+                $insertStmt->execute(['uid' => $userId, 'score' => $new_score]);
+            }
+            
+            echo json_encode(['status' => 'success', 'new_score' => $new_score]);
+            exit;
+        } catch (PDOException $e) {
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            exit;
+        }
+    }
+
+    // 2. Logika Update Level AI (Menyimpan preferensi tingkat kesulitan ke Sesi)
+    if (isset($input['update_level']) && !empty($_SESSION['user_id'])) {
+        $_SESSION['ai_level'] = $input['level'];
+        echo json_encode(['status' => 'success', 'level' => $input['level']]);
+        exit;
+    }
+}
+
+$isLoggedIn = !empty($_SESSION['user_name']);
+$userName = $isLoggedIn ? $_SESSION['user_name'] : 'Guest';
+$aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -220,28 +276,85 @@ session_start();
     <script>
         const isLoggedIn = document.body.getAttribute('data-logged-in') === 'true';
 
-        // ==========================================
-        // 1. LOGIKA SKOR (TIDAK DIUBAH)
-        // ==========================================
+        // ====================================================================
+        // 1. API SQL & MACHINE LEARNING UTILITIES (NLP & ADAPTIVE)
+        // ====================================================================
         function sendScore(correct, wrong, points) {
             if (!isLoggedIn) return;
-            fetch('save_score.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({correct,wrong,points,material:'hiragana'}) }).catch(err=>console.error('Gagal menyimpan skor:',err));
+            fetch('', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ update_progress: true, points: points, material: 'hiragana' }) 
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') console.log('SQL Progress tersimpan: ' + data.new_score + '%');
+            }).catch(err => console.error('Gagal menyimpan skor ke SQL:', err));
         }
+
         function saveAILevel(newLevel) {
             if (aiUserLevel === newLevel) return;
             aiUserLevel = newLevel;
             if (!isLoggedIn) return;
-            fetch('save_level.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({level:newLevel,material:'hiragana'}) }).catch(err=>console.error('Gagal menyimpan level AI:',err));
+            fetch('', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ update_level: true, level: newLevel, material: 'hiragana' }) 
+            }).catch(err => console.error('Gagal menyimpan level AI:', err));
         }
-        window.checkQuickAnswer = (ans) => {
-            const ok = (ans === 'a');
-            const msg = document.getElementById('hir-msg');
-            if(ok){ msg.className='mt-3 text-sm font-bold text-emerald-300'; msg.innerHTML='✅ Benar, +10 poin dikirim ke Leaderboard!'; sendScore(1,0,10); }
-            else{ msg.className='mt-3 text-sm font-bold text-rose-300'; msg.innerHTML='❌ Salah, jawaban benar: a'; sendScore(0,1,-3); }
-        };
+
+        // ML ALGORITHM 1: Levenshtein Distance (NLP) untuk deteksi typo
+        function getLevenshteinDistance(a, b) {
+            if(a.length === 0) return b.length;
+            if(b.length === 0) return a.length;
+            var matrix = [];
+            for(var i=0; i<=b.length; i++){ matrix[i] = [i]; }
+            for(var j=0; j<=a.length; j++){ matrix[0][j] = j; }
+            for(var i=1; i<=b.length; i++){
+                for(var j=1; j<=a.length; j++){
+                    if(b.charAt(i-1) == a.charAt(j-1)){ matrix[i][j] = matrix[i-1][j-1]; }
+                    else { matrix[i][j] = Math.min(matrix[i-1][j-1]+1, Math.min(matrix[i][j-1]+1, matrix[i-1][j]+1)); }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        // ML ALGORITHM 2: Fuzzy Logic & Decision Tree untuk Kelulusan Kalimat AI
+        function evaluateAIResponse(inputStr, targetStr, timeTaken, currentLevel) {
+            const dist = getLevenshteinDistance(inputStr, targetStr);
+            const accuracy = Math.max(0, 100 - (dist / targetStr.length) * 100);
+            const cps = targetStr.length / Math.max(1, timeTaken); // Kecepatan Mengetik (Char per Sec)
+            
+            let status = 'fail', points = 0, feedback = '', nextLevel = currentLevel;
+
+            if (accuracy >= 90) { // Toleransi typo 10% diizinkan
+                status = 'success';
+                if (currentLevel === 'pemula') {
+                    if (cps > 1.2) { nextLevel = 'mahir'; points = 25; feedback = `Luar Biasa! Akurasi ${accuracy.toFixed(1)}%, Kec: ${cps.toFixed(1)} c/s. AI Promosi ke MAHIR!`; }
+                    else { points = 15; feedback = `Benar! Akurasi ${accuracy.toFixed(1)}%. Tingkatkan kecepatanmu.`; }
+                } else if (currentLevel === 'mahir') {
+                    if (cps > 2.0) { nextLevel = 'pro'; points = 40; feedback = `Sempurna! Akurasi ${accuracy.toFixed(1)}%, Kec: ${cps.toFixed(1)} c/s. AI Promosi ke PRO!`; }
+                    else { points = 25; feedback = `Bagus Sekali! Akurasi ${accuracy.toFixed(1)}%. Latihan terus untuk kecepatan Pro.`; }
+                } else {
+                    points = 50; feedback = `Master Class! Kemampuan Anda setara Native. Kec: ${cps.toFixed(1)} c/s.`;
+                }
+            } else if (accuracy >= 65) { // Partial Credit (Cukup Paham tapi Typo banyak)
+                status = 'partial';
+                points = 5;
+                feedback = `Hampir benar (Akurasi: ${accuracy.toFixed(1)}%). AI mendeteksi ada ${dist} huruf salah ketik.`;
+            } else { // Fail & Demotion
+                status = 'fail';
+                points = -5;
+                feedback = `Kurang Tepat (Akurasi: ${accuracy.toFixed(1)}%). AI menyarankan periksa pola kalimat.`;
+                if (currentLevel === 'pro' && accuracy < 40) nextLevel = 'mahir';
+                else if (currentLevel === 'mahir' && accuracy < 40) nextLevel = 'pemula';
+            }
+            
+            return { status, points, feedback, nextLevel, accuracy, cps };
+        }
 
         // ==========================================
-        // 2. DATABASE HIRAGANA + JUMLAH GORESAN (s)
+        // 2. DATABASE HIRAGANA
         // ==========================================
         const dataGojuuon = [
             {k:'あ',r:'a',type:'Seion',s:3},{k:'い',r:'i',type:'Seion',s:2},{k:'う',r:'u',type:'Seion',s:2},{k:'え',r:'e',type:'Seion',s:2},{k:'お',r:'o',type:'Seion',s:3},
@@ -278,7 +391,7 @@ session_start();
         const allKana = [...dataGojuuon,...dataDakuon,...dataYoon].filter(i=>i.k!=='' && i.s>0);
 
         // ==========================================
-        // 3. DATA CERITA AI (TIDAK DIUBAH)
+        // 3. DATA CERITA AI & MATERI RENDER
         // ==========================================
         const aiReadingData = {
             pemula: [
@@ -298,11 +411,9 @@ session_start();
 
         const contentDiv = document.getElementById('content-container');
         let aiUserLevel = document.body.getAttribute('data-ai-level') || 'pemula';
-        let aiCurrentStory = null, aiTimerInterval = null, aiTimeElapsed = 0, aiTimeRemaining = 0, aiTimerStarted = false, aiFinished = false;
+        let aiCurrentStory = null, aiTimerInterval = null, aiTimeElapsed = 0, aiTimeLimit = 0, aiTimeRemaining = 0, aiTimerStarted = false, aiFinished = false, aiCurrentFeedback = '';
 
-        // ==========================================
-        // 4. TAB NAVIGASI (TIDAK DIUBAH)
-        // ==========================================
+        // TABS
         function switchTab(tab) {
             ['materi','flashcard','ai'].forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
@@ -311,14 +422,18 @@ session_start();
                 else btn.className = t==='ai' ? "flex-1 min-w-[120px] py-3 px-3 rounded-xl font-bold text-sm transition-all text-orange-400 bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20" : "flex-1 min-w-[120px] py-3 px-3 rounded-xl font-bold text-sm transition-all text-neutral-400 hover:text-white hover:bg-white/[.05]";
             });
             if(tab==='materi') renderMateri();
-            if(tab==='flashcard'){if(flashcardSequence.length===0)initFlashcards();renderFlashcard();}
+            if(tab==='flashcard'){ initFCWeights(); getNextFlashcard(); renderFlashcard(); }
             if(tab==='ai') initAIReading();
             if(window.MathJax) MathJax.typesetPromise().catch(()=>{});
         }
 
-        // ==========================================
-        // 5. MATERI (TAMPILAN SAJA DIUBAH)
-        // ==========================================
+        window.checkQuickAnswer = (ans) => {
+            const ok = (ans === 'a');
+            const msg = document.getElementById('hir-msg');
+            if(ok){ msg.className='mt-3 text-sm font-bold text-emerald-300'; msg.innerHTML='✅ Benar, +10 poin dikirim ke Leaderboard!'; sendScore(1,0,10); }
+            else{ msg.className='mt-3 text-sm font-bold text-rose-300'; msg.innerHTML='❌ Salah, jawaban benar: a'; sendScore(0,1,-3); }
+        };
+
         function buildGrid(data, cols=5) {
             let h = `<div class="grid grid-cols-3 sm:grid-cols-${cols} gap-2 sm:gap-3 mb-8">`;
             data.forEach(item => {
@@ -391,56 +506,39 @@ session_start();
         let strokeAnimTimeout = [];
 
         window.showStrokeModal = (k, r, type, strokes) => {
-            // Reset previous timeouts
-            strokeAnimTimeout.forEach(t => clearTimeout(t));
-            strokeAnimTimeout = [];
-
+            strokeAnimTimeout.forEach(t => clearTimeout(t)); strokeAnimTimeout = [];
             document.getElementById('modal-romaji').innerText = r;
             document.getElementById('modal-type').innerText = type;
             document.getElementById('modal-strokes').innerText = strokes;
 
-            // Build stroke progress dots
             let dotsHtml = '';
-            for(let i=0; i<strokes; i++) {
-                dotsHtml += `<span class="stroke-dot w-3 h-3 rounded-full bg-white/10 border border-white/20 transition-all duration-300" data-i="${i}"></span>`;
-            }
+            for(let i=0; i<strokes; i++) dotsHtml += `<span class="stroke-dot w-3 h-3 rounded-full bg-white/10 border border-white/20 transition-all duration-300" data-i="${i}"></span>`;
+            
             document.getElementById('stroke-dots').innerHTML = dotsHtml;
             document.getElementById('stroke-label').innerText = 'Menulis...';
             document.getElementById('stroke-label').className = 'text-center text-xs text-sakura-400 mb-4';
 
-            // Dynamically size SVG text based on char length
             const charLen = k.length;
             const svgFontSize = charLen <= 1 ? 130 : charLen === 2 ? 90 : 65;
-            const totalDur = strokes * 0.55; // seconds per stroke
+            const totalDur = strokes * 0.55; 
 
-            // Build SVG with stroke-draw animation
             document.getElementById('modal-svg').innerHTML = `
                 <svg viewBox="0 0 200 200" class="w-full h-full" style="font-family:'Noto Sans JP','Yu Mincho',serif">
                     <text x="100" y="${charLen<=1?145:135}" text-anchor="middle" font-size="${svgFontSize}"
                         fill="transparent" stroke="#F472B6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                        stroke-dasharray="900" stroke-dashoffset="900"
-                        class="stroke-draw" style="animation-duration:${totalDur}s">${k}</text>
+                        stroke-dasharray="900" stroke-dashoffset="900" class="stroke-draw" style="animation-duration:${totalDur}s">${k}</text>
                     <text x="100" y="${charLen<=1?145:135}" text-anchor="middle" font-size="${svgFontSize}"
-                        fill="white" fill-opacity="0"
-                        class="stroke-fill" style="animation-duration:${totalDur}s">${k}</text>
+                        fill="white" fill-opacity="0" class="stroke-fill" style="animation-duration:${totalDur}s">${k}</text>
                 </svg>`;
 
-            // Animate stroke dots sequentially
             const dotEls = document.querySelectorAll('.stroke-dot');
             const perStroke = (totalDur * 1000) / strokes;
-            dotEls.forEach((dot, i) => {
-                const t = setTimeout(() => {
-                    dot.classList.add('stroke-dot-active');
-                }, (i + 1) * perStroke);
-                strokeAnimTimeout.push(t);
-            });
+            dotEls.forEach((dot, i) => { strokeAnimTimeout.push(setTimeout(() => dot.classList.add('stroke-dot-active'), (i + 1) * perStroke)); });
 
-            // After animation completes, show "Selesai"
-            const finishT = setTimeout(() => {
+            strokeAnimTimeout.push(setTimeout(() => {
                 document.getElementById('stroke-label').innerText = '✅ Selesai!';
                 document.getElementById('stroke-label').className = 'text-center text-xs text-emerald-400 mb-4 font-semibold';
-            }, totalDur * 1000 + 200);
-            strokeAnimTimeout.push(finishT);
+            }, totalDur * 1000 + 200));
 
             document.getElementById('strokeModal').classList.remove('hidden');
         };
@@ -448,29 +546,56 @@ session_start();
         window.hideStrokeModal = () => {
             document.getElementById('strokeModal').classList.add('hidden');
             document.getElementById('modal-svg').innerHTML = '';
-            strokeAnimTimeout.forEach(t => clearTimeout(t));
-            strokeAnimTimeout = [];
+            strokeAnimTimeout.forEach(t => clearTimeout(t)); strokeAnimTimeout = [];
         };
 
-        // ==========================================
-        // 6. FLASHCARD — FIX YOON NUMPUK
-        // ==========================================
-        let flashcardSequence = [], currentFlashcardIndex = 0, isCardFlipped = false;
+        // ====================================================================
+        // 6. ML ALGORITHM 3: SPACED REPETITION SYSTEM (SRS) UNTUK FLASHCARD
+        // AI Mengingat huruf yang sering salah dan memunculkannya lebih sering
+        // ====================================================================
+        let fcWeights = {}, isCardFlipped = false, currentFCItem = null, fcSessionTotal = 0;
 
-        function shuffleArray(a) { let c=a.length; while(0!==c){let r=Math.floor(Math.random()*c);c--;[a[c],a[r]]=[a[r],a[c]];} return a; }
-        function initFlashcards() { flashcardSequence = shuffleArray([...allKana]); currentFlashcardIndex = 0; isCardFlipped = false; }
+        function initFCWeights() {
+            if(Object.keys(fcWeights).length === 0) {
+                allKana.forEach(k => fcWeights[k.r] = 1.0); // Base probability 100%
+            }
+        }
+
+        function getNextFlashcard() {
+            let totalWeight = 0;
+            for(let r in fcWeights) totalWeight += fcWeights[r];
+            let rand = Math.random() * totalWeight;
+            
+            // Roulette Wheel Selection (ML Weights)
+            for(let i=0; i<allKana.length; i++) {
+                rand -= fcWeights[allKana[i].r];
+                if(rand <= 0) {
+                    currentFCItem = allKana[i];
+                    fcSessionTotal++;
+                    return;
+                }
+            }
+            currentFCItem = allKana[0];
+        }
+
+        function updateFCWeight(romaji, isCorrect) {
+            if(isCorrect) {
+                fcWeights[romaji] = Math.max(0.1, fcWeights[romaji] * 0.4); // Probabilitas diturunkan drastis jika benar
+            } else {
+                fcWeights[romaji] = Math.min(10.0, fcWeights[romaji] * 3.0); // Probabilitas dinaikkan 3x lipat jika salah (AI Penalty)
+            }
+        }
 
         function renderFlashcard() {
-            const item = flashcardSequence[currentFlashcardIndex];
+            const item = currentFCItem;
             const cl = item.k.length;
-            // Dinamis ukuran font berdasarkan jumlah karakter
             const fSize = cl <= 1 ? 'text-[8rem]' : cl === 2 ? 'text-[5.5rem]' : 'text-[4rem]';
             const bSize = item.r.length <= 2 ? 'text-6xl' : item.r.length <= 3 ? 'text-5xl' : 'text-4xl';
 
             contentDiv.innerHTML = `
                 <div class="flex flex-col items-center justify-center py-6 tab-content">
                     <div class="mb-5 text-center">
-                        <span class="glass-card px-4 py-1.5 rounded-full text-sm font-semibold text-sakura-300 border border-sakura-400/15">Mode Acak · Kartu ${currentFlashcardIndex+1} / ${flashcardSequence.length}</span>
+                        <span class="glass-card px-4 py-1.5 rounded-full text-sm font-semibold text-sakura-300 border border-sakura-400/15">AI Adaptive Spaced Repetition · Sesi ke-${fcSessionTotal}</span>
                         <p class="text-neutral-500 mt-2 text-sm">Ketik Romaji lalu Kirim atau Enter</p>
                     </div>
 
@@ -481,7 +606,7 @@ session_start();
                             </div>
                             <div class="absolute w-full h-full backface-hidden rotate-y-180 bg-gradient-to-br from-orange-600/20 to-dark-800 border-2 border-orange-400/30 rounded-3xl flex flex-col items-center justify-center p-4">
                                 <span class="text-2xl mb-2">🎉</span>
-                                <span class="text-sm text-orange-200 mb-1 font-bold">Benar!</span>
+                                <span class="text-sm text-orange-200 mb-1 font-bold">Jawaban Anda</span>
                                 <span class="${bSize} font-black text-white font-mono uppercase">${item.r}</span>
                             </div>
                         </div>
@@ -512,68 +637,113 @@ session_start();
         window.submitFCAnswer = () => {
             if(isCardFlipped) return;
             const inp = document.getElementById('fc-input'), msg = document.getElementById('fc-msg');
-            const val = inp.value.trim().toLowerCase(), item = flashcardSequence[currentFlashcardIndex];
-            if(val===''){msg.innerText='⚠️ Jawaban tidak boleh kosong.';return;}
-            if(val===item.r){msg.className='h-6 mt-2 text-sm font-bold text-emerald-400 text-center';msg.innerText='✅ Benar!';isCardFlipped=true;sendScore(1,0,10);renderFlashcard();setTimeout(()=>{if(isCardFlipped)advanceFlashcard();},1500);}
-            else{msg.className='h-6 mt-2 text-sm font-bold text-rose-400 text-center';msg.innerText='❌ Salah, coba lagi!';sendScore(0,1,-3);inp.value='';inp.focus();}
+            const val = inp.value.trim().toLowerCase(), item = currentFCItem;
+            
+            if(val===''){ msg.innerText='⚠️ Jawaban tidak boleh kosong.'; return; }
+            
+            const isCorrect = (val === item.r);
+            updateFCWeight(item.r, isCorrect); // Train AI SRS
+
+            if(isCorrect){
+                msg.className='h-6 mt-2 text-sm font-bold text-emerald-400 text-center';
+                msg.innerText='✅ Benar! AI mencatat perkembangan Anda.';
+                isCardFlipped=true;
+                sendScore(1,0,5);
+                renderFlashcard();
+                setTimeout(()=>{ if(isCardFlipped) advanceFlashcard(); }, 1200);
+            } else {
+                msg.className='h-6 mt-2 text-sm font-bold text-rose-400 text-center';
+                msg.innerText='❌ Salah, AI akan mengulang huruf ini nanti.';
+                sendScore(0,1,-2);
+                inp.value=''; inp.focus();
+            }
         };
         window.skipFlashcard = () => advanceFlashcard();
-        function advanceFlashcard(){isCardFlipped=false;currentFlashcardIndex++;if(currentFlashcardIndex>=flashcardSequence.length)initFlashcards();renderFlashcard();}
+        function advanceFlashcard() { isCardFlipped=false; getNextFlashcard(); renderFlashcard(); }
 
         // ==========================================
-        // 7. AI MEMBACA (LOGIKA TIDAK DIUBAH, TAMPILAN DIUPDATE)
+        // 7. AI MEMBACA MENGGUNAKAN FUZZY LOGIC & NLP
         // ==========================================
-        function normalizeRomaji(s){return s.toLowerCase().replace(/[^a-z]/g,'').replace(/wo/g,'o').replace(/si/g,'shi').replace(/ti/g,'chi').replace(/tu/g,'tsu').replace(/hu/g,'fu').replace(/zi/g,'ji');}
+        function normalizeRomaji(s){ return s.toLowerCase().replace(/[^a-z]/g,'').replace(/wo/g,'o').replace(/si/g,'shi').replace(/ti/g,'chi').replace(/tu/g,'tsu').replace(/hu/g,'fu').replace(/zi/g,'ji'); }
 
         function initAIReading(){
-            const a=aiReadingData[aiUserLevel]; aiCurrentStory=a[Math.floor(Math.random()*a.length)];
-            aiTimerStarted=false; aiFinished=false;
-            if(aiUserLevel==='pemula') aiTimeElapsed=0;
-            else if(aiUserLevel==='mahir') aiTimeRemaining=Math.floor(aiCurrentStory.romaji.replace(/[^a-z]/g,'').length*2.5);
-            else aiTimeRemaining=Math.floor(aiCurrentStory.romaji.replace(/[^a-z]/g,'').length*1.2);
-            clearInterval(aiTimerInterval); renderAIReading();
+            const a = aiReadingData[aiUserLevel]; 
+            aiCurrentStory = a[Math.floor(Math.random()*a.length)];
+            aiTimerStarted = false; 
+            aiFinished = false; 
+            aiTimeElapsed = 0;
+            aiCurrentFeedback = '';
+            
+            // Set dynamic limit based on length & level
+            aiTimeLimit = Math.floor(aiCurrentStory.romaji.replace(/[^a-z]/g,'').length * (aiUserLevel==='mahir'? 2.5 : 1.2));
+            aiTimeRemaining = aiTimeLimit;
+            
+            clearInterval(aiTimerInterval); 
+            renderAIReading();
         }
 
-        window.startAITimerIfNeeded=()=>{
-            if(!aiTimerStarted&&!aiFinished){
+        window.startAITimerIfNeeded = () => {
+            if(!aiTimerStarted && !aiFinished){
                 aiTimerStarted=true;
-                if(aiUserLevel==='pemula'){aiTimerInterval=setInterval(()=>{aiTimeElapsed++;updateTimerUI();},1000);}
-                else{aiTimerInterval=setInterval(()=>{aiTimeRemaining--;updateTimerUI();if(aiTimeRemaining<=0)handleAITimeout();},1000);}
+                aiTimerInterval = setInterval(() => {
+                    aiTimeElapsed++;
+                    if(aiUserLevel !== 'pemula') {
+                        aiTimeRemaining--;
+                        if(aiTimeRemaining <= 0) handleAITimeout();
+                    }
+                    updateTimerUI();
+                }, 1000);
                 updateTimerUI();
             }
         };
 
         function updateTimerUI(){
-            const t=document.getElementById('ai-timer-display');if(!t)return;
-            if(aiUserLevel==='pemula'){t.innerText=`⏱️ Waktu: ${aiTimeElapsed} detik`;t.className='text-lg font-mono font-bold text-orange-400';}
-            else{t.innerText=`⏳ Tersisa: ${aiTimeRemaining} detik`;t.className=aiTimeRemaining<=5?'text-lg font-mono font-bold timer-urgent':'text-lg font-mono font-bold text-sakura-400';}
+            const t = document.getElementById('ai-timer-display'); if(!t) return;
+            if(aiUserLevel==='pemula'){
+                t.innerText=`⏱️ Waktu: ${aiTimeElapsed} detik`;
+                t.className='text-lg font-mono font-bold text-orange-400';
+            } else {
+                t.innerText=`⏳ Tersisa: ${aiTimeRemaining} detik`;
+                t.className=aiTimeRemaining<=5 ? 'text-lg font-mono font-bold timer-urgent' : 'text-lg font-mono font-bold text-sakura-400';
+            }
         }
 
         function handleAITimeout(){
-            clearInterval(aiTimerInterval);aiFinished={status:'timeout'};sendScore(0,1,-5);
-            if(aiUserLevel==='pro')saveAILevel('mahir');else if(aiUserLevel==='mahir')saveAILevel('pemula');
-            renderAIReading();if(window.MathJax)MathJax.typesetPromise();
+            clearInterval(aiTimerInterval); aiFinished = { status: 'timeout' };
+            aiCurrentFeedback = 'Waktu Anda Habis. AI akan memberikan penyesuaian level jika perlu.';
+            sendScore(0,1,-5);
+            if(aiUserLevel==='pro') saveAILevel('mahir'); else if(aiUserLevel==='mahir') saveAILevel('pemula');
+            renderAIReading(); if(window.MathJax) MathJax.typesetPromise();
         }
 
-        window.submitAIAnswer=()=>{
-            if(aiFinished)return;
-            const inp=document.getElementById('ai-read-input'),msg=document.getElementById('ai-msg'),val=inp.value;
-            if(val.trim()===''){msg.innerText='⚠️ Anda belum mengetik apapun.';return;}
-            let nu=normalizeRomaji(val),nt=normalizeRomaji(aiCurrentStory.romaji);
-            if(nu===nt){
-                clearInterval(aiTimerInterval);aiFinished={status:'success'};
-                let cc=nt.length;
-                if(aiUserLevel==='pemula'){sendScore(1,0,15);if(cc/aiTimeElapsed>1.0)saveAILevel('mahir');}
-                else if(aiUserLevel==='mahir'){sendScore(1,0,25);let mt=Math.floor(cc*2.5);if(aiTimeRemaining>(mt*0.3))saveAILevel('pro');}
-                else{sendScore(1,0,40);}
-                renderAIReading();if(window.MathJax)MathJax.typesetPromise();
-            }else{msg.innerText='❌ Jawaban kurang tepat atau ada typo. Ayo periksa lagi!';sendScore(0,1,-2);}
+        window.submitAIAnswer = () => {
+            if(aiFinished) return;
+            const inp = document.getElementById('ai-read-input'), msg = document.getElementById('ai-msg');
+            const val = inp.value;
+            
+            if(val.trim()===''){ msg.innerText='⚠️ Anda belum mengetik apapun.'; return; }
+            
+            clearInterval(aiTimerInterval);
+            let nu = normalizeRomaji(val), nt = normalizeRomaji(aiCurrentStory.romaji);
+            let timeTaken = (aiUserLevel === 'pemula') ? aiTimeElapsed : (aiTimeLimit - aiTimeRemaining);
+            if(timeTaken <= 0) timeTaken = 1;
+
+            // Trigger AI Decision Tree & NLP
+            let aiEvaluation = evaluateAIResponse(nu, nt, timeTaken, aiUserLevel);
+            
+            aiFinished = { status: aiEvaluation.status };
+            aiCurrentFeedback = aiEvaluation.feedback;
+            
+            sendScore(aiEvaluation.status === 'success' ? 1 : 0, aiEvaluation.status === 'fail' ? 1 : 0, aiEvaluation.points);
+            saveAILevel(aiEvaluation.nextLevel);
+            
+            renderAIReading(); if(window.MathJax) MathJax.typesetPromise();
         };
 
         function renderAIReading(){
-            let fb='',inp='';
+            let fb='', inp='';
             if(!aiFinished){
-                let tl=aiUserLevel==='pemula'?'⏱️ Ketik huruf pertama untuk memulai waktu...':`⏳ Waktu Target: ${aiTimeRemaining}s`;
+                let tl = aiUserLevel==='pemula' ? '⏱️ Ketik huruf pertama untuk memulai waktu...' : `⏳ Waktu Target: ${aiTimeRemaining}s`;
                 inp=`
                     <div class="mt-6 flex flex-col items-center w-full">
                         <div id="ai-timer-display" class="text-lg font-mono font-bold text-neutral-500 mb-3">${tl}</div>
@@ -585,13 +755,13 @@ session_start();
                         <p class="text-xs text-neutral-600 mt-2 text-center">*Abaikan spasi/tanda baca. Tekan <strong class="text-neutral-400">Enter</strong> untuk mengirim.</p>
                     </div>`;
             }else{
-                let sh=aiFinished.status==='success'
-                    ?`<h3 class="text-2xl sm:text-3xl font-black text-emerald-400 mb-2 flex items-center gap-2 justify-center"><i data-lucide="check-circle-2" class="w-8 h-8"></i> Membaca Selesai!</h3>`
-                    :`<h3 class="text-2xl sm:text-3xl font-black text-rose-400 mb-2 flex items-center gap-2 justify-center"><i data-lucide="timer-off" class="w-8 h-8"></i> Waktu Habis!</h3>`;
+                let iconClass = aiFinished.status==='success' ? 'text-emerald-400' : (aiFinished.status==='partial' ? 'text-amber-400' : 'text-rose-400');
+                let sh = `<h3 class="text-2xl sm:text-3xl font-black ${iconClass} mb-2 flex items-center gap-2 justify-center"><i data-lucide="brain-circuit" class="w-8 h-8"></i> Hasil Evaluasi AI</h3>`;
                 fb=`
                     <div class="mt-8 glass-card rounded-3xl p-6 sm:p-8 shadow-xl tab-content w-full border border-white/[.08]">
                         ${sh}
-                        <p class="text-center text-neutral-300 mb-8">Kalimat asli: <strong class="text-white">"${aiCurrentStory.indo}"</strong></p>
+                        <p class="text-center text-white text-lg font-bold mb-1">${aiCurrentFeedback}</p>
+                        <p class="text-center text-neutral-400 text-sm mb-8">Kalimat asli: <strong class="text-orange-300">"${aiCurrentStory.indo}"</strong></p>
                         <div class="grid lg:grid-cols-2 gap-6">
                             <div>
                                 <h4 class="text-base font-bold text-white mb-3 pb-2 border-b border-white/[.06] flex items-center gap-2"><i data-lucide="book-a" class="w-4 h-4 text-sakura-400"></i> Bedah 漢字</h4>
@@ -603,7 +773,7 @@ session_start();
                             </div>
                         </div>
                         <div class="mt-8 flex justify-center">
-                            <button onclick="initAIReading()" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-sakura-500 hover:from-orange-400 hover:to-sakura-400 transition font-black tracking-wide text-white shadow-lg shadow-orange-500/20 flex justify-center items-center gap-2">Baca Cerita Selanjutnya <i data-lucide="arrow-right-circle" class="w-5 h-5"></i></button>
+                            <button onclick="initAIReading()" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-sakura-500 hover:from-orange-400 hover:to-sakura-400 transition font-black tracking-wide text-white shadow-lg shadow-orange-500/20 flex justify-center items-center gap-2">Tantangan AI Selanjutnya <i data-lucide="arrow-right-circle" class="w-5 h-5"></i></button>
                         </div>
                     </div>`;
             }
@@ -613,7 +783,7 @@ session_start();
                     <div class="mb-6 flex justify-between items-center glass-card p-4 rounded-2xl w-full border border-white/[.06]">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-xl bg-orange-400/10 flex items-center justify-center border border-orange-400/15"><i data-lucide="brain-circuit" class="w-5 h-5 text-orange-400"></i></div>
-                            <div><h2 class="text-white font-bold text-sm sm:text-base">AI Membaca Tingkat Cerdas</h2><p class="text-xs text-neutral-500">Mendeteksi kecepatan & keakuratan.</p></div>
+                            <div><h2 class="text-white font-bold text-sm sm:text-base">AI Membaca Tingkat Cerdas</h2><p class="text-xs text-neutral-500">Mendeteksi kecepatan, typo, & keakuratan (NLP).</p></div>
                         </div>
                         <span class="inline-flex items-center gap-1.5 border font-bold px-4 py-2 rounded-full text-xs sm:text-sm uppercase tracking-widest ${bc}">${aiUserLevel}</span>
                     </div>
