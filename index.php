@@ -237,6 +237,10 @@ header("Expires: 0");
                         <i data-lucide="award" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                         <span data-i18n="hero.cta1">Lihat Sertifikat</span>
                     </a>
+                    <a href="#projects" class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-accent-500 text-white font-semibold rounded-xl active:scale-[0.98] transition-all duration-200 shadow-xl shadow-accent-500/25 text-sm sm:text-base">
+                        <i data-lucide="folder-open" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                        <span>Lihat Projek</span>
+                    </a>
                     <a href="#contact" class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-white/5 border border-white/20 text-white font-semibold rounded-xl active:scale-[0.98] transition-all duration-200 backdrop-blur-sm text-sm sm:text-base">
                         <i data-lucide="mail" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                         <span data-i18n="hero.cta2">Hubungi Saya</span>
