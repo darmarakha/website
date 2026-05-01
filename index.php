@@ -1,11 +1,23 @@
 <?php
-session_start(); // Wajib di baris pertama untuk melacak status login user
+// Wajib di baris pertama untuk mencegah caching (Hard Refresh) dan melacak status login
+session_start();
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: 0");
 ?>
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!-- Diperbarui agar fit di mobile dan tidak bisa di-zoom out secara tidak sengaja -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Meta tambahan untuk memastikan browser tidak menyimpan cache halaman lama -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <title>Darma Alif Rakhaa — Portfolio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -126,7 +138,8 @@ session_start(); // Wajib di baris pertama untuk melacak status login user
                     <?php endif; ?>
                 </div>
 
-                <button id="mobile-menu-btn" class="w-10 h-10 flex items-center justify-center rounded-lg text-white hover:bg-white/10 active:bg-white/20 transition-colors z-10" aria-label="Menu">
+                <!-- Tambahan onclick="handleMenuClick()" untuk menangani bug transparansi -->
+                <button id="mobile-menu-btn" onclick="handleMenuClick()" class="w-10 h-10 flex items-center justify-center rounded-lg text-white hover:bg-white/10 active:bg-white/20 transition-colors z-10" aria-label="Menu">
                     <i data-lucide="menu" class="w-5 h-5" id="menu-icon-open"></i>
                     <i data-lucide="x" class="w-5 h-5 hidden" id="menu-icon-close"></i>
                 </button>
@@ -144,34 +157,31 @@ session_start(); // Wajib di baris pertama untuk melacak status login user
                 </div>
                 <div class="w-full h-px bg-white/10 mb-3"></div>
                 <div class="space-y-1 flex-1">
-                    <a href="#about" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
+                    <a href="#about" onclick="handleMenuClick()" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
                         <span class="flex items-center gap-3"><i data-lucide="user" class="w-4 h-4 opacity-50"></i><span data-i18n="nav.about">Tentang</span></span>
                     </a>
-                    <a href="#experience" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
+                    <a href="#experience" onclick="handleMenuClick()" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
                         <span class="flex items-center gap-3"><i data-lucide="briefcase" class="w-4 h-4 opacity-50"></i><span data-i18n="nav.experience">Pengalaman</span></span>
                     </a>
-                    <a href="#skills" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
+                    <a href="#skills" onclick="handleMenuClick()" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
                         <span class="flex items-center gap-3"><i data-lucide="zap" class="w-4 h-4 opacity-50"></i><span data-i18n="nav.skills">Keahlian</span></span>
                     </a>
-                    <a href="#certifications" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
+                    <a href="#certifications" onclick="handleMenuClick()" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
                         <span class="flex items-center gap-3"><i data-lucide="award" class="w-4 h-4 opacity-50"></i><span data-i18n="nav.certificates">Sertifikat</span></span>
                     </a>
-                    <a href="#projects" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
+                    <a href="#projects" onclick="handleMenuClick()" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
                         <span class="flex items-center gap-3"><i data-lucide="folder-open" class="w-4 h-4 opacity-50"></i><span data-i18n="nav.projects">Proyek</span></span>
                     </a>
-                    <a href="Belajar/Index.php" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
+                    <a href="Belajar/Index.php" onclick="handleMenuClick()" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
                         <span class="flex items-center gap-3"><i data-lucide="book-open" class="w-4 h-4 opacity-50"></i><span data-i18n="nav.learn">Belajar</span></span>
                     </a>
-                    <a href="Bisnis/" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
+                    <a href="Bisnis/" onclick="handleMenuClick()" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
                         <span class="flex items-center gap-3"><i data-lucide="pie-chart" class="w-4 h-4 opacity-50"></i><span>Bisnis</span></span>
-                    </a>
-                    <a href="/Belajar/Index.php" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
-                        <span class="flex items-center gap-3"><i data-lucide="book-open" class="w-4 h-4 opacity-50"></i><span data-i18n="nav.learn">Belajar</span></span>
                     </a>
                 </div>
                 
                 <div class="space-y-3 pt-6 border-t border-white/10">
-                    <a href="#contact" class="mobile-link flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-accent-500 text-white font-semibold rounded-xl active:bg-accent-600 transition-colors text-sm">
+                    <a href="#contact" onclick="handleMenuClick()" class="mobile-link flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-accent-500 text-white font-semibold rounded-xl active:bg-accent-600 transition-colors text-sm">
                         <i data-lucide="mail" class="w-4 h-4"></i>
                         <span data-i18n="nav.contactFull">Hubungi Saya</span>
                     </a>
@@ -198,7 +208,7 @@ session_start(); // Wajib di baris pertama untuk melacak status login user
                             </a>
                         </div>
                     <?php else: ?>
-                        <button onclick="openAuthModal(); toggleMenu(false);" class="mobile-link flex items-center justify-center gap-2 w-full px-6 py-3.5 border border-white/20 text-white font-semibold rounded-xl active:bg-white/10 transition-colors text-sm mt-3">
+                        <button onclick="handleMenuClick(); openAuthModal();" class="mobile-link flex items-center justify-center gap-2 w-full px-6 py-3.5 border border-white/20 text-white font-semibold rounded-xl active:bg-white/10 transition-colors text-sm mt-3">
                             <i data-lucide="log-in" class="w-4 h-4"></i>
                             <span data-i18n="nav.login">Login / Sign Up</span>
                         </button>
@@ -496,6 +506,23 @@ session_start(); // Wajib di baris pertama untuk melacak status login user
         </div>
     </div>
 
+    <!-- MODAL UNTUK MELIHAT DETAIL PROYEK -->
+    <div id="project-modal" class="lightbox fixed inset-0 z-[105] bg-navy-950/95 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden relative transition-transform transform scale-95 opacity-0" id="project-card">
+            <button onclick="closeProjectModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-navy-50 hover:bg-navy-100 text-navy-500 transition-colors z-10 shadow-sm border border-navy-100" aria-label="Close">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <div class="overflow-y-auto p-6 sm:p-8">
+                <h3 class="text-xl sm:text-2xl font-bold text-navy-900 mb-3" id="project-modal-title">Judul Proyek</h3>
+                <div class="flex flex-wrap gap-2 mb-4" id="project-modal-tags"></div>
+                <img id="project-modal-img" src="" alt="Screenshot Proyek" class="w-full h-auto max-h-96 object-contain bg-navy-50 rounded-lg mb-5 shadow-sm border border-navy-100">
+                <div class="text-sm sm:text-base text-navy-600 leading-relaxed space-y-3" id="project-modal-desc">
+                    Deskripsi proyek akan tampil di sini.
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="auth-modal" class="lightbox fixed inset-0 z-[100] bg-navy-950/90 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative transition-transform transform scale-95 opacity-0" id="auth-card">
             <button onclick="closeAuthModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-navy-50 hover:bg-navy-100 text-navy-500 transition-colors z-10" aria-label="Close">
@@ -547,7 +574,94 @@ session_start(); // Wajib di baris pertama untuk melacak status login user
     <script src="app.js"></script>
 
     <script>
-        // Script untuk warna teks username saat di-scroll
+        // SCRIPT TAMBAHAN UNTUK HARD REFRESH OTOMATIS BROWSER
+        window.onpageshow = function(event) {
+            // Jika halaman ditarik dari cache (bfcache) akibat tombol back/forward
+            if (event.persisted) {
+                window.location.reload();
+            }
+        };
+
+        // SCRIPT PERBAIKAN BUG NAVIGASI HAMBURGER TRANSPARAN
+        let isMobileMenuOpen = false;
+        function handleMenuClick() {
+            isMobileMenuOpen = !isMobileMenuOpen;
+            const navbar = document.getElementById('navbar');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const overlay = document.getElementById('mobile-menu-overlay');
+            const iconOpen = document.getElementById('menu-icon-open');
+            const iconClose = document.getElementById('menu-icon-close');
+
+            if (isMobileMenuOpen) {
+                mobileMenu.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+                iconOpen.classList.add('hidden');
+                iconClose.classList.remove('hidden');
+                
+                // Mencegah Navbar Transparan secara paksa dengan Inline Style
+                navbar.style.backgroundColor = '#0a1929'; // Warna navy-950 solid
+                navbar.style.backdropFilter = 'none';
+            } else {
+                mobileMenu.classList.add('translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+                iconOpen.classList.remove('hidden');
+                iconClose.classList.add('hidden');
+                
+                // Mengembalikan kontrol background ke Tailwind/app.js Anda
+                navbar.style.backgroundColor = '';
+                navbar.style.backdropFilter = '';
+            }
+        }
+        
+        // Agar menekan area gelap di samping menu juga menutup menu dan mengembalikan navbar
+        document.getElementById('mobile-menu-overlay').addEventListener('click', () => {
+            if(isMobileMenuOpen) handleMenuClick();
+        });
+
+        // SCRIPT LOGIKA BUKA LIHAT PROYEK (Bisa dipanggil dari app.js Anda)
+        function openProjectModal(title, image, desc, tags) {
+            document.getElementById('project-modal-title').textContent = title;
+            document.getElementById('project-modal-img').src = image;
+            document.getElementById('project-modal-desc').innerHTML = desc;
+            
+            const tagsContainer = document.getElementById('project-modal-tags');
+            tagsContainer.innerHTML = '';
+            if(tags) {
+                let tagsArray = Array.isArray(tags) ? tags : tags.split(',');
+                tagsArray.forEach(tag => {
+                    tagsContainer.innerHTML += `<span class="px-2.5 py-1 bg-accent-50 text-accent-600 text-xs font-semibold rounded-md border border-accent-100">${tag.trim()}</span>`;
+                });
+            }
+
+            const modal = document.getElementById('project-modal');
+            const card = document.getElementById('project-card');
+            modal.classList.add('active');
+            setTimeout(() => {
+                card.classList.remove('scale-95', 'opacity-0');
+                card.classList.add('scale-100', 'opacity-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeProjectModal() {
+            const modal = document.getElementById('project-modal');
+            const card = document.getElementById('project-card');
+            card.classList.remove('scale-100', 'opacity-100');
+            card.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        // Tutup modal proyek saat klik area di luar card
+        document.getElementById('project-modal').addEventListener('click', e => {
+            if (e.target === document.getElementById('project-modal')) closeProjectModal();
+        });
+
+        // Script asli untuk warna teks username saat di-scroll
         const navUserName = document.getElementById('nav-user-name');
         window.addEventListener('scroll', () => {
             const scrolled = window.scrollY > 60;
