@@ -74,6 +74,7 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <script>
@@ -116,18 +117,7 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
         @keyframes urgentPulse{0%{color:#f43f5e;transform:scale(1)}50%{color:#fda4af;transform:scale(1.05)}100%{color:#f43f5e;transform:scale(1)}}
         .timer-urgent{animation:urgentPulse 1s infinite}
 
-        /* ===== STROKE ORDER ANIMATION ===== */
-        @keyframes drawStroke{to{stroke-dashoffset:0}}
-        @keyframes fillStroke{0%,75%{fill-opacity:0}100%{fill-opacity:1}}
-        @keyframes brushGlow{
-            0%,100%{opacity:.3;transform:translate(-50%,-50%) scale(1)}
-            50%{opacity:.8;transform:translate(-50%,-50%) scale(1.5)}
-        }
-        .stroke-draw{animation:drawStroke forwards ease-in-out}
-        .stroke-fill{animation:fillStroke forwards ease-in-out}
-        .stroke-dot-active{background:#F472B6!important;border-color:#F472B6!important;box-shadow:0 0 8px rgba(244,114,182,.5)}
-
-        /* Genkouyoushi grid */
+        /* Genkouyoushi grid (Background Kanji) */
         .genkouyoushi{
             position:relative;
             background:rgba(255,255,255,.02);
@@ -159,6 +149,122 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
         ::-webkit-scrollbar-track{background:#0a0a0a}
         ::-webkit-scrollbar-thumb{background:#2e2e2e;border-radius:3px}
         ::-webkit-scrollbar-thumb:hover{background:#F74E09}
+
+        /* ===== Wikimedia GIF Stroke Board + Practice Canvas ===== */
+        .stroke-board-wrap {
+            position: relative;
+            width: 280px;
+            height: 220px;
+            margin: 0 auto;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        #stroke-gif-image,
+        #target-canvas,
+        #practice-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #stroke-gif-image {
+            z-index: 3;
+            object-fit: contain;
+            opacity: 1;
+            pointer-events: none;
+            image-rendering: auto;
+        }
+
+        #target-canvas {
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        #practice-canvas {
+            z-index: 5;
+            cursor: crosshair;
+        }
+
+        /* FIX MODAL: tombol silang tetap terlihat walau feedback AI membuat konten tinggi */
+        #strokeModal {
+            align-items: flex-start;
+            overflow-y: auto;
+            padding-top: 24px;
+            padding-bottom: 24px;
+        }
+        .stroke-modal-card {
+            max-height: calc(100vh - 48px);
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            scrollbar-width: thin;
+        }
+        .stroke-close-btn {
+            position: sticky !important;
+            top: 0;
+            align-self: flex-end;
+            margin-bottom: -36px;
+            z-index: 60;
+        }
+        .stroke-modal-card::-webkit-scrollbar { width: 5px; }
+        .stroke-modal-card::-webkit-scrollbar-track { background: rgba(255,255,255,.03); border-radius: 10px; }
+        .stroke-modal-card::-webkit-scrollbar-thumb { background: rgba(244,114,182,.35); border-radius: 10px; }
+
+
+
+        /* Update UI: kartu kana aman untuk PC/mobile, audio tidak menimpa romaji/dakuten */
+        .kana-cell{
+            min-height:118px;
+            background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.018));
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            gap:3px;
+        }
+        .kana-char{line-height:1;}
+        .kana-romaji-label{line-height:1.15;min-height:16px;display:flex;align-items:center;justify-content:center;}
+        .kana-audio-btn{
+            position:relative;
+            width:46px;
+            height:26px;
+            margin-top:2px;
+            border-radius:999px;
+            background:rgba(249,115,22,.13);
+            border:1px solid rgba(251,146,60,.22);
+            color:#fdba74;
+            font-size:12px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            transition:.2s;
+            z-index:8;
+            flex:0 0 auto;
+        }
+        .kana-audio-btn:hover{background:rgba(249,115,22,.27);transform:scale(1.06)}
+        .kana-cell-daku .kana-char,.kana-cell-handa .kana-char{padding-top:2px;padding-right:0;line-height:1;}
+        .safe-scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
+        .ai-safe-grid{display:grid;grid-template-columns:1fr;gap:1rem;max-width:100%;}
+        @media (min-width:1024px){.ai-safe-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.5rem;}}
+        .ai-panel-safe{min-width:0;max-width:100%;overflow:hidden;}
+        .ai-panel-safe ul,.ai-panel-safe div{max-width:100%;}
+        .ai-panel-safe .math-scroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:normal;word-break:break-word;}
+        .ai-mobile-card{max-width:100%;overflow-x:hidden;}
+        .tip-card{background:linear-gradient(135deg,rgba(236,72,153,.10),rgba(249,115,22,.08),rgba(96,165,250,.06));}
+        .soft-glow-pink{box-shadow:0 0 35px rgba(236,72,153,.12)}
+        .answer-choice:active{transform:scale(.98)}
+        .feedback-mobile-safe{max-height:42vh;overflow-y:auto;overscroll-behavior:contain;}
+
+        @media (min-width: 640px) {
+            #strokeModal { align-items: center; }
+        }
     </style>
 </head>
 <body class="bg-dark-900 text-white min-h-screen selection:bg-sakura-500 selection:text-white pb-20" data-logged-in="<?php echo $isLoggedIn?'true':'false'; ?>" data-ai-level="<?php echo htmlspecialchars($aiLevel); ?>">
@@ -221,60 +327,220 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
             <button onclick="switchTab('ai')" id="tab-ai" class="flex-1 min-w-[120px] py-3 px-3 rounded-xl font-bold text-sm transition-all text-orange-400 bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20">📖 AI Membaca</button>
         </nav>
 
+        <div class="glass-card rounded-2xl p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border border-white/[.06]">
+            <div class="text-sm text-neutral-400"><span class="text-sakura-300 font-bold">🌐 Bahasa / Language</span> · Pilih tampilan materi</div>
+            <select onchange="setUILanguage(this.value)" class="bg-dark-800 border border-white/[.10] rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-sakura-400/60">
+                <option value="id">Indonesia</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+
         <div id="content-container" class="min-h-[500px]"></div>
 
         <footer class="mt-12 text-center">
             <div class="flex items-center justify-center gap-2 mb-3">
                 <div class="w-6 h-px bg-white/10"></div><span class="text-lg">🌸</span><div class="w-6 h-px bg-white/10"></div>
             </div>
-            <p class="text-neutral-600 text-sm">Credit: <strong class="text-neutral-400">Darma</strong> — Dikembangkan dengan ❤️ & AI</p>
+            <p class="text-neutral-600 text-sm"><strong class="text-neutral-400">by Darma</strong></p>
         </footer>
 
-        <!-- ===== STROKE ORDER MODAL ===== -->
-        <div id="strokeModal" class="hidden fixed inset-0 bg-dark-900/90 z-50 flex justify-center items-center px-4 backdrop-blur-sm transition-opacity">
-            <div class="glass-card rounded-3xl p-6 sm:p-8 max-w-sm w-full relative shadow-2xl border border-sakura-400/20">
-                <button onclick="hideStrokeModal()" class="absolute top-4 right-4 text-neutral-500 hover:text-white bg-white/[.05] hover:bg-white/[.1] p-2 rounded-xl w-9 h-9 flex items-center justify-center transition border border-white/[.08] text-sm">✕</button>
+        <!-- ===== STROKE ORDER MODAL CANGGIH (Animasi per garis & Mode Latihan) ===== -->
+        <div id="strokeModal" class="hidden fixed inset-0 bg-dark-900/90 z-50 flex justify-center px-4 backdrop-blur-sm transition-opacity">
+            <div class="glass-card stroke-modal-card rounded-3xl p-6 sm:p-8 max-w-sm w-full relative shadow-2xl border border-sakura-400/20 flex flex-col items-center">
+                <button onclick="hideStrokeModal()" class="stroke-close-btn text-neutral-500 hover:text-white bg-white/[.08] hover:bg-white/[.14] p-2 rounded-xl w-9 h-9 flex items-center justify-center transition border border-white/[.12] text-sm shadow-lg shadow-black/20">✕</button>
 
-                <h3 class="text-lg font-bold text-sakura-400 mb-5 text-center">Cara Penulisan</h3>
+                <h3 class="text-lg font-bold text-sakura-400 mb-4 text-center w-full border-b border-white/[.06] pb-3">Papan Penulisan</h3>
 
-                <!-- Genkouyoushi Grid + SVG Animation -->
-                <div class="genkouyoushi rounded-2xl w-48 h-48 mx-auto mb-5 flex items-center justify-center relative overflow-hidden" id="modal-svg-container">
-                    <!-- Brush glow indicator -->
-                    <div id="brush-glow" class="absolute w-6 h-6 rounded-full bg-sakura-400/40 blur-md pointer-events-none" style="top:30%;left:30%;animation:brushGlow 1.5s ease-in-out infinite"></div>
-                    <!-- SVG akan di-inject via JS -->
-                    <div id="modal-svg" class="relative z-10"></div>
+                <!-- Mode Tabs -->
+                <div class="flex items-center gap-2 mb-3 w-full">
+                    <button onclick="hwAnimate()" id="mode-auto" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-sakura-500/20 text-sakura-300 border border-sakura-400/20 shadow-inner">✨ Tonton Animasi</button>
+                    <button onclick="hwPractice()" id="mode-practice" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-white/[.04] text-neutral-400 border border-white/[.08] hover:bg-white/[.08]">✏️ Latihan Nulis</button>
                 </div>
 
-                <!-- Stroke Progress Dots -->
-                <div class="flex items-center justify-center gap-2 mb-4" id="stroke-dots"></div>
-                <p class="text-center text-xs text-neutral-500 mb-4" id="stroke-label">Menulis...</p>
+                <button onclick="playCurrentKanaSound(event)" id="modal-sound-btn" class="w-full mb-5 py-2.5 rounded-xl bg-orange-500/15 hover:bg-orange-500/25 border border-orange-400/20 text-orange-300 text-xs font-black tracking-wide transition-all flex items-center justify-center gap-2">
+                    🔊 Dengarkan Suara
+                </button>
 
-                <!-- Info -->
-                <div class="bg-white/[.04] p-4 rounded-2xl text-center mb-4 border border-white/[.08]">
+                <!-- Papan Tulis: Animasi Wikimedia + Canvas Latihan -->
+                <div class="genkouyoushi rounded-2xl w-full max-w-[280px] h-[220px] mx-auto mb-4 flex items-center justify-center p-2 relative overflow-hidden bg-dark-900 border-2 border-white/[.08] shadow-inner" style="touch-action: none;" id="modal-svg-container">
+                    <div class="stroke-board-wrap">
+                        <img id="stroke-gif-image" alt="Hiragana stroke order animation" draggable="false">
+                        <canvas id="target-canvas" width="280" height="220"></canvas>
+                        <canvas id="practice-canvas" width="280" height="220"></canvas>
+                    </div>
+                </div>
+
+                <p class="text-center text-xs text-neutral-400 mb-5 h-4 font-medium" id="stroke-label">Memuat data garis...</p>
+
+                <div class="grid grid-cols-2 gap-2 w-full mb-4">
+                    <button onclick="resetWriting()" class="py-3 rounded-xl bg-white/[.06] hover:bg-white/[.1] border border-white/[.1] text-white text-sm font-bold transition-all">
+                        ↻ Ulang
+                    </button>
+                    <button onclick="checkWritingScore()" class="py-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/30 text-emerald-300 text-sm font-bold transition-all">
+                        ✓ Nilai Tulisan
+                    </button>
+                </div>
+
+                <div id="scoreBox" class="hidden w-full bg-white/[.04] p-4 rounded-2xl border border-white/[.08] mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-[10px] uppercase tracking-[0.2em] text-neutral-500 font-bold">Skor Kemiripan</span>
+                        <span id="scoreText" class="text-sm font-black text-sakura-300">0%</span>
+                    </div>
+                    <div class="w-full h-2 rounded-full bg-white/[.08] overflow-hidden mb-3">
+                        <div id="scoreBar" class="h-full rounded-full bg-gradient-to-r from-sakura-500 to-orange-400 transition-all duration-500" style="width:0%"></div>
+                    </div>
+                    <p id="scoreNote" class="text-xs text-neutral-500 text-center">Tulis huruf terlebih dahulu, lalu klik Nilai Tulisan.</p>
+                </div>
+
+                <!-- Info Box -->
+                <div class="w-full bg-white/[.04] p-4 rounded-2xl text-center mb-4 border border-white/[.08]">
                     <p class="text-neutral-500 text-[10px] uppercase tracking-widest mb-1">Romaji</p>
                     <p class="text-2xl font-mono text-orange-400 font-bold" id="modal-romaji">a</p>
                 </div>
 
-                <div class="flex items-center justify-center gap-4 text-xs text-neutral-500 mb-4">
+                <div class="flex items-center justify-center gap-4 text-xs text-neutral-500 mb-2 w-full">
                     <span>Kategori: <strong class="text-sakura-300" id="modal-type">Seion</strong></span>
                     <span class="text-neutral-700">|</span>
-                    <span>Goresan: <strong class="text-orange-300" id="modal-strokes">3</strong></span>
+                    <span>Total Goresan: <strong class="text-orange-300" id="modal-strokes">3</strong></span>
                 </div>
-
-                <div class="p-4 bg-dark-900 border border-white/[.06] rounded-2xl text-sm text-neutral-300 text-left leading-relaxed">
-                    <strong class="text-white block mb-2 text-xs">📌 Panduan Coretan:</strong>
-                    <ul class="list-disc pl-4 mt-1 space-y-0.5 text-neutral-400 text-xs">
-                        <li>Dari <strong class="text-neutral-200">Kiri</strong> ke <strong class="text-neutral-200">Kanan</strong></li>
-                        <li>Dari <strong class="text-neutral-200">Atas</strong> ke <strong class="text-neutral-200">Bawah</strong></li>
-                        <li>Perhatikan ujung garis (Tome, Hane, Harai)</li>
-                    </ul>
-                </div>
+                
+                <p class="text-[10px] text-neutral-600 text-center w-full leading-relaxed">Tonton Animasi untuk melihat urutan goresan. Latihan Nulis memakai bayangan huruf dan skor kemiripan pixel.</p>
             </div>
         </div>
     </main>
 
+    <script src="assets/js/hiragana-lang-id.js"></script>
+    <script src="assets/js/hiragana-lang-en.js"></script>
     <script>
         const isLoggedIn = document.body.getAttribute('data-logged-in') === 'true';
+        const LANG_PACKS = { id: window.HIRAGANA_LANG_ID || {}, en: window.HIRAGANA_LANG_EN || {} };
+        let currentUILang = localStorage.getItem('hiragana_ui_lang') || 'id';
+        function tr(key) { return (LANG_PACKS[currentUILang] && LANG_PACKS[currentUILang][key]) || (LANG_PACKS.id && LANG_PACKS.id[key]) || key; }
+        window.setUILanguage = function(lang) {
+            currentUILang = lang === 'en' ? 'en' : 'id';
+            localStorage.setItem('hiragana_ui_lang', currentUILang);
+            const activeTab = document.querySelector('nav button[class*="gradient"]')?.id?.replace('tab-', '') || 'materi';
+            switchTab(activeTab);
+        };
+
+
+        // ====================================================================
+        // AUDIO HIRAGANA
+        // ====================================================================
+        // File suara eksternal tidak ditempel ulang di file ini.
+        // Simpan MP3 legal di: ./assets/audio/hiragana/a.mp3, i.mp3, u.mp3, ka.mp3, dst.
+        // Bila file lokal belum ada, browser otomatis memakai Web Speech API Jepang.
+        const kanaAudioCache = {};
+        const kanaAudioBasePath = './assets/audio/hiragana/';
+        let cachedJapaneseVoice = null;
+        let speechWarmStarted = false;
+        let speechUnlocked = false;
+
+        function refreshJapaneseVoice() {
+            if (!('speechSynthesis' in window)) return null;
+            const voices = window.speechSynthesis.getVoices() || [];
+            cachedJapaneseVoice = voices.find(v => /ja-JP/i.test(v.lang)) || voices.find(v => /ja|japanese/i.test(v.lang + ' ' + v.name)) || cachedJapaneseVoice;
+            return cachedJapaneseVoice;
+        }
+
+        function warmJapaneseSpeechEngine() {
+            if (speechWarmStarted || !('speechSynthesis' in window)) return;
+            speechWarmStarted = true;
+            refreshJapaneseVoice();
+            let tries = 0;
+            const loader = setInterval(() => {
+                tries++;
+                refreshJapaneseVoice();
+                if (cachedJapaneseVoice || tries > 12) clearInterval(loader);
+            }, 180);
+        }
+
+        function unlockSpeechOnce() {
+            if (speechUnlocked || !('speechSynthesis' in window)) return;
+            speechUnlocked = true;
+            try {
+                refreshJapaneseVoice();
+                const u = new SpeechSynthesisUtterance('あ');
+                u.lang = 'ja-JP';
+                u.volume = 0.01;
+                u.rate = 1.0;
+                const v = refreshJapaneseVoice();
+                if (v) u.voice = v;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(u);
+                setTimeout(() => window.speechSynthesis.cancel(), 80);
+            } catch (_) {}
+        }
+        warmJapaneseSpeechEngine();
+        window.addEventListener('pointerdown', unlockSpeechOnce, { once:true, passive:true });
+        window.addEventListener('touchstart', unlockSpeechOnce, { once:true, passive:true });
+
+        function normalizeRomajiForAudio(romaji) {
+            return String(romaji || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+        }
+
+        function stopAllKanaAudio() {
+            Object.values(kanaAudioCache).forEach(audio => {
+                try { audio.pause(); audio.currentTime = 0; } catch (_) {}
+            });
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        }
+
+        function speakKanaWithJapaneseVoice(kana, romaji) {
+            if (!('speechSynthesis' in window)) {
+                alert('Browser ini belum mendukung suara otomatis. Tambahkan file MP3 lokal di folder assets/audio/hiragana/.');
+                return;
+            }
+
+            const text = String(kana || '').trim() || String(romaji || '').trim();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ja-JP';
+            utterance.rate = 0.78;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+
+            const jpVoice = cachedJapaneseVoice || refreshJapaneseVoice();
+            if (jpVoice) utterance.voice = jpVoice;
+
+            // Langsung speak pada klik yang sama. Tidak menunggu fallback MP3 agar respon cepat.
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.resume();
+            window.speechSynthesis.speak(utterance);
+        }
+
+        const USE_LOCAL_MP3_FIRST = false;
+
+        function playKanaSound(kana, romaji, event) {
+            if (event) { event.preventDefault(); event.stopPropagation(); }
+            stopAllKanaAudio();
+
+            const key = normalizeRomajiForAudio(romaji);
+            if (!USE_LOCAL_MP3_FIRST || !key) {
+                speakKanaWithJapaneseVoice(kana, romaji);
+                return;
+            }
+
+            const src = `${kanaAudioBasePath}${key}.mp3`;
+            let audio = kanaAudioCache[key];
+            if (!audio) {
+                audio = new Audio(src);
+                audio.preload = 'auto';
+                kanaAudioCache[key] = audio;
+            }
+
+            audio.currentTime = 0;
+            audio.onerror = () => speakKanaWithJapaneseVoice(kana, romaji);
+            audio.play().catch(() => speakKanaWithJapaneseVoice(kana, romaji));
+        }
+
+        function playCurrentKanaSound(event) {
+            playKanaSound(window.currentStrokeKana || '', window.currentStrokeRomaji || '', event);
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => refreshJapaneseVoice();
+            refreshJapaneseVoice();
+        }
 
         // ====================================================================
         // 1. API SQL & MACHINE LEARNING UTILITIES (NLP & ADAPTIVE)
@@ -350,7 +616,7 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
                 else if (currentLevel === 'mahir' && accuracy < 40) nextLevel = 'pemula';
             }
             
-            return { status, points, feedback, nextLevel, accuracy, cps };
+            return { status, points, feedback, nextLevel, accuracy, cps, distance: dist };
         }
 
         // ==========================================
@@ -395,23 +661,44 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
         // ==========================================
         const aiReadingData = {
             pemula: [
-                { hiragana:'わたしは にほんごを べんきょうします。', romaji:'watashi wa nihongo o benkyoushimasu', indo:'Saya belajar bahasa Jepang.', kanjiInfo:"<li><span class='text-sakura-400 font-bold text-lg'>私 (わたし)</span> : Saya.</li><li><span class='text-sakura-400 font-bold text-lg'>日本語 (にほんご)</span> : Bahasa Jepang.</li><li><span class='text-sakura-400 font-bold text-lg'>勉強します (べんきょうします)</span> : Belajar.</li>", bunpouInfo:"$$\\text{[Subjek]} + \\text{は (wa)} + \\text{[Objek]} + \\text{を (o)} + \\text{[Kata Kerja]}$$" },
-                { hiragana:'あした がっこうへ いきます。', romaji:'ashita gakkou e ikimasu', indo:'Besok pergi ke sekolah.', kanjiInfo:"<li><span class='text-sakura-400 font-bold text-lg'>明日 (あした)</span> : Besok.</li><li><span class='text-sakura-400 font-bold text-lg'>学校 (がっこう)</span> : Sekolah.</li><li><span class='text-sakura-400 font-bold text-lg'>行きます (いきます)</span> : Pergi.</li>", bunpouInfo:"$$\\text{[Waktu]} + \\text{[Tempat]} + \\text{へ (e)} + \\text{[Kata Kerja Perpindahan]}$$" },
-                { hiragana:'まいにち りんごを たべます。', romaji:'mainichi ringo o tabemasu', indo:'Setiap hari makan apel.', kanjiInfo:"<li><span class='text-sakura-400 font-bold text-lg'>毎日 (まいにち)</span> : Setiap hari.</li><li><span class='text-sakura-400 font-bold text-lg'>林檎 (りんご)</span> : Apel.</li><li><span class='text-sakura-400 font-bold text-lg'>食べます (たべます)</span> : Makan.</li>", bunpouInfo:"$$\\text{[Waktu Keterangan]} + \\text{[Objek]} + \\text{を (o)} + \\text{[Kata Kerja]}$$" }
+                { hiragana:'わたしは にほんごを べんきょうします。', romaji:'watashi wa nihongo o benkyoushimasu', indo:'Saya belajar bahasa Jepang.', kanjiInfo:"<li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>私 (わたし)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>wa ta shi</span><br><span class='text-sm text-neutral-300'>Saya.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>日本語 (にほんご)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>ni ho n go</span><br><span class='text-sm text-neutral-300'>Bahasa Jepang.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>勉強します (べんきょうします)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>be n kyo u shi ma su</span><br><span class='text-sm text-neutral-300'>Belajar.</span></li>", bunpouInfo:"$$\\text{[Subjek]} + \\text{は (wa)} + \\text{[Objek]} + \\text{を (o)} + \\text{[Kata Kerja]}$$" },
+                { hiragana:'あした がっこうへ いきます。', romaji:'ashita gakkou e ikimasu', indo:'Besok pergi ke sekolah.', kanjiInfo:"<li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>明日 (あした)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>a shi ta</span><br><span class='text-sm text-neutral-300'>Besok.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>学校 (がっこう)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>ga k ko u</span><br><span class='text-sm text-neutral-300'>Sekolah.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>行きます (いきます)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>i ki ma su</span><br><span class='text-sm text-neutral-300'>Pergi.</span></li>", bunpouInfo:"$$\\text{[Waktu]} + \\text{[Tempat]} + \\text{へ (e)} + \\text{[Kata Kerja Perpindahan]}$$" },
+                { hiragana:'まいにち りんごを たべます。', romaji:'mainichi ringo o tabemasu', indo:'Setiap hari makan apel.', kanjiInfo:"<li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>毎日 (まいにち)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>ma i ni chi</span><br><span class='text-sm text-neutral-300'>Setiap hari.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>林檎 (りんご)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>ri n go</span><br><span class='text-sm text-neutral-300'>Apel.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>食べます (たべます)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>ta be ma su</span><br><span class='text-sm text-neutral-300'>Makan.</span></li>", bunpouInfo:"$$\\text{[Waktu Keterangan]} + \\text{[Objek]} + \\text{を (o)} + \\text{[Kata Kerja]}$$" }
             ],
             mahir: [
-                { hiragana:'むかしむかし、ある ところに、おじいさんと おばあさんが いました。', romaji:'mukashimukashi aru tokoroni ojiisan to obaasan ga imashita', indo:'Zaman dahulu kala, di suatu tempat, ada seorang kakek dan nenek.', kanjiInfo:"<li><span class='text-sakura-400 font-bold text-lg'>昔々 (むかしむかし)</span> : Zaman dahulu kala.</li><li><span class='text-sakura-400 font-bold text-lg'>所 (ところ)</span> : Tempat.</li><li><span class='text-sakura-400 font-bold text-lg'>お爺さん (おじいさん)</span> : Kakek.</li><li><span class='text-sakura-400 font-bold text-lg'>お婆さん (おばあさん)</span> : Nenek.</li>", bunpouInfo:"$$\\text{[Waktu Lampau]} + \\text{、} + \\text{[Tempat]} + \\text{に} + \\text{、} + \\text{[Subjek 1]} + \\text{と} + \\text{[Subjek 2]} + \\text{が} + \\text{いました}$$" },
-                { hiragana:'きょうの てんきは とても いいですから、こうえんを さんぽしましょう。', romaji:'kyou no tenkiwa totemo iidesukara kouen o sanposhimashou', indo:'Karena cuaca hari ini sangat bagus, mari kita jalan-jalan di taman.', kanjiInfo:"<li><span class='text-sakura-400 font-bold text-lg'>今日 (きょう)</span> : Hari ini.</li><li><span class='text-sakura-400 font-bold text-lg'>天気 (てんき)</span> : Cuaca.</li><li><span class='text-sakura-400 font-bold text-lg'>公園 (こうえん)</span> : Taman.</li><li><span class='text-sakura-400 font-bold text-lg'>散歩しましょう (さんぽしましょう)</span> : Mari jalan-jalan.</li>", bunpouInfo:"$$\\text{[Alasan/Sebab]} + \\text{から (kara)} + \\text{、} + \\text{[Aktivitas Ajakan \~mashou]}$$" }
+                { hiragana:'むかしむかし、ある ところに、おじいさんと おばあさんが いました。', romaji:'mukashimukashi aru tokoroni ojiisan to obaasan ga imashita', indo:'Zaman dahulu kala, di suatu tempat, ada seorang kakek dan nenek.', kanjiInfo:"<li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>昔々 (むかしむかし)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>mu ka shi mu ka shi</span><br><span class='text-sm text-neutral-300'>Zaman dahulu kala.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>所 (ところ)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>to ko ro</span><br><span class='text-sm text-neutral-300'>Tempat.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>お爺さん (おじいさん)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>o ji i sa n</span><br><span class='text-sm text-neutral-300'>Kakek.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>お婆さん (おばあさん)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>o ba a sa n</span><br><span class='text-sm text-neutral-300'>Nenek.</span></li>", bunpouInfo:"$$\\text{[Waktu Lampau]} + \\text{、} + \\text{[Tempat]} + \\text{に} + \\text{、} + \\text{[Subjek 1]} + \\text{と} + \\text{[Subjek 2]} + \\text{が} + \\text{いました}$$" },
+                { hiragana:'きょうの てんきは とても いいですから、こうえんを さんぽしましょう。', romaji:'kyou no tenkiwa totemo iidesukara kouen o sanposhimashou', indo:'Karena cuaca hari ini sangat bagus, mari kita jalan-jalan di taman.', kanjiInfo:"<li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>今日 (きょう)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>kyo u</span><br><span class='text-sm text-neutral-300'>Hari ini.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>天気 (てんき)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>te n ki</span><br><span class='text-sm text-neutral-300'>Cuaca.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>公園 (こうえん)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>ko u e n</span><br><span class='text-sm text-neutral-300'>Taman.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>散歩しましょう (さんぽしましょう)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>sa n po shi ma sho u</span><br><span class='text-sm text-neutral-300'>Mari jalan-jalan.</span></li>", bunpouInfo:"$$\\text{[Alasan/Sebab]} + \\text{から (kara)} + \\text{、} + \\text{[Aktivitas Ajakan \~mashou]}$$" }
             ],
             pro: [
-                { hiragana:'あきの ゆうぐれ、もみじが とても きれいでした。わたしたちは おちゃを のみながら、けしきを たのしみました。', romaji:'akinoyuugure momijiga totemo kireideshita watashitachiwa ocha o nominagara keshiki o tanoshimimashita', indo:'Di senja musim gugur, dedaunan merah sangatlah cantik. Kami menikmati pemandangan sambil meminum teh.', kanjiInfo:"<li><span class='text-sakura-400 font-bold text-lg'>秋 (あき)</span> : Musim gugur.</li><li><span class='text-sakura-400 font-bold text-lg'>夕暮れ (ゆうぐれ)</span> : Senja.</li><li><span class='text-sakura-400 font-bold text-lg'>紅葉 (もみじ)</span> : Daun musim gugur.</li><li><span class='text-sakura-400 font-bold text-lg'>綺麗 (きれい)</span> : Cantik.</li><li><span class='text-sakura-400 font-bold text-lg'>私達 (わたしたち)</span> : Kami.</li><li><span class='text-sakura-400 font-bold text-lg'>お茶 (おちゃ)</span> : Teh.</li><li><span class='text-sakura-400 font-bold text-lg'>景色 (けしき)</span> : Pemandangan.</li>", bunpouInfo:"$$\\text{[Aktivitas 1 (Bentuk Masu Coret)]} + \\text{ながら} + \\text{、} + \\text{[Aktivitas 2]}$$<br><em>Nagara</em> digunakan untuk aktivitas yang dilakukan bersamaan (sambil)." },
-                { hiragana:'にほんの ぶんかは とても おもしろいです。とくに、おまつりの ときに たべる たこやきが だいすきです。', romaji:'nihonnobunkawa totemo omoshiroidesu tokuni omatsurinotokini taberu takoyakiga daisukidesu', indo:'Budaya Jepang sangatlah menarik. Terutama, saya sangat suka takoyaki yang dimakan saat festival.', kanjiInfo:"<li><span class='text-sakura-400 font-bold text-lg'>日本 (にほん)</span> : Jepang.</li><li><span class='text-sakura-400 font-bold text-lg'>文化 (ぶんか)</span> : Budaya.</li><li><span class='text-sakura-400 font-bold text-lg'>面白い (おもしろい)</span> : Menarik.</li><li><span class='text-sakura-400 font-bold text-lg'>特に (とくに)</span> : Terutama.</li><li><span class='text-sakura-400 font-bold text-lg'>お祭り (おまつり)</span> : Festival.</li><li><span class='text-sakura-400 font-bold text-lg'>大好き (だいすき)</span> : Sangat suka.</li>", bunpouInfo:"$$\\text{[Kata Benda]} + \\text{の} + \\text{時に (Toki ni)}$$<br><em>Toki ni</em> berarti 'saat' atau 'ketika'." }
+                { hiragana:'あきの ゆうぐれ、もみじが とても きれいでした。わたしたちは おちゃを のみながら、けしきを たのしみました。', romaji:'akinoyuugure momijiga totemo kireideshita watashitachiwa ocha o nominagara keshiki o tanoshimimashita', indo:'Di senja musim gugur, dedaunan merah sangatlah cantik. Kami menikmati pemandangan sambil meminum teh.', kanjiInfo:"<li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>秋 (あき)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>a ki</span><br><span class='text-sm text-neutral-300'>Musim gugur.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>夕暮れ (ゆうぐれ)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>yu u gu re</span><br><span class='text-sm text-neutral-300'>Senja.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>紅葉 (もみじ)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>mo mi ji</span><br><span class='text-sm text-neutral-300'>Daun musim gugur.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>綺麗 (きれい)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>ki re i</span><br><span class='text-sm text-neutral-300'>Cantik.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>私達 (わたしたち)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>wa ta shi ta chi</span><br><span class='text-sm text-neutral-300'>Kami.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>お茶 (おちゃ)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>o cha</span><br><span class='text-sm text-neutral-300'>Teh.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>景色 (けしき)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>ke shi ki</span><br><span class='text-sm text-neutral-300'>Pemandangan.</span></li>", bunpouInfo:"$$\\text{[Aktivitas 1 (Bentuk Masu Coret)]} + \\text{ながら} + \\text{、} + \\text{[Aktivitas 2]}$$<br><em>Nagara</em> digunakan untuk aktivitas yang dilakukan bersamaan (sambil)." },
+                { hiragana:'にほんの ぶんかは とても おもしろいです。とくに、おまつりの ときに たべる たこやきが だいすきです。', romaji:'nihonnobunkawa totemo omoshiroidesu tokuni omatsurinotokini taberu takoyakiga daisukidesu', indo:'Budaya Jepang sangatlah menarik. Terutama, saya sangat suka takoyaki yang dimakan saat festival.', kanjiInfo:"<li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>日本 (にほん)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>ni ho n</span><br><span class='text-sm text-neutral-300'>Jepang.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>文化 (ぶんか)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>bu n ka</span><br><span class='text-sm text-neutral-300'>Budaya.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>面白い (おもしろい)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>o mo shi ro i</span><br><span class='text-sm text-neutral-300'>Menarik.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>特に (とくに)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>to ku ni</span><br><span class='text-sm text-neutral-300'>Terutama.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>お祭り (おまつり)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>o ma tsu ri</span><br><span class='text-sm text-neutral-300'>Festival.</span></li><li class='mb-3'><span class='text-sakura-400 font-bold text-lg'>大好き (だいすき)</span><br><span class='text-xs text-orange-300 font-mono tracking-widest'>da i su ki</span><br><span class='text-sm text-neutral-300'>Sangat suka.</span></li>", bunpouInfo:"$$\\text{[Kata Benda]} + \\text{の} + \\text{時に (Toki ni)}$$<br><em>Toki ni</em> berarti 'saat' atau 'ketika'." }
             ]
         };
 
         const contentDiv = document.getElementById('content-container');
         let aiUserLevel = document.body.getAttribute('data-ai-level') || 'pemula';
-        let aiCurrentStory = null, aiTimerInterval = null, aiTimeElapsed = 0, aiTimeLimit = 0, aiTimeRemaining = 0, aiTimerStarted = false, aiFinished = false, aiCurrentFeedback = '';
+        let aiCurrentStory = null, aiTimerInterval = null, aiTimeElapsed = 0, aiTimeLimit = 0, aiTimeRemaining = 0, aiTimerStarted = false, aiFinished = false, aiCurrentFeedback = '', aiLastUserInput = '', aiLastEvaluation = null;
+        let aiRecentByLevel = { pemula: [], mahir: [], pro: [] };
+
+        function pickAdaptiveReadingStory(level) {
+            const list = aiReadingData[level] || aiReadingData.pemula;
+            let pool = list.filter(x => !aiRecentByLevel[level].includes(x.hiragana));
+            if (pool.length < 1) { aiRecentByLevel[level] = []; pool = list; }
+            // Acak berbobot ringan: pemula cenderung pendek, pro cenderung panjang.
+            const weighted = [];
+            pool.forEach(story => {
+                const len = normalizeRomaji(story.romaji).length;
+                let w = 3;
+                if (level === 'pemula') w = len < 22 ? 5 : 3;
+                if (level === 'mahir') w = len >= 35 ? 5 : 3;
+                if (level === 'pro') w = len >= 70 ? 5 : 3;
+                for (let i=0;i<w;i++) weighted.push(story);
+            });
+            const chosen = shuffleArray(weighted)[0] || pool[0];
+            aiRecentByLevel[level].push(chosen.hiragana);
+            if (aiRecentByLevel[level].length > Math.max(2, Math.floor(list.length * 0.65))) aiRecentByLevel[level].shift();
+            return chosen;
+        }
 
         // TABS
         function switchTab(tab) {
@@ -426,378 +713,12 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
             if(tab==='ai') initAIReading();
             if(window.MathJax) MathJax.typesetPromise().catch(()=>{});
         }
-
-        window.checkQuickAnswer = (ans) => {
-            const ok = (ans === 'a');
-            const msg = document.getElementById('hir-msg');
-            if(ok){ msg.className='mt-3 text-sm font-bold text-emerald-300'; msg.innerHTML='✅ Benar, +10 poin dikirim ke Leaderboard!'; sendScore(1,0,10); }
-            else{ msg.className='mt-3 text-sm font-bold text-rose-300'; msg.innerHTML='❌ Salah, jawaban benar: a'; sendScore(0,1,-3); }
-        };
-
-        function buildGrid(data, cols=5) {
-            let h = `<div class="grid grid-cols-3 sm:grid-cols-${cols} gap-2 sm:gap-3 mb-8">`;
-            data.forEach(item => {
-                if(item.k==='') { h += '<div class="hidden sm:block"></div>'; return; }
-                h += `<div onclick="showStrokeModal('${item.k}','${item.r}','${item.type}',${item.s})"
-                    class="kana-cell glass-card rounded-2xl p-3 sm:p-4 text-center cursor-pointer group flex flex-col items-center justify-center border border-white/[.06] hover:border-sakura-400/30">
-                    <div class="kana-char text-3xl sm:text-4xl font-black text-sakura-300 mb-1 font-jp transition-all">${item.k}</div>
-                    <div class="text-[11px] sm:text-xs text-orange-400/70 font-mono tracking-widest">${item.r}</div>
-                </div>`;
-            });
-            h += '</div>';
-            return h;
-        }
-
-        function renderMateri() {
-            contentDiv.innerHTML = `
-                <div class="tab-content space-y-6">
-                    <section class="glass-card rounded-3xl p-5 sm:p-6 border border-blue-400/15 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-400/5 rounded-full blur-[60px] pointer-events:none"></div>
-                        <h2 class="text-lg sm:text-xl font-bold flex items-center gap-2 text-blue-300 relative">
-                            <div class="w-8 h-8 rounded-lg bg-blue-400/10 flex items-center justify-center"><i data-lucide="zap" class="w-4 h-4 text-blue-400"></i></div> Latihan Cepat
-                        </h2>
-                        <p class="text-sm text-neutral-400 mt-3 relative">Romaji dari <span class="text-2xl font-jp font-black text-sakura-300 mx-1">あ</span> adalah?</p>
-                        <div class="mt-4 flex flex-wrap gap-2 sm:gap-3 relative">
-                            <button onclick="checkQuickAnswer('a')" class="flex-1 min-w-[80px] sm:flex-none px-6 py-3 rounded-xl bg-white/[.04] hover:bg-white/[.08] border border-white/[.08] hover:border-sakura-400/40 transition-all font-mono font-bold text-lg text-white">a</button>
-                            <button onclick="checkQuickAnswer('i')" class="flex-1 min-w-[80px] sm:flex-none px-6 py-3 rounded-xl bg-white/[.04] hover:bg-white/[.08] border border-white/[.08] hover:border-sakura-400/40 transition-all font-mono font-bold text-lg text-white">i</button>
-                            <button onclick="checkQuickAnswer('u')" class="flex-1 min-w-[80px] sm:flex-none px-6 py-3 rounded-xl bg-white/[.04] hover:bg-white/[.08] border border-white/[.08] hover:border-sakura-400/40 transition-all font-mono font-bold text-lg text-white">u</button>
-                        </div>
-                        <p id="hir-msg" class="mt-3 text-sm font-medium h-6 relative"></p>
-                    </section>
-                    <div class="glass-card rounded-2xl p-4 border border-sakura-400/10 text-sm flex gap-3 items-center">
-                        <span class="text-xl shrink-0">💡</span>
-                        <p class="text-neutral-300"><strong class="text-sakura-300">Tips:</strong> Klik huruf Hiragana untuk melihat <strong class="text-white">animasi cara penulisan</strong>!</p>
-                    </div>
-                    <section class="glass-card rounded-3xl p-5 md:p-8 relative overflow-hidden">
-                        <div class="absolute -top-20 -left-20 w-40 h-40 bg-sakura-400/5 rounded-full blur-[80px] pointer-events:none"></div>
-                        <h2 class="text-lg font-bold mb-5 flex items-center gap-3 relative">
-                            <span class="w-8 h-8 rounded-lg bg-sakura-400/10 text-sakura-400 text-xs font-black flex items-center justify-center border border-sakura-400/15">01</span>
-                            <span class="text-white">Huruf Dasar</span>
-                            <span class="text-xs font-jp text-sakura-400/40">五十音</span>
-                        </h2>
-                        ${buildGrid(dataGojuuon,5)}
-                    </section>
-                    <section class="grid lg:grid-cols-2 gap-5">
-                        <div class="glass-card rounded-3xl p-5 md:p-6 relative overflow-hidden border border-orange-400/10">
-                            <div class="absolute -bottom-16 -right-16 w-32 h-32 bg-orange-400/5 rounded-full blur-[60px] pointer-events:none"></div>
-                            <h2 class="text-lg font-bold mb-5 flex items-center gap-3 relative">
-                                <span class="w-8 h-8 rounded-lg bg-orange-400/10 text-orange-400 text-xs font-black flex items-center justify-center border border-orange-400/15">02</span>
-                                <span class="text-white">Dakuon & Handakuon</span>
-                            </h2>
-                            ${buildGrid(dataDakuon,5)}
-                        </div>
-                        <div class="glass-card rounded-3xl p-5 md:p-6 relative overflow-hidden border border-purple-400/10">
-                            <div class="absolute -bottom-16 -right-16 w-32 h-32 bg-purple-400/5 rounded-full blur-[60px] pointer-events:none"></div>
-                            <h2 class="text-lg font-bold mb-5 flex items-center gap-3 relative">
-                                <span class="w-8 h-8 rounded-lg bg-purple-400/10 text-purple-400 text-xs font-black flex items-center justify-center border border-purple-400/15">03</span>
-                                <span class="text-white">Bunyi Campuran</span>
-                                <span class="text-xs text-purple-400/40">拗音</span>
-                            </h2>
-                            ${buildGrid(dataYoon,3)}
-                        </div>
-                    </section>
-                </div>`;
-            lucide.createIcons();
-        }
-
-        // ==========================================
-        // 5b. STROKE ORDER MODAL DENGAN ANIMASI
-        // ==========================================
-        let strokeAnimTimeout = [];
-
-        window.showStrokeModal = (k, r, type, strokes) => {
-            strokeAnimTimeout.forEach(t => clearTimeout(t)); strokeAnimTimeout = [];
-            document.getElementById('modal-romaji').innerText = r;
-            document.getElementById('modal-type').innerText = type;
-            document.getElementById('modal-strokes').innerText = strokes;
-
-            let dotsHtml = '';
-            for(let i=0; i<strokes; i++) dotsHtml += `<span class="stroke-dot w-3 h-3 rounded-full bg-white/10 border border-white/20 transition-all duration-300" data-i="${i}"></span>`;
-            
-            document.getElementById('stroke-dots').innerHTML = dotsHtml;
-            document.getElementById('stroke-label').innerText = 'Menulis...';
-            document.getElementById('stroke-label').className = 'text-center text-xs text-sakura-400 mb-4';
-
-            const charLen = k.length;
-            const svgFontSize = charLen <= 1 ? 130 : charLen === 2 ? 90 : 65;
-            const totalDur = strokes * 0.55; 
-
-            document.getElementById('modal-svg').innerHTML = `
-                <svg viewBox="0 0 200 200" class="w-full h-full" style="font-family:'Noto Sans JP','Yu Mincho',serif">
-                    <text x="100" y="${charLen<=1?145:135}" text-anchor="middle" font-size="${svgFontSize}"
-                        fill="transparent" stroke="#F472B6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                        stroke-dasharray="900" stroke-dashoffset="900" class="stroke-draw" style="animation-duration:${totalDur}s">${k}</text>
-                    <text x="100" y="${charLen<=1?145:135}" text-anchor="middle" font-size="${svgFontSize}"
-                        fill="white" fill-opacity="0" class="stroke-fill" style="animation-duration:${totalDur}s">${k}</text>
-                </svg>`;
-
-            const dotEls = document.querySelectorAll('.stroke-dot');
-            const perStroke = (totalDur * 1000) / strokes;
-            dotEls.forEach((dot, i) => { strokeAnimTimeout.push(setTimeout(() => dot.classList.add('stroke-dot-active'), (i + 1) * perStroke)); });
-
-            strokeAnimTimeout.push(setTimeout(() => {
-                document.getElementById('stroke-label').innerText = '✅ Selesai!';
-                document.getElementById('stroke-label').className = 'text-center text-xs text-emerald-400 mb-4 font-semibold';
-            }, totalDur * 1000 + 200));
-
-            document.getElementById('strokeModal').classList.remove('hidden');
-        };
-
-        window.hideStrokeModal = () => {
-            document.getElementById('strokeModal').classList.add('hidden');
-            document.getElementById('modal-svg').innerHTML = '';
-            strokeAnimTimeout.forEach(t => clearTimeout(t)); strokeAnimTimeout = [];
-        };
-
-        // ====================================================================
-        // 6. ML ALGORITHM 3: SPACED REPETITION SYSTEM (SRS) UNTUK FLASHCARD
-        // AI Mengingat huruf yang sering salah dan memunculkannya lebih sering
-        // ====================================================================
-        let fcWeights = {}, isCardFlipped = false, currentFCItem = null, fcSessionTotal = 0;
-
-        function initFCWeights() {
-            if(Object.keys(fcWeights).length === 0) {
-                allKana.forEach(k => fcWeights[k.r] = 1.0); // Base probability 100%
-            }
-        }
-
-        function getNextFlashcard() {
-            let totalWeight = 0;
-            for(let r in fcWeights) totalWeight += fcWeights[r];
-            let rand = Math.random() * totalWeight;
-            
-            // Roulette Wheel Selection (ML Weights)
-            for(let i=0; i<allKana.length; i++) {
-                rand -= fcWeights[allKana[i].r];
-                if(rand <= 0) {
-                    currentFCItem = allKana[i];
-                    fcSessionTotal++;
-                    return;
-                }
-            }
-            currentFCItem = allKana[0];
-        }
-
-        function updateFCWeight(romaji, isCorrect) {
-            if(isCorrect) {
-                fcWeights[romaji] = Math.max(0.1, fcWeights[romaji] * 0.4); // Probabilitas diturunkan drastis jika benar
-            } else {
-                fcWeights[romaji] = Math.min(10.0, fcWeights[romaji] * 3.0); // Probabilitas dinaikkan 3x lipat jika salah (AI Penalty)
-            }
-        }
-
-        function renderFlashcard() {
-            const item = currentFCItem;
-            const cl = item.k.length;
-            const fSize = cl <= 1 ? 'text-[8rem]' : cl === 2 ? 'text-[5.5rem]' : 'text-[4rem]';
-            const bSize = item.r.length <= 2 ? 'text-6xl' : item.r.length <= 3 ? 'text-5xl' : 'text-4xl';
-
-            contentDiv.innerHTML = `
-                <div class="flex flex-col items-center justify-center py-6 tab-content">
-                    <div class="mb-5 text-center">
-                        <span class="glass-card px-4 py-1.5 rounded-full text-sm font-semibold text-sakura-300 border border-sakura-400/15">AI Adaptive Spaced Repetition · Sesi ke-${fcSessionTotal}</span>
-                        <p class="text-neutral-500 mt-2 text-sm">Ketik Romaji lalu Kirim atau Enter</p>
-                    </div>
-
-                    <div class="perspective-1000 w-64 ${cl>=3?'h-72':'h-80'} mb-2 cursor-pointer ${isCardFlipped?'flipped':''}" onclick="toggleFlashcard()">
-                        <div class="flip-card-inner relative w-full h-full transform-style-3d shadow-2xl rounded-3xl">
-                            <div class="absolute w-full h-full backface-hidden bg-gradient-to-br from-dark-700 to-dark-800 border-2 border-white/[.08] rounded-3xl flex items-center justify-center p-4">
-                                <span class="${fSize} font-black text-sakura-300 font-jp drop-shadow-lg leading-none">${item.k}</span>
-                            </div>
-                            <div class="absolute w-full h-full backface-hidden rotate-y-180 bg-gradient-to-br from-orange-600/20 to-dark-800 border-2 border-orange-400/30 rounded-3xl flex flex-col items-center justify-center p-4">
-                                <span class="text-2xl mb-2">🎉</span>
-                                <span class="text-sm text-orange-200 mb-1 font-bold">Jawaban Anda</span>
-                                <span class="${bSize} font-black text-white font-mono uppercase">${item.r}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col items-center w-full max-w-xs mx-auto mb-6 mt-4">
-                        <div class="flex w-full gap-2 relative">
-                            <input type="text" id="fc-input"
-                                class="flex-1 w-full bg-dark-800 border-2 border-white/[.08] rounded-2xl px-4 py-3 text-center text-xl font-bold text-white focus:outline-none focus:border-sakura-400/60 transition placeholder-neutral-600"
-                                placeholder="Ketik romaji..." autocomplete="off" autocapitalize="none"
-                                ${isCardFlipped?'disabled':''}
-                                oninput="document.getElementById('fc-msg').innerHTML=''"
-                                onkeydown="if(event.key==='Enter'){event.preventDefault();submitFCAnswer();}">
-                            <button onclick="submitFCAnswer()" class="bg-gradient-to-r from-sakura-500 to-sakura-600 hover:from-sakura-400 hover:to-sakura-500 text-white p-3 rounded-2xl transition flex items-center justify-center shadow-lg shadow-sakura-500/20" ${isCardFlipped?'disabled':''}>
-                                <i data-lucide="send" class="w-5 h-5"></i>
-                            </button>
-                            ${isCardFlipped?'<div class="absolute right-[4.5rem] top-3.5 text-sakura-400 font-black text-xl">✓</div>':''}
-                        </div>
-                        <p id="fc-msg" class="h-6 mt-2 text-sm font-bold text-rose-400 text-center"></p>
-                    </div>
-                    <button onclick="skipFlashcard()" class="px-6 py-2.5 rounded-xl bg-white/[.05] hover:bg-white/[.1] transition font-semibold text-sm text-neutral-400 border border-white/[.08]">Lewati →</button>
-                </div>`;
-            lucide.createIcons();
-            if(!isCardFlipped && window.innerWidth>640) setTimeout(()=>{const e=document.getElementById('fc-input');if(e)e.focus();},100);
-        }
-
-        window.toggleFlashcard = () => { isCardFlipped = !isCardFlipped; renderFlashcard(); };
-        window.submitFCAnswer = () => {
-            if(isCardFlipped) return;
-            const inp = document.getElementById('fc-input'), msg = document.getElementById('fc-msg');
-            const val = inp.value.trim().toLowerCase(), item = currentFCItem;
-            
-            if(val===''){ msg.innerText='⚠️ Jawaban tidak boleh kosong.'; return; }
-            
-            const isCorrect = (val === item.r);
-            updateFCWeight(item.r, isCorrect); // Train AI SRS
-
-            if(isCorrect){
-                msg.className='h-6 mt-2 text-sm font-bold text-emerald-400 text-center';
-                msg.innerText='✅ Benar! AI mencatat perkembangan Anda.';
-                isCardFlipped=true;
-                sendScore(1,0,5);
-                renderFlashcard();
-                setTimeout(()=>{ if(isCardFlipped) advanceFlashcard(); }, 1200);
-            } else {
-                msg.className='h-6 mt-2 text-sm font-bold text-rose-400 text-center';
-                msg.innerText='❌ Salah, AI akan mengulang huruf ini nanti.';
-                sendScore(0,1,-2);
-                inp.value=''; inp.focus();
-            }
-        };
-        window.skipFlashcard = () => advanceFlashcard();
-        function advanceFlashcard() { isCardFlipped=false; getNextFlashcard(); renderFlashcard(); }
-
-        // ==========================================
-        // 7. AI MEMBACA MENGGUNAKAN FUZZY LOGIC & NLP
-        // ==========================================
-        function normalizeRomaji(s){ return s.toLowerCase().replace(/[^a-z]/g,'').replace(/wo/g,'o').replace(/si/g,'shi').replace(/ti/g,'chi').replace(/tu/g,'tsu').replace(/hu/g,'fu').replace(/zi/g,'ji'); }
-
-        function initAIReading(){
-            const a = aiReadingData[aiUserLevel]; 
-            aiCurrentStory = a[Math.floor(Math.random()*a.length)];
-            aiTimerStarted = false; 
-            aiFinished = false; 
-            aiTimeElapsed = 0;
-            aiCurrentFeedback = '';
-            
-            // Set dynamic limit based on length & level
-            aiTimeLimit = Math.floor(aiCurrentStory.romaji.replace(/[^a-z]/g,'').length * (aiUserLevel==='mahir'? 2.5 : 1.2));
-            aiTimeRemaining = aiTimeLimit;
-            
-            clearInterval(aiTimerInterval); 
-            renderAIReading();
-        }
-
-        window.startAITimerIfNeeded = () => {
-            if(!aiTimerStarted && !aiFinished){
-                aiTimerStarted=true;
-                aiTimerInterval = setInterval(() => {
-                    aiTimeElapsed++;
-                    if(aiUserLevel !== 'pemula') {
-                        aiTimeRemaining--;
-                        if(aiTimeRemaining <= 0) handleAITimeout();
-                    }
-                    updateTimerUI();
-                }, 1000);
-                updateTimerUI();
-            }
-        };
-
-        function updateTimerUI(){
-            const t = document.getElementById('ai-timer-display'); if(!t) return;
-            if(aiUserLevel==='pemula'){
-                t.innerText=`⏱️ Waktu: ${aiTimeElapsed} detik`;
-                t.className='text-lg font-mono font-bold text-orange-400';
-            } else {
-                t.innerText=`⏳ Tersisa: ${aiTimeRemaining} detik`;
-                t.className=aiTimeRemaining<=5 ? 'text-lg font-mono font-bold timer-urgent' : 'text-lg font-mono font-bold text-sakura-400';
-            }
-        }
-
-        function handleAITimeout(){
-            clearInterval(aiTimerInterval); aiFinished = { status: 'timeout' };
-            aiCurrentFeedback = 'Waktu Anda Habis. AI akan memberikan penyesuaian level jika perlu.';
-            sendScore(0,1,-5);
-            if(aiUserLevel==='pro') saveAILevel('mahir'); else if(aiUserLevel==='mahir') saveAILevel('pemula');
-            renderAIReading(); if(window.MathJax) MathJax.typesetPromise();
-        }
-
-        window.submitAIAnswer = () => {
-            if(aiFinished) return;
-            const inp = document.getElementById('ai-read-input'), msg = document.getElementById('ai-msg');
-            const val = inp.value;
-            
-            if(val.trim()===''){ msg.innerText='⚠️ Anda belum mengetik apapun.'; return; }
-            
-            clearInterval(aiTimerInterval);
-            let nu = normalizeRomaji(val), nt = normalizeRomaji(aiCurrentStory.romaji);
-            let timeTaken = (aiUserLevel === 'pemula') ? aiTimeElapsed : (aiTimeLimit - aiTimeRemaining);
-            if(timeTaken <= 0) timeTaken = 1;
-
-            // Trigger AI Decision Tree & NLP
-            let aiEvaluation = evaluateAIResponse(nu, nt, timeTaken, aiUserLevel);
-            
-            aiFinished = { status: aiEvaluation.status };
-            aiCurrentFeedback = aiEvaluation.feedback;
-            
-            sendScore(aiEvaluation.status === 'success' ? 1 : 0, aiEvaluation.status === 'fail' ? 1 : 0, aiEvaluation.points);
-            saveAILevel(aiEvaluation.nextLevel);
-            
-            renderAIReading(); if(window.MathJax) MathJax.typesetPromise();
-        };
-
-        function renderAIReading(){
-            let fb='', inp='';
-            if(!aiFinished){
-                let tl = aiUserLevel==='pemula' ? '⏱️ Ketik huruf pertama untuk memulai waktu...' : `⏳ Waktu Target: ${aiTimeRemaining}s`;
-                inp=`
-                    <div class="mt-6 flex flex-col items-center w-full">
-                        <div id="ai-timer-display" class="text-lg font-mono font-bold text-neutral-500 mb-3">${tl}</div>
-                        <div class="flex flex-col sm:flex-row w-full max-w-2xl gap-3">
-                            <textarea id="ai-read-input" rows="2" class="flex-1 w-full bg-dark-800 border-2 border-white/[.08] rounded-2xl p-4 text-xl sm:text-2xl text-white focus:outline-none focus:border-orange-400/60 transition placeholder-neutral-600 font-bold resize-none" placeholder="Ketik romaji di sini..." autocomplete="off" autocapitalize="none" spellcheck="false" oninput="startAITimerIfNeeded();document.getElementById('ai-msg').innerHTML=''" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitAIAnswer();}"></textarea>
-                            <button onclick="submitAIAnswer()" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white px-6 py-4 rounded-2xl transition flex items-center justify-center shadow-lg shadow-orange-500/20 sm:w-auto w-full font-bold gap-2"><i data-lucide="send" class="w-5 h-5"></i> Kirim</button>
-                        </div>
-                        <p id="ai-msg" class="h-6 mt-2 text-sm font-bold text-rose-400"></p>
-                        <p class="text-xs text-neutral-600 mt-2 text-center">*Abaikan spasi/tanda baca. Tekan <strong class="text-neutral-400">Enter</strong> untuk mengirim.</p>
-                    </div>`;
-            }else{
-                let iconClass = aiFinished.status==='success' ? 'text-emerald-400' : (aiFinished.status==='partial' ? 'text-amber-400' : 'text-rose-400');
-                let sh = `<h3 class="text-2xl sm:text-3xl font-black ${iconClass} mb-2 flex items-center gap-2 justify-center"><i data-lucide="brain-circuit" class="w-8 h-8"></i> Hasil Evaluasi AI</h3>`;
-                fb=`
-                    <div class="mt-8 glass-card rounded-3xl p-6 sm:p-8 shadow-xl tab-content w-full border border-white/[.08]">
-                        ${sh}
-                        <p class="text-center text-white text-lg font-bold mb-1">${aiCurrentFeedback}</p>
-                        <p class="text-center text-neutral-400 text-sm mb-8">Kalimat asli: <strong class="text-orange-300">"${aiCurrentStory.indo}"</strong></p>
-                        <div class="grid lg:grid-cols-2 gap-6">
-                            <div>
-                                <h4 class="text-base font-bold text-white mb-3 pb-2 border-b border-white/[.06] flex items-center gap-2"><i data-lucide="book-a" class="w-4 h-4 text-sakura-400"></i> Bedah 漢字</h4>
-                                <ul class="list-none space-y-3 bg-dark-900 p-4 rounded-2xl border border-white/[.05] h-full">${aiCurrentStory.kanjiInfo}</ul>
-                            </div>
-                            <div>
-                                <h4 class="text-base font-bold text-white mb-3 pb-2 border-b border-white/[.06] flex items-center gap-2"><i data-lucide="graduation-cap" class="w-4 h-4 text-orange-400"></i> Analisis 文法</h4>
-                                <div class="text-base text-neutral-300 leading-relaxed bg-dark-900 p-4 rounded-2xl border border-white/[.05] h-full flex flex-col justify-center text-center overflow-x-auto">${aiCurrentStory.bunpouInfo}</div>
-                            </div>
-                        </div>
-                        <div class="mt-8 flex justify-center">
-                            <button onclick="initAIReading()" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-sakura-500 hover:from-orange-400 hover:to-sakura-400 transition font-black tracking-wide text-white shadow-lg shadow-orange-500/20 flex justify-center items-center gap-2">Tantangan AI Selanjutnya <i data-lucide="arrow-right-circle" class="w-5 h-5"></i></button>
-                        </div>
-                    </div>`;
-            }
-            let bc=aiUserLevel==='pemula'?'bg-sakura-400/10 border-sakura-400/20 text-sakura-300':aiUserLevel==='mahir'?'bg-blue-400/10 border-blue-400/20 text-blue-300':'bg-rose-400/10 border-rose-400/20 text-rose-300';
-            contentDiv.innerHTML=`
-                <div class="max-w-4xl mx-auto py-4 tab-content px-2 sm:px-0 flex flex-col items-center w-full">
-                    <div class="mb-6 flex justify-between items-center glass-card p-4 rounded-2xl w-full border border-white/[.06]">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-orange-400/10 flex items-center justify-center border border-orange-400/15"><i data-lucide="brain-circuit" class="w-5 h-5 text-orange-400"></i></div>
-                            <div><h2 class="text-white font-bold text-sm sm:text-base">AI Membaca Tingkat Cerdas</h2><p class="text-xs text-neutral-500">Mendeteksi kecepatan, typo, & keakuratan (NLP).</p></div>
-                        </div>
-                        <span class="inline-flex items-center gap-1.5 border font-bold px-4 py-2 rounded-full text-xs sm:text-sm uppercase tracking-widest ${bc}">${aiUserLevel}</span>
-                    </div>
-                    <div class="glass-card rounded-3xl p-6 sm:p-10 mb-2 relative overflow-hidden text-center w-full border border-white/[.06]">
-                        <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-sakura-400/20 to-transparent"></div>
-                        <h2 class="text-neutral-500 text-xs sm:text-sm font-bold tracking-widest uppercase mb-6 flex items-center justify-center gap-2"><i data-lucide="glasses" class="w-4 h-4"></i> Baca Huruf di Bawah Ini</h2>
-                        <div class="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-relaxed sm:leading-loose font-jp break-keep">${aiCurrentStory.hiragana}</div>
-                    </div>
-                    ${inp}${fb}
-                </div>`;
-            lucide.createIcons();
-            if(!aiFinished&&window.innerWidth>640)setTimeout(()=>{const e=document.getElementById('ai-read-input');if(e)e.focus();},100);
-        }
-
+    </script>
+    <script src="hiragana/materi.js"></script>
+    <script src="hiragana/flashcard.js"></script>
+    <script src="hiragana/ai-membaca.js"></script>
+    <script>
+        setTimeout(()=>{ const sel=document.querySelector('select[onchange*="setUILanguage"]'); if(sel) sel.value=currentUILang; },0);
         switchTab('materi');
     </script>
 </body>
