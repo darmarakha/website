@@ -402,6 +402,8 @@ header("Expires: 0");
             <div class="text-center mb-10 sm:mb-16 reveal">
                 <p class="text-accent-500 font-semibold text-xs sm:text-sm tracking-widest uppercase mb-3 sm:mb-4 i18n-fade" data-i18n="proj.label">Karya Saya</p>
                 <h2 class="font-serif text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight text-navy-900 i18n-fade" data-i18n="proj.title">Proyek</h2>
+                <!-- TAMBAHAN SUBTITLE UNTUK PROYEK AGAR SAMA SEPERTI SERTIFIKAT -->
+                <p class="text-navy-600 mt-3 sm:mt-4 max-w-lg mx-auto text-sm sm:text-base px-2 i18n-fade" data-i18n="proj.subtitle">Klik pada setiap kartu untuk melihat detail proyek secara lengkap.</p>
             </div>
             <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8" id="proj-grid"></div>
         </div>
@@ -519,6 +521,13 @@ header("Expires: 0");
                 <div class="text-sm sm:text-base text-navy-600 leading-relaxed space-y-3" id="project-modal-desc">
                     Deskripsi proyek akan tampil di sini.
                 </div>
+                <!-- TAMBAHAN TOMBOL LIHAT LINK PROYEK -->
+                <div class="mt-6 pt-5 border-t border-navy-100 hidden" id="project-link-container">
+                    <a href="#" target="_blank" id="project-modal-link" class="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-navy-900 text-white font-semibold rounded-xl hover:bg-navy-800 transition-colors text-sm">
+                        <i data-lucide="external-link" class="w-4 h-4"></i>
+                        <span>Kunjungi Proyek</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -620,8 +629,8 @@ header("Expires: 0");
             if(isMobileMenuOpen) handleMenuClick();
         });
 
-        // SCRIPT LOGIKA BUKA LIHAT PROYEK (Bisa dipanggil dari app.js Anda)
-        function openProjectModal(title, image, desc, tags) {
+        // SCRIPT LOGIKA BUKA LIHAT PROYEK (DIPERBARUI DENGAN LINK PROYEK)
+        function openProjectModal(title, image, desc, tags, linkUrl = "") {
             document.getElementById('project-modal-title').textContent = title;
             document.getElementById('project-modal-img').src = image;
             document.getElementById('project-modal-desc').innerHTML = desc;
@@ -633,6 +642,16 @@ header("Expires: 0");
                 tagsArray.forEach(tag => {
                     tagsContainer.innerHTML += `<span class="px-2.5 py-1 bg-accent-50 text-accent-600 text-xs font-semibold rounded-md border border-accent-100">${tag.trim()}</span>`;
                 });
+            }
+
+            // Menampilkan tombol link jika URL proyek tersedia
+            const linkContainer = document.getElementById('project-link-container');
+            const linkBtn = document.getElementById('project-modal-link');
+            if (linkUrl && linkUrl.trim() !== "" && linkUrl !== "#") {
+                linkContainer.classList.remove('hidden');
+                linkBtn.href = linkUrl;
+            } else {
+                linkContainer.classList.add('hidden');
             }
 
             const modal = document.getElementById('project-modal');
