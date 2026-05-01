@@ -7,8 +7,8 @@ const T = {
     'nav.skills':       { id:'Keahlian',        en:'Skills' },
     'nav.certificates': { id:'Sertifikat',      en:'Certificates' },
     'nav.projects':     { id:'Proyek',          en:'Projects' },
-    'nav.business':       { id:'Bisnis',        en:'Business' },
-    'nav.learn':          { id:'Belajar',       en:'Learn' },
+    'nav.business':     { id:'Bisnis',          en:'Business' },
+    'nav.learn':        { id:'Belajar',         en:'Learn' },
     'nav.login':        { id:'Masuk / Daftar',  en:'Login / Sign Up' },
     'nav.contact':      { id:'Hubungi',         en:'Contact' },
     'nav.contactFull':  { id:'Hubungi Saya',    en:'Contact Me' },
@@ -201,25 +201,30 @@ const projData = [
         imgSrc:'/edit/uploads/1777174476_AnalisisAktivitasRadioisotopremovedpage0001.jpg',
         fullSrc:'/edit/uploads/1777174476_AnalisisAktivitasRadioisotopremovedpage0001.jpg',
         tags:['COSINE-100','Dark Matter','Science'],
-        titleKey:'proj.t1', descKey:'proj.d1', span:''
+        titleKey:'proj.t1', descKey:'proj.d1', span:'',
+        linkUrl: '' // Kosongkan jika tidak ada URL
     },
     {
-        imgSrc:'https://picsum.photos/seed/project-ml-model/600/375.jpg',
-        tags:['Scikit-Learn','Pandas'],
-        titleKey:'proj.t2', descKey:'proj.d2', span:''
+        imgSrc:'/edit/uploads/1777565632_Screenshot20260430230724.png',
+        fullSrc:'/edit/uploads/1777565632_Screenshot20260430230724.png',
+        tags:['Machine Learning','Japanese'],
+        titleKey:'proj.t2', descKey:'proj.d2', span:'',
+        linkUrl: 'https://gemuyokai.my.id/' // Contoh tautan yang ditambahkan
     },
     {
         imgSrc:'https://picsum.photos/seed/project-esp32-iot/600/375.jpg',
+        fullSrc:'https://picsum.photos/seed/project-esp32-iot/600/375.jpg', // Menambahkan fullSrc agar aman
         tags:['ESP32-CAM','IoT'],
-        titleKey:'proj.t3', descKey:'proj.d3', span:'sm:col-span-2 md:col-span-1'
+        titleKey:'proj.t3', descKey:'proj.d3', span:'sm:col-span-2 md:col-span-1',
+        linkUrl: '' // Kosongkan jika tidak ada URL
     },
 ];
 
 const projI18n = {
-    'proj.t1': { id:'Analisis Aktivitas Radioisotop Kalium-40 pada SET 1 (48 hari) Menggunakan Teknik Multi-Hit dalam Eksperimen COSINE-100',            en:'Analysis of Potassium-40 Radioisotope Activity at SET 1 (48 days) Using the Multi-Hit Technique in the COSINE-100 Experiment' },
+    'proj.t1': { id:'Analisis Aktivitas Radioisotop Kalium-40 pada SET 1 (48 hari) Menggunakan Teknik Multi-Hit dalam Eksperimen COSINE-100',             en:'Analysis of Potassium-40 Radioisotope Activity at SET 1 (48 days) Using the Multi-Hit Technique in the COSINE-100 Experiment' },
     'proj.d1': { id:'Eksperimen COSINE-100 merupakan upaya untuk memverifikasi sinyal modulasi tahunan yang dilaporkan oleh DAMA/LIBRA dengan menggunakan detektor kristal NaI(Tl) dalam kondisi latar belakang (background) radiasi yang rendah.', en:'The COSINE-100 experiment is an attempt to verify the annual modulation signal reported by DAMA/LIBRA using a NaI(Tl) crystal detector under low background radiation conditions.' },
-    'proj.t2': { id:'Pemodelan Machine Learning',    en:'Machine Learning Modeling' },
-    'proj.d2': { id:'Pemodelan prediktif menggunakan berbagai algoritma ML untuk analisis data riset.', en:'Predictive modeling using various ML algorithms for research data analysis.' },
+    'proj.t2': { id:'Pembuatan Website Belajar Bahasa Jepang',    en:'Creating a Japanese Language Learning Website' },
+    'proj.d2': { id:'Website untuk belajar bahasa jepang dari N5 - N1 secara akurat menggunakan AI dan Machine Learning.', en:'Website to learn Japanese from N5 - N1 accurately using AI and Machine Learning.' },
     'proj.t3': { id:'Eksplorasi IoT ESP32-CAM',     en:'IoT ESP32-CAM Exploration' },
     'proj.d3': { id:'Eksperimen ESP32-CAM untuk sistem pemantauan berbasis Internet of Things.', en:'ESP32-CAM experiments for IoT-based monitoring systems.' },
 };
