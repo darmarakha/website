@@ -1,0 +1,16 @@
+[
+  {
+    "id": "codex-maintenance-2026-05-08-dnd-n5",
+    "source": "Codex maintenance",
+    "topic": "DnD 2014 upgrade dan N5 upload ringan",
+    "text": "DnD 2014 diperbarui dengan d100, layout responsive, lobby guard untuk player, GM starting options, SRD 5.1 rule baseline, schema MySQL starting package, dan Rule AI note. N5 memakai build ringan tanpa node_modules/dist untuk upload cPanel dan credit Google AI Studio sudah dibersihkan.",
+    "created_at": "2026-05-08T16:00:00+07:00"
+  },
+  {
+    "id": "codex-maintenance-2026-05-08-dnd-map-dialogue-percentile",
+    "source": "Codex maintenance",
+    "topic": "DnD percentile dice, cinematic maps, online dialogue",
+    "text": "DnD 2014 diperbaiki lagi: d100 sekarang memakai percentile dice puluhan 00/10/20...90 + satuan 0-9, map generator punya landmark fantasy detail seperti pohon, batu cover, shrine, penginapan, pandai besi, pasar, kuil, stable, trap, chest, dan altar, serta campaign punya mode online/offline. Online tanpa voice wajib mencatat dialog GM/NPC dan player agar Rule AI bisa memantau alur.",
+    "created_at": "2026-05-08T18:35:00+07:00"
+  }
+]

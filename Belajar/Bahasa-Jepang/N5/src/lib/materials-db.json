@@ -1,0 +1,334 @@
+[
+  {
+    "id": "n5-ch01",
+    "title": "Perkenalan di Kelas",
+    "scenario": "Hari pertama di kelas bahasa Jepang. Hayato dan Sakura baru saja bertemu. Mereka saling memperkenalkan diri dengan sopan.",
+    "emoji": "🏫",
+    "difficulty": "easy",
+    "topic": "Jikoshoukai (自己紹介)",
+    "context": "Hayato dan Sakura adalah mahasiswa baru di kelas bahasa Jepang. Hari ini adalah pertama kalinya mereka bertemu. Mereka sedang saling memperkenalkan diri.",
+    "speakers": [
+      { "id": "A", "name": "はやと", "nameRo": "Hayato", "gender": "pria", "role": "Mahasiswa baru (laki-laki)", "emoji": "👨", "colorClass": "blue" },
+      { "id": "B", "name": "さくら", "nameRo": "Sakura", "gender": "wanita", "role": "Mahasiswa baru (perempuan)", "emoji": "👩", "colorClass": "rose" }
+    ],
+    "dialogue": [
+      { "speaker": "A", "text": "はじめまして。私[わたし]は たなか はやとです。", "ro": "Hajimemashite. Watashi wa Tanaka Hayato desu.", "id": "Senang berkenalan. Saya Tanaka Hayato." },
+      { "speaker": "B", "text": "はじめまして。私[わたし]は さくら です。", "ro": "Hajimemashite. Watashi wa Sakura desu.", "id": "Senang berkenalan. Saya Sakura." },
+      { "speaker": "A", "text": "さくらさんは がくせいですか。", "ro": "Sakura-san wa gakusei desu ka.", "id": "Sakura-san, apakah kamu mahasiswa?" },
+      { "speaker": "B", "text": "はい、がくせいです。たなかさんは？", "ro": "Hai, gakusei desu. Tanaka-san wa?", "id": "Ya, saya mahasiswa. Bagaimana dengan Tanaka-san?" },
+      { "speaker": "A", "text": "私[わたし]も がくせいです。にほんご[ご]の がくせいです。", "ro": "Watashi mo gakusei desu. Nihongo no gakusei desu.", "id": "Saya juga mahasiswa. Mahasiswa bahasa Jepang." },
+      { "speaker": "B", "text": "そうですか。どこの がっこうですか。", "ro": "Sou desu ka. Doko no gakkou desu ka.", "id": "Begitu ya. Dari universitas mana?" },
+      { "speaker": "A", "text": "とうきょうだいがくです。", "ro": "Toukyou daigaku desu.", "id": "Universitas Tokyo." },
+      { "speaker": "B", "text": "あ、そうですか。よろしく おねがいします。", "ro": "A, sou desu ka. Yoroshiku onegaishimasu.", "id": "Oh begitu ya. Senang berkenalan denganmu!" }
+    ],
+    "quiz": {
+      "question": "Tanaka-san adalah mahasiswa dari universitas mana?",
+      "options": [ "Kyoto Daigaku", "Toukyou Daigaku", "Osaka Daigaku", "Hokkaidou Daigaku" ],
+      "answer": 1,
+      "explanation": "Hayato (Tanaka) berkata 「とうきょうだいがくです」 yang berarti \"Universitas Tokyo\"."
+    }
+  },
+  {
+    "id": "n5-ch02",
+    "title": "Belanja di Konbini",
+    "scenario": "Sore hari di minimarket (konbini). Riku ingin membeli makanan dan minuman.",
+    "emoji": "🏪",
+    "difficulty": "easy",
+    "topic": "Kaimono (買い物)",
+    "context": "Riku pergi ke minimarket (konbini) untuk membeli onigiri dan teh. Pegawai toko menyambutnya dan membantu transaksi.",
+    "speakers": [
+      { "id": "A", "name": "てんいん", "nameRo": "Ten'in", "gender": "wanita", "role": "Pegawai toko", "emoji": "👩‍💼", "colorClass": "rose" },
+      { "id": "B", "name": "りく", "nameRo": "Riku", "gender": "pria", "role": "Pelanggan", "emoji": "🧑", "colorClass": "blue" }
+    ],
+    "dialogue": [
+      { "speaker": "A", "text": "いらっしゃいませ。", "ro": "Irasshaimase.", "id": "Selamat datang! (Sapaan toko)" },
+      { "speaker": "B", "text": "すみません。おにぎりは いくらですか。", "ro": "Sumimasen. Onigiri wa ikura desu ka.", "id": "Permisi. Berapa harga onigiri?" },
+      { "speaker": "A", "text": "おにぎりは ひゃくえんです。", "ro": "Onigiri wa hyaku en desu.", "id": "Onigiri harganya 100 yen." },
+      { "speaker": "B", "text": "じゃあ、おにぎりを みっつ ください。", "ro": "Jaa, onigiri o mittsu kudasai.", "id": "Kalau begitu, saya mau tiga onigiri." },
+      { "speaker": "A", "text": "はい。ほかに なにか。", "ro": "Hai. Hoka ni nanika.", "id": "Baik. Ada yang lain?" },
+      { "speaker": "B", "text": "おちゃを ひとつ ください。", "ro": "Ocha o hitotsu kudasai.", "id": "Saya mau satu teh." },
+      { "speaker": "A", "text": "おちゃは ひゃくごじゅうえんです。ぜんぶで さんびゃくごじゅうえんです。", "ro": "Ocha wa hyaku gojuu en desu. Zenbu de sanbyaku gojuu en desu.", "id": "Tehnya 150 yen. Semuanya jadi 350 yen." },
+      { "speaker": "B", "text": "はい。さんびゃくごじゅうえんで おねがいします。", "ro": "Hai. Sanbyaku gojuu en de onegaishimasu.", "id": "Baik, bayar 350 yen ya." }
+    ],
+    "quiz": {
+      "question": "Berapa total harga belanjaan Riku?",
+      "options": [ "200 yen", "250 yen", "350 yen", "450 yen" ],
+      "answer": 2,
+      "explanation": "Onigiri 100 yen x 3 = 300 yen, ditambah teh 150 yen. Totalnya 350 yen (さんびゃくごじゅうえん)."
+    }
+  },
+  {
+    "id": "n5-ch03",
+    "title": "Menanyakan Arah",
+    "scenario": "Yuki tersesat di jalan. Ia bertanya arah kepada seseorang yang kebetulan lewat.",
+    "emoji": "🗺️",
+    "difficulty": "easy",
+    "topic": "Michi o kiku (道を聞く)",
+    "context": "Yuki sedang mencari stasiun tetapi tersesat. Ia bertanya arah kepada orang yang sedang berjalan di jalan.",
+    "speakers": [
+      { "id": "A", "name": "ゆき", "nameRo": "Yuki", "gender": "pria", "role": "Orang yang bertanya arah", "emoji": "🧑", "colorClass": "blue" },
+      { "id": "B", "name": "せんせい", "nameRo": "Sensei", "gender": "wanita", "role": "Orang yang ditanya", "emoji": "👩", "colorClass": "rose" }
+    ],
+    "dialogue": [
+      { "speaker": "A", "text": "すみません。えきは どこですか。", "ro": "Sumimasen. Eki wa doko desu ka.", "id": "Permisi. Di mana stasiunnya?" },
+      { "speaker": "B", "text": "えきですね。まっすぐ いって、みぎに まがってください。", "ro": "Eki desu ne. Massugu itte, migi ni magatte kudasai.", "id": "Stasiun ya. Jalan lurus terus, lalu belok kanan." },
+      { "speaker": "A", "text": "まっすぐ ですか。", "ro": "Massugu desu ka.", "id": "Lurus terus?" },
+      { "speaker": "B", "text": "はい。にふんくらい ですよ。", "ro": "Hai. Nifun kurai desu yo.", "id": "Ya. Kira-kira 2 menit jalan kaki." },
+      { "speaker": "A", "text": "わかりました。ありがとう ございます。", "ro": "Wakarimashita. Arigatou gozaimasu.", "id": "Mengerti. Terima kasih banyak." },
+      { "speaker": "B", "text": "どういたしまして。", "ro": "Dou itashimashite.", "id": "Sama-sama." }
+    ],
+    "quiz": {
+      "question": "Setelah jalan lurus, ke arah mana Yuki harus belok?",
+      "options": [ "Hidari (kiri)", "Migi (kanan)", "Mae (depan)", "Ushiro (belakang)" ],
+      "answer": 1,
+      "explanation": "Sensei berkata 「みぎに まがってください」 yang berarti \"tolong belok kanan\" (migi = kanan)."
+    }
+  },
+  {
+    "id": "n5-ch04",
+    "title": "Di Restoran",
+    "scenario": "Makan siang di restoran Jepang. Mei dan Haru sedang memesan makanan.",
+    "emoji": "🍽️",
+    "difficulty": "easy",
+    "topic": "Resutoran (レストラン)",
+    "context": "Mei dan Haru pergi makan siang ke restoran Jepang. Pelayan restoran menyambut mereka dan membantu memesan.",
+    "speakers": [
+      { "id": "A", "name": "うえさん", "nameRo": "Uesan", "gender": "wanita", "role": "Pelayan restoran", "emoji": "👩‍🍳", "colorClass": "rose" },
+      { "id": "B", "name": "めい", "nameRo": "Mei", "gender": "pria", "role": "Pelanggan", "emoji": "🧑", "colorClass": "blue" }
+    ],
+    "dialogue": [
+      { "speaker": "A", "text": "いらっしゃいませ。なんめいさまですか。", "ro": "Irasshaimase. Nanmeisama desu ka.", "id": "Selamat datang. Berapa orang?" },
+      { "speaker": "B", "text": "ふたりです。", "ro": "Futari desu.", "id": "Dua orang." },
+      { "speaker": "A", "text": "こちらへ どうぞ。", "ro": "Kochira e douzo.", "id": "Ke sini, silakan." },
+      { "speaker": "A", "text": "ごちゅうもんは おきまりですか。", "ro": "Gochuumon wa okimari desu ka.", "id": "Sudah siap memesan?" },
+      { "speaker": "B", "text": "ていしょくを ふたつ おねがいします。", "ro": "Teishoku o futatsu onegaishimasu.", "id": "Kami mau dua set menu, tolong." },
+      { "speaker": "A", "text": "かしこまりました。おのみものは？", "ro": "Kashikomarimashita. O-nomimono wa?", "id": "Baik. Minumannya?" },
+      { "speaker": "B", "text": "みずを おねがいします。", "ro": "Mizu o onegaishimasu.", "id": "Air mineral, tolong." }
+    ],
+    "quiz": {
+      "question": "Berapa orang yang makan di restoran tersebut?",
+      "options": [ "Hitori (satu orang)", "Futari (dua orang)", "Sannin (tiga orang)", "Yonin (empat orang)" ],
+      "answer": 1,
+      "explanation": "Mei berkata 「ふたりです」 yang berarti \"dua orang\" (futari = dua orang)."
+    }
+  },
+  {
+    "id": "n5-ch05",
+    "title": "Bicara tentang Hobi",
+    "scenario": "Di taman kampus. Kenji dan Aoi sedang mengobrol tentang hobi mereka di waktu luang.",
+    "emoji": "⚽",
+    "difficulty": "easy",
+    "topic": "Shumi (趣味)",
+    "context": "Kenji bertemu Aoi di taman kampus. Mereka mulai mengobrol tentang hobi masing-masing.",
+    "speakers": [
+      { "id": "A", "name": "けんじ", "nameRo": "Kenji", "gender": "pria", "role": "Mahasiswa yang suka olahraga", "emoji": "👦", "colorClass": "blue" },
+      { "id": "B", "name": "あおい", "nameRo": "Aoi", "gender": "wanita", "role": "Mahasiswa yang suka musik", "emoji": "👧", "colorClass": "rose" }
+    ],
+    "dialogue": [
+      { "speaker": "A", "text": "Aoiさん、しゅみは 何[なん]ですか。", "ro": "Aoi-san, shumi wa nan desu ka.", "id": "Aoi-san, hobi kamu apa?" },
+      { "speaker": "B", "text": "私[わたし]の しゅみは おんがくです。ケータイで おんがくを よく 聞[き]きます。", "ro": "Watashi no shumi wa ongaku desu. Keetai de ongaku o yoku kikimasu.", "id": "Hobi saya musik. Saya sering dengar musik lewat HP." },
+      { "speaker": "A", "text": "そうですか。どんな おんがくが 好[す]きですか。", "ro": "Sou desu ka. Donna ongaku ga suki desu ka.", "id": "Begitu ya. Musik jenis apa yang kamu suka?" },
+      { "speaker": "B", "text": "J-POPが 好[す]きです. Kenjiさんは？", "ro": "J-POP ga suki desu. Kenji-san wa?", "id": "Saya suka J-POP. Bagaimana dengan Kenji-san?" },
+      { "speaker": "A", "text": "私[わたし]は スポーツ ga 好[す]きです。とくに サッカーです。", "ro": "Watashi wa supootsu ga suki desu. Tokuni sakkaa desu.", "id": "Saya suka olahraga. Terutama sepak bola." },
+      { "speaker": "B", "text": "へえ、すごいですね。いつも サッカーを しますか。", "ro": "Hee, sugoi desu ne. Itsumo sakkaa o shimasu ka.", "id": "Heh, keren ya. Apakah kamu selalu main bola?" },
+      { "speaker": "A", "text": "ええ、どようびに よく します。", "ro": "Ee, doyoubi ni yoku shimasu.", "id": "Ya, saya sering main di hari Sabtu." }
+    ],
+    "quiz": {
+      "question": "Hobi Aoi adalah apa?",
+      "options": [ "Sakkaa (Sepak bola)", "Eiga (Film)", "Ongaku (Musik)", "Ryouri (Memasak)" ],
+      "answer": 2,
+      "explanation": "Aoi berkata 「私のしゅみはおんがくです」 yang berarti \"Hobi saya musik\" (ongaku = musik)."
+    }
+  },
+  {
+    "id": "n5-ch06",
+    "title": "Ngobrol tentang Cuaca",
+    "scenario": "Pagi hari di halte bus. Sato dan Kitamura sedang menunggu bus sambil ngobrol.",
+    "emoji": "☀️",
+    "difficulty": "easy",
+    "topic": "Tenki (天気)",
+    "context": "Sato dan Kitamura sedang menunggu bus di halte pada pagi hari. Mereka mengobrol tentang cuaca hari ini.",
+    "speakers": [
+      { "id": "A", "name": "さとう", "nameRo": "Satou", "gender": "wanita", "role": "Penumpang halte bus", "emoji": "👩", "colorClass": "rose" },
+      { "id": "B", "name": "きたむら", "nameRo": "Kitamura", "gender": "pria", "role": "Penumpang halte bus", "emoji": "👨", "colorClass": "blue" }
+    ],
+    "dialogue": [
+      { "speaker": "A", "text": "きょうは いい てんきですね。", "ro": "Kyou wa ii tenki desu ne.", "id": "Hari ini cuacanya bagus ya." },
+      { "speaker": "B", "text": "はい、とても あたたかいです。", "ro": "Hai, totemo atatakai desu.", "id": "Ya, sangat hangat." },
+      { "speaker": "A", "text": "あしたも いい てんきですか。", "ro": "Ashita mo ii tenki desu ka.", "id": "Besok cuacanya bagus juga?" },
+      { "speaker": "B", "text": "さあ、わかりません。でも、きのうは あめでしたよ。", "ro": "Saa, wakarimasen. Demo, kinou wa ame deshita yo.", "id": "Hmm, tidak tahu. Tapi kemarin hujan loh." },
+      { "speaker": "A", "text": "そうですか. じゃあ、かさを もちましょう。", "ro": "Sou desu ka. Jaa, kasa o mochimashou.", "id": "Begitu ya. Kalau begitu, bawa payung ya." },
+      { "speaker": "B", "text": "いい かんがえですね。", "ro": "Ii kangae desu ne.", "id": "Ide bagus." }
+    ],
+    "quiz": {
+      "question": "Bagaimana cuaca kemarin menurut Kitamura?",
+      "options": [ "Hare (Cerah)", "Ame (Hujan)", "Yuki (Salju)", "Kumori (Berawan)" ],
+      "answer": 1,
+      "explanation": "Kitamura berkata 「きのうはあめでしたよ」 yang berarti \"kemarin hujan\" (ame = hujan)."
+    }
+  },
+  {
+    "id": "n5-ch07",
+    "title": "Janji Bertemu",
+    "scenario": "Telepon sore hari. Takumi ingin mengajak Hana pergi ke bioskop minggu depan.",
+    "emoji": "📞",
+    "difficulty": "medium",
+    "topic": "Yakusoku (約束)",
+    "context": "Takumi menelepon Hana untuk mengajaknya menonton film baru di bioskop pada hari Minggu depan.",
+    "speakers": [
+      { "id": "A", "name": "たくみ", "nameRo": "Takumi", "gender": "pria", "role": "Penelpon", "emoji": "👨", "colorClass": "blue" },
+      { "id": "B", "name": "はな", "nameRo": "Hana", "gender": "wanita", "role": "Penerima telepon", "emoji": "👩", "colorClass": "rose" }
+    ],
+    "dialogue": [
+      { "speaker": "A", "text": "もしもし、はなさん。たくみです。", "ro": "Moshimoshi, Hana-san. Takumi desu.", "id": "Halo Hana-san. Ini Takumi." },
+      { "speaker": "B", "text": "あ、たくみさん。こんばんは。どうしましたか。", "ro": "A, Takumi-san. Konbanwa. Dou shimashita ka.", "id": "Ah, Takumi-san. Selamat malam. Ada apa?" },
+      { "speaker": "A", "text": "らいしゅうの にちようび、いっしょに えいがを みに いきませんか。", "ro": "Raishuu no nichiyoubi, issho ni eiga o mini ikimasen ka.", "id": "Minggu depan, maukah pergi nonton film bersama?" },
+      { "speaker": "B", "text": "いいですね。なんの えいがですか。", "ro": "Ii desu ne. Nan no eiga desu ka.", "id": "Boleh juga. Film apa?" },
+      { "speaker": "A", "text": "あたらしい アニメの えいがです。しんじゅくで みましょう。", "ro": "Atarashii anime no eiga desu. Shinjuku de mimashou.", "id": "Film anime baru. Mari kita tonton di Shinjuku." },
+      { "speaker": "B", "text": "わかりました。なんじに あいましょうか。", "ro": "Wakarimashita. Nanji ni aimashou ka.", "id": "Baik. Jam berapa kita bertemu?" },
+      { "speaker": "A", "text": "ごぜん じゅうじに えきで あいましょう。", "ro": "Gozen juuji ni eki de aimashou.", "id": "Mari bertemu jam 10 pagi di stasiun." }
+    ],
+    "quiz": {
+      "question": "Di mana dan kapan mereka akan bertemu?",
+      "options": [ "Shinjuku, jam 9 pagi", "Stasiun, jam 10 pagi", "Bioskop, jam 10 pagi", "Stasiun, jam 11 pagi" ],
+      "answer": 1,
+      "explanation": "Takumi berkata 「ごぜんじゅうじにえきであいましょう」 yang berarti \"Mari bertemu jam 10 pagi di stasiun\"."
+    }
+  },
+  {
+    "id": "n5-ch08",
+    "title": "Membicarakan Keluarga",
+    "scenario": "Di kantin sekolah. Elena bercerita tentang keluarganya kepada Daiki.",
+    "emoji": "👨‍👩-👧‍👦",
+    "difficulty": "medium",
+    "topic": "Kazoku (家族)",
+    "context": "Elena dan Daiki sedang makan siang di kantin. Elena menunjukkan foto keluarganya dan menjelaskannya kepada Daiki.",
+    "speakers": [
+      { "id": "A", "name": "だいき", "nameRo": "Daiki", "gender": "pria", "role": "Teman sekolah", "emoji": "👦", "colorClass": "blue" },
+      { "id": "B", "name": "エレナ", "nameRo": "Erena", "gender": "wanita", "role": "Teman sekolah", "emoji": "👧", "colorClass": "rose" }
+    ],
+    "dialogue": [
+      { "speaker": "A", "text": "エレナさん、ごかぞくは なんにん ですか。", "ro": "Erena-san, gokazoku wa nannin desu ka.", "id": "Elena-san, ada berapa orang di keluargamu?" },
+      { "speaker": "B", "text": "ごにん です。ちちと ははと あねと おとうとが います。", "ro": "Gonin desu. Chichi to haha to ane to otouto ga imasu.", "id": "Lima orang. Ada ayah, ibu, kakak perempuan, dan adik laki-laki." },
+      { "speaker": "A", "text": "おねえさんは おいくつ ですか。", "ro": "Oneesan wa oikutsu desu ka.", "id": "Berapa umur kakak perempuanmu?" },
+      { "speaker": "B", "text": "にじゅうさい です。だいがくせい ですよ。", "ro": "Nijuusai desu. Daigakusei desu yo.", "id": "Dua puluh tahun. Dia mahasiswa loh." },
+      { "speaker": "A", "text": "そうですか。おとうとさんは？", "ro": "Otoutosan wa?", "id": "Begitu ya. Adik laki-lakimu?" },
+      { "speaker": "B", "text": "おとうとは じゅうにさい です。ちゅうがくせい です。", "ro": "Otouto wa juunisai desu. Chuugakusei desu.", "id": "Adik laki-laki saya 12 tahun. Siswa SMP." }
+    ],
+    "quiz": {
+      "question": "Berapa umur adik laki-laki Elena?",
+      "options": [ "10 tahun", "12 tahun", "15 tahun", "20 tahun" ],
+      "answer": 1,
+      "explanation": "Elena berkata 「おとうとはじゅうにさいです」 yang berarti \"Adik laki-laki saya 12 tahun\"."
+    }
+  },
+  {
+    "id": "n5-ch09",
+    "title": "Rutinitas Harian",
+    "scenario": "Sambil berjalan pulang sekolah. Sota bertanya tentang jadwal harian Hina.",
+    "emoji": "⏰",
+    "difficulty": "medium",
+    "topic": "Mainichi no seikatsu (毎日の生活)",
+    "context": "Sota dan Hina sedang berjalan pulang bersama. Mereka saling bertukar cerita tentang jam berapa mereka biasanya bangun dan tidur.",
+    "speakers": [
+      { "id": "A", "name": "そうた", "nameRo": "Souta", "gender": "pria", "role": "Teman sekelas", "emoji": "👦", "colorClass": "blue" },
+      { "id": "B", "name": "ひな", "nameRo": "Hina", "gender": "wanita", "role": "Teman sekelas", "emoji": "👧", "colorClass": "rose" }
+    ],
+    "dialogue": [
+      { "speaker": "A", "text": "ひなさんは、まいあさ なんじに おきますか。", "ro": "Hina-san wa, maiasa nanji ni okimasu ka.", "id": "Hina-san, setiap pagi bangun jam berapa?" },
+      { "speaker": "B", "text": "ろくじはんに おきます。そうたさんは？", "ro": "Rokuji-han ni okimasu. Souta-san wa?", "id": "Bangun jam 6 lewat 30 menit. Kalau Sota-san?" },
+      { "speaker": "A", "text": "私[わたし]は しちじに おきます。それから、あさごはんを たべます。", "ro": "Watashi wa shichiji ni okimasu. Sorekara, asagohan o tabemasu.", "id": "Saya bangun jam 7. Setelah itu makan sarapan." },
+      { "speaker": "B", "text": "あさごはんは いつも 何[なに]を たべますか。", "ro": "Asagohan wa itsumo nani o tabemasu ka.", "id": "Sarapan biasanya makan apa?" },
+      { "speaker": "A", "text": "パンと たまごを たべます。コーヒーも のみます。", "ro": "Pan to tamago o tabemasu. Koohii mo nomimasu.", "id": "Makan roti dan telur. Minum kopi juga." },
+      { "speaker": "B", "text": "いいですね。私[わたし]は よる じゅういちじに ねます。", "ro": "Ii desu ne. Watashi wa yoru juuichiji ni nemasu.", "id": "Bagus ya. Saya tidur jam 11 malam." }
+    ],
+    "quiz": {
+      "question": "Jam berapa Hina bangun pagi?",
+      "options": [ "6:00", "6:30", "7:00", "7:30" ],
+      "answer": 1,
+      "explanation": "Hina berkata 「ろくじはんにおきます」 yang berarti bangun jam 6:30 (han = setengah/30 menit)."
+    }
+  },
+  {
+    "id": "n5-ch10",
+    "title": "Liburan Musim Panas",
+    "scenario": "Di perpustakaan. Ren dan Mio sedang berbisik membicarakan rencana liburan mereka.",
+    "emoji": "🏖️",
+    "difficulty": "medium",
+    "topic": "Natsu yasumi (夏休み)",
+    "context": "Ren dan Mio sedang belajar di perpustakaan. Mereka mengambil istirahat sejenak untuk membicarakan rencana liburan musim panas mendatang.",
+    "speakers": [
+      { "id": "A", "name": "れん", "nameRo": "Ren", "gender": "pria", "role": "Teman belajar", "emoji": "👦", "colorClass": "blue" },
+      { "id": "B", "name": "みお", "nameRo": "Mio", "gender": "wanita", "role": "Teman belajar", "emoji": "👧", "colorClass": "rose" }
+    ],
+    "dialogue": [
+      { "speaker": "A", "text": "みおさん、なつやすみは どこかへ いきますか。", "ro": "Mio-san, natsuyasumi wa dokoka e ikimasu ka.", "id": "Mio-san, apakah akan pergi ke suatu tempat saat libur musim panas?" },
+      { "speaker": "B", "text": "はい、ほっかいどうへ いきます。かぞくと いっしょです。", "ro": "Hai, Hokkaidou e ikimasu. Kazoku to issho desu.", "id": "Ya, mau ke Hokkaido. Bersama keluarga." },
+      { "speaker": "A", "text": "いいですね。ほっかいどうで 何[なに]を しますか。", "ro": "Ii desu ne. Hokkaidou de nani o shimasu ka.", "id": "Wah bagus ya. Mau ngapain di Hokkaido?" },
+      { "speaker": "B", "text": "おいしい さかなを たべます。それから、しゃしんを たくさん とります。", "ro": "Oishii sakana o tabemasu. Sorekara, shashin o takusan torimasu.", "id": "Makan ikan yang enak. Terus mau foto-foto yang banyak." },
+      { "speaker": "A", "text": "いいですね。私[わたし]は どこも いきません。うちで べんきょうします。", "ro": "Ii desu ne. Watashi wa dokomo ikimasen. Uchi de benkyou shimasu.", "id": "Bagus ya. Kalau saya nggak ke mana-mana. Mau belajar di rumah." },
+      { "speaker": "B", "text": "そうですか。ざんねんですね。", "ro": "Sou desu ka. Zannen desu ne.", "id": "Begitu ya. Sayang sekali ya." }
+    ],
+    "quiz": {
+      "question": "Ke mana Mio akan pergi berlibur?",
+      "options": [ "Okinawa", "Osaka", "Hokkaidou", "Toukyou" ],
+      "answer": 2,
+      "explanation": "Mio berkata 「ほっかいどうへいきます」 yang berarti \"pergi ke Hokkaido\"."
+    }
+  },
+  {
+    "id": "n5-ch11",
+    "title": "Membicarakan Masa Lalu",
+    "scenario": "Bertemu di depan bioskop. Kaito dan Yui membicarakan film yang baru mereka tonton.",
+    "emoji": "🎬",
+    "difficulty": "medium",
+    "topic": "Kako no hanashi (過去の話)",
+    "context": "Kaito dan Yui baru saja selesai menonton film. Mereka berdiri di depan bioskop dan memberikan kesan mereka terhadap film tersebut.",
+    "speakers": [
+      { "id": "A", "name": "かいと", "nameRo": "Kaito", "gender": "pria", "role": "Penonton film", "emoji": "👦", "colorClass": "blue" },
+      { "id": "B", "name": "ゆい", "nameRo": "Yui", "gender": "wanita", "role": "Penonton film", "emoji": "👧", "colorClass": "rose" }
+    ],
+    "dialogue": [
+      { "speaker": "A", "text": "ゆいさん、えいがは どうでしたか。", "ro": "Yui-san, eiga wa dou deshita ka.", "id": "Yui-san, gimana filmnya tadi?" },
+      { "speaker": "B", "text": "とても おもしろかったです。かいとさんは？", "ro": "Totemo omoshirokatta desu. Kaito-san wa?", "id": "Sangat menarik. Kalau Kaito-san?" },
+      { "speaker": "A", "text": "私[わたし]も おもしろかったです。でも、すこし ながかったです。", "ro": "Watashi mo omoshirokatta desu. Demo, sukoshi nagakatta desu.", "id": "Saya juga merasa menarik. Tapi agak kepanjangan." },
+      { "speaker": "B", "text": "そうですね。にじかんはん でしたね。", "ro": "Sou desu ne. Nijikan-han deshita ne.", "id": "Iya ya. Tadi 2 jam setengah ya." },
+      { "speaker": "A", "text": "おなかが すきました。なにか たべに いきませんか。", "ro": "Onaka ga sukimashita. Nanika tabe ni ikimasen ka.", "id": "Lapar nih. Maukah pergi makan sesuatu?" },
+      { "speaker": "B", "text": "いいですね。ラーメンを たべましょう。", "ro": "Ii desu ne. Raamen o tabemashou.", "id": "Boleh juga. Mari makan ramen." }
+    ],
+    "quiz": {
+      "question": "Berapa lama durasi film tersebut?",
+      "options": [ "1 jam", "2 jam", "2 jam 30 menit", "3 jam" ],
+      "answer": 2,
+      "explanation": "Yui berkata 「にじかんはんでしたね」 yang berarti durasinya 2 jam 30 menit (nijikan-han)."
+    }
+  },
+  {
+    "id": "n5-ch12",
+    "title": "Membeli Oleh-oleh",
+    "scenario": "Di bandara sebelum pulang. Haruto sedang memilih oleh-oleh untuk temannya.",
+    "emoji": "🎁",
+    "difficulty": "medium",
+    "topic": "Omiyage (お土産)",
+    "context": "Haruto berada di toko oleh-oleh bandara. Ia ingin membelikan sesuatu yang khas Jepang untuk temannya di Indonesia.",
+    "speakers": [
+      { "id": "A", "name": "てんいん", "nameRo": "Ten'in", "gender": "wanita", "role": "Penjual", "emoji": "👩‍💼", "colorClass": "rose" },
+      { "id": "B", "name": "はると", "nameRo": "Haruto", "gender": "pria", "role": "Pembeli", "emoji": "🧑", "colorClass": "blue" }
+    ],
+    "dialogue": [
+      { "speaker": "A", "text": "いらっしゃいませ。おみやげは いかがですか。", "ro": "Irasshaimase. Omiyage wa ikaga desu ka.", "id": "Selamat datang. Mau cari oleh-oleh?" },
+      { "speaker": "B", "text": "すみません。これは 何[なん]ですか。", "ro": "Sumimasen. Kore wa nan desu ka.", "id": "Permisi. Ini apa ya?" },
+      { "speaker": "A", "text": "それは にほんの おかしです。とても おいしいですよ。", "ro": "Sore wa Nihon no okashi desu. Totemo oishii desu yo.", "id": "Itu camilan Jepang. Enak sekali loh." },
+      { "speaker": "B", "text": "そうですか。ひとつ いくらですか。", "ro": "Sou desu ka. Hitotsu ikura desu ka.", "id": "Begitu ya. Satunya berapa?" },
+      { "speaker": "A", "text": "はっぴゃくえん です。", "ro": "Hap-pyaku en desu.", "id": "800 yen." },
+      { "speaker": "B", "text": "じゃあ、これを ごこ ください。", "ro": "Jaa, kore o goko kudasai.", "id": "Kalau begitu, minta ini lima buah." },
+      { "speaker": "A", "text": "はい、よんせんえん です。ありがとう ございます。", "ro": "Hai, yonsen en desu. Arigatou gozaimasu.", "id": "Baik, jadi 4.000 yen. Terima kasih banyak." }
+    ],
+    "quiz": {
+      "question": "Berapa banyak Haruto membeli camilan tersebut?",
+      "options": [ "3 buah", "4 buah", "5 buah", "10 buah" ],
+      "answer": 2,
+      "explanation": "Haruto berkata 「これをごこください」 yang berarti \"minta ini lima buah\" (goko = 5 buah)."
+    }
+  }
+]

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /edit/
+Disallow: /config/
+Disallow: /AI/activity-log.json
+Disallow: /AI/brain.json
+Disallow: /AI/memory.json
+
+Sitemap: https://gemuyokai.my.id/sitemap.xml

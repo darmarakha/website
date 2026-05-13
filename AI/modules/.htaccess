@@ -1,0 +1,7 @@
+# Blokir akses langsung ke modul
+Options -Indexes
+Require all denied
+<IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+</IfModule>

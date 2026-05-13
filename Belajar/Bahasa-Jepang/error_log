@@ -1,0 +1,4 @@
+[08-May-2026 16:02:46 Asia/Jakarta] Gagal mengambil progress: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'httpgemu_website.user_progress' doesn't exist
+[09-May-2026 00:07:17 Asia/Jakarta] Gagal mengambil progress: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'httpgemu_website.user_progress' doesn't exist
+[09-May-2026 00:16:47 Asia/Jakarta] Gagal mengambil progress: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'httpgemu_website.user_progress' doesn't exist
+[10-May-2026 15:57:21 Asia/Jakarta] Gagal mengambil progress: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'httpgemu_website.user_progress' doesn't exist

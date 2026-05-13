@@ -1,0 +1,29 @@
+DnD 2014 v38 — Lobby Room Gameplay Fix (fixed files only)
+
+Upload/replace ke folder /Game/DnD-2014/ sesuai path berikut:
+
+1. DnD-2014/dnd.css
+2. DnD-2014/css/dnd-v34-extra-3.css
+3. DnD-2014/js/dnd-app-part-1.js
+4. DnD-2014/js/dnd-app-part-2.js
+5. DnD-2014/js/dnd-app-part-3.js
+6. DnD-2014/js/dnd-app-part-4.js
+7. DnD-2014/js/dnd-app-part-4b.js  <-- file baru, wajib upload
+8. DnD-2014/js/dnd-app-part-5.js
+9. DnD-2014/js/dnd-app-part-6.js
+
+Catatan penting:
+- dnd-app.php sudah memakai glob js/dnd-app-part-*.js + natsort, jadi file baru dnd-app-part-4b.js otomatis ikut terbaca.
+- Jika cache browser masih menampilkan versi lama, hard refresh: Ctrl + F5.
+- Semua file JS tetap di bawah 1000 baris per file.
+
+Isi perbaikan:
+- Saat masuk room/game, tab utama disembunyikan: Lobby, Character, Map, Dice, GM Screen, Database, Compendium, Rule AI tidak muncul di mode game.
+- Tombol Keluar Game mengembalikan tampilan ke lobby utama.
+- GM memilih map aktif room; map yang dipilih muncul sama di layar GM dan player.
+- Dadu lengkap ditambahkan: d2, d3, d4, d6, d8, d10, d12, d20, d100.
+- GM memiliki Turn Controller untuk menentukan giliran aktif.
+- Player yang bukan giliran aktif tidak bisa roll dice, skill roll, chat/dialog aksi, atau menggerakkan token.
+- Player tetap bisa melihat sheet, stat, item, map, dan log saat bukan giliran.
+- Player hanya bisa menggerakkan token karakter miliknya sendiri, dan tetap dicegah masuk tile collision.
+- Owner tetap bisa memilih tampilan Player/GM dari switcher owner dan tetap bebas mengatur.

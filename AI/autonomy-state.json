@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "mode_name": "Mode Mandiri Aman",
+  "last_cycle_ts": 0,
+  "last_cycle_time": null,
+  "last_scan_ts": 0,
+  "last_scan_time": null,
+  "cycle_count": 0,
+  "goals": [
+    "Memahami prompt sederhana dari owner Darma dan mengubahnya menjadi rencana teknis.",
+    "Mengumpulkan saran update mendalam tanpa spam request.",
+    "Menyiapkan draft program bila perubahan bisa dibuat aman.",
+    "Tidak menulis file website tanpa tombol ✓ owner Darma."
+  ],
+  "last_summary": "Mode mandiri siap. GEMU belum menjalankan siklus pertama.",
+  "idea_cursor": 0
+}

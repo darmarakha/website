@@ -1,0 +1,28 @@
+DirectoryIndex index.php index.html
+Options -Indexes
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(php|html|js|css)$">
+        Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_authz_core.c>
+    <Files "config.php">
+        Require all denied
+    </Files>
+</IfModule>
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# Jangan ganggu file/folder yang memang ada
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Jangan expose file schema database
+RewriteRule ^database/ - [F,L]
+</IfModule>

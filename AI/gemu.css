@@ -1,0 +1,350 @@
+:root{--bg:#07111f;--panel:#0b1b31;--panel2:#10243b;--text:#eef7ff;--muted:#9fb3c8;--accent:#1aa7e8;--green:#18c184;--yellow:#ffd166;--red:#ff5c75;--line:rgba(255,255,255,.09)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(circle at top left,rgba(26,167,232,.24),transparent 34%),radial-gradient(circle at bottom right,rgba(24,193,132,.13),transparent 35%),var(--bg);color:var(--text);min-height:100vh}.gemu-shell{width:min(100% - 28px,1280px);margin:auto;padding:22px 0 36px}.gemu-hero{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:18px;padding:26px;border:1px solid var(--line);border-radius:30px;background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.03));box-shadow:0 25px 70px rgba(0,0,0,.25);overflow:hidden;position:relative}.gemu-hero:before{content:"";position:absolute;inset:-60px auto auto 45%;width:360px;height:360px;border-radius:50%;background:rgba(26,167,232,.12);filter:blur(20px)}.gemu-hero>*{position:relative}.eyebrow{margin:0 0 10px;color:var(--green);letter-spacing:.18em;font-size:.76rem;font-weight:900}.gemu-hero h1{font-size:clamp(3rem,7vw,5.4rem);line-height:.9;margin:0;background:linear-gradient(90deg,#fff,#74d6ff,#9bffd9);-webkit-background-clip:text;background-clip:text;color:transparent}.subtitle{max-width:760px;color:var(--muted);line-height:1.7}.hero-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}.home-link,.tiny-btn,.chat-form button,.mini-btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 15px;border-radius:999px;border:1px solid rgba(26,167,232,.35);background:rgba(26,167,232,.12);color:var(--text);font-weight:900;text-decoration:none;cursor:pointer}.home-link:hover,.tiny-btn:hover,.mini-btn:hover{border-color:rgba(26,167,232,.85);transform:translateY(-1px)}.owner-pill{display:flex;align-items:center;gap:10px;padding:12px 15px;border:1px solid rgba(24,193,132,.35);border-radius:999px;background:rgba(24,193,132,.08);white-space:nowrap}.dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 20px var(--green)}
+.quick-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:14px;margin:18px 0}.action-card{border:1px solid var(--line);background:rgba(16,36,59,.78);color:var(--text);border-radius:22px;padding:17px;text-align:left;cursor:pointer;transition:.2s;min-height:102px}.action-card:hover{transform:translateY(-2px);border-color:rgba(26,167,232,.55);box-shadow:0 16px 38px rgba(0,0,0,.2)}.action-card b{display:block;margin-bottom:6px}.action-card span{color:var(--muted);font-size:.9rem;line-height:1.45}.gemu-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(350px,.75fr);gap:18px}.chat-panel,.status-panel{border:1px solid var(--line);border-radius:28px;background:rgba(7,17,31,.76);box-shadow:0 20px 60px rgba(0,0,0,.22);overflow:hidden}.chat-header{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.035)}.chat-header span{display:block;color:var(--muted);font-size:.88rem;margin-top:3px}.chat-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.chat-log{height:min(620px,64vh);overflow:auto;padding:20px;display:flex;flex-direction:column;gap:12px;scrollbar-width:thin;scrollbar-color:var(--accent) transparent}.msg{max-width:88%;padding:13px 15px;border-radius:18px;line-height:1.58;white-space:pre-wrap;word-break:break-word;box-shadow:0 10px 28px rgba(0,0,0,.12)}.msg.gemu{align-self:flex-start;background:rgba(26,167,232,.12);border:1px solid rgba(26,167,232,.2)}.msg.owner{align-self:flex-end;background:rgba(24,193,132,.13);border:1px solid rgba(24,193,132,.2)}.msg.thinking{opacity:.82;font-style:italic;box-shadow:none}.chat-form{display:grid;grid-template-columns:auto auto 1fr auto;gap:10px;padding:16px;border-top:1px solid var(--line);background:rgba(7,17,31,.8)}.chat-form input[type=text],.chat-form input:not([type]){width:100%;border:1px solid rgba(255,255,255,.12);border-radius:15px;background:rgba(255,255,255,.06);color:var(--text);padding:13px 14px;outline:0}.chat-form input:focus{border-color:rgba(26,167,232,.7);box-shadow:0 0 0 4px rgba(26,167,232,.13)}.status-panel{padding:20px;max-height:860px;overflow:auto}.status-panel h2{font-size:1rem;margin:0 0 10px}.status-box,.memory-box,.safe-note,.activity-box,.file-box,.autonomy-box{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.04);padding:14px;color:var(--muted);line-height:1.6;margin-bottom:16px}.status-box hr,.memory-box hr,.file-box hr{border:0;border-top:1px solid var(--line);margin:12px 0}.issue,.task,.log-item,.file-item,.draft-edit{padding:10px;border-radius:13px;margin:8px 0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.075);font-size:.9rem;color:var(--muted)}.issue.danger{border-color:rgba(255,92,117,.38);color:#ffc3cd}.issue.warning{border-color:rgba(255,209,102,.38);color:#ffe6a6}.issue.summary{border-color:rgba(26,167,232,.24);color:#cdefff}.task{background:rgba(24,193,132,.08);border-color:rgba(24,193,132,.18);color:#c7f8e5}.log-item{position:relative;padding-left:16px}.log-item:before{content:"";position:absolute;left:-1px;top:12px;width:5px;height:calc(100% - 24px);border-radius:20px;background:linear-gradient(var(--accent),var(--green))}.log-item span{display:inline-flex;padding:2px 8px;border-radius:999px;background:rgba(26,167,232,.14);color:#bfeeff;font-size:.72rem;text-transform:uppercase;font-weight:900}.log-item b{display:block;margin:6px 0 2px;color:var(--text);font-size:.82rem}.log-item p,.file-item p{margin:5px 0 0}.file-item{border-color:rgba(255,255,255,.1)}.file-item b{display:block;color:var(--text)}.file-item span{font-size:.78rem;color:#bfeeff}.draft-edit{border-color:rgba(26,167,232,.22);background:linear-gradient(135deg,rgba(26,167,232,.1),rgba(24,193,132,.06))}.draft-edit b{display:block;color:var(--text)}.draft-edit span,.draft-edit small{display:block;color:#bfeeff;font-size:.78rem;margin-top:3px}.draft-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.draft-actions .mini-btn{padding:8px 11px;font-size:.82rem}.draft-actions .mini-btn.approve{background:rgba(24,193,132,.18);border-color:rgba(24,193,132,.45);color:#c8fbe7}.draft-actions .mini-btn.reject{background:rgba(255,92,117,.13);border-color:rgba(255,92,117,.42);color:#ffd1d8}.draft-actions .mini-btn.approve:hover{box-shadow:0 10px 28px rgba(24,193,132,.16)}.draft-actions .mini-btn.reject:hover{box-shadow:0 10px 28px rgba(255,92,117,.12)}.autonomy-box ul{margin:8px 0 12px;padding-left:18px}.autonomy-box li{margin:4px 0}.safe-note{font-size:.9rem;border-color:rgba(24,193,132,.25)}code{background:rgba(0,0,0,.25);padding:2px 6px;border-radius:7px;color:#d8f5ff}.muted{color:var(--muted)}.blocked{display:grid;place-items:center;padding:18px}.blocked-card{max-width:520px;padding:28px;border-radius:24px;background:white;color:#0d1b2e;box-shadow:0 22px 60px rgba(0,0,0,.25)}.blocked-card a{display:inline-block;margin-top:12px;color:#0d88c5;font-weight:800}
+@media(max-width:920px){.gemu-shell{width:min(100% - 20px,1240px);padding:12px 0}.gemu-hero{padding:20px;border-radius:22px;align-items:flex-start;flex-direction:column}.hero-tools{width:100%;justify-content:flex-start}.owner-pill{white-space:normal}.quick-actions{grid-template-columns:1fr 1fr}.gemu-grid{grid-template-columns:1fr}.chat-log{height:58vh}.status-panel{max-height:none}.chat-form{grid-template-columns:auto auto 1fr}.chat-form button[type=submit]{grid-column:1/-1}.msg{max-width:96%}}
+@media(max-width:640px){body{background:#06101d}.gemu-shell{width:100%;padding:0}.gemu-hero,.chat-panel,.status-panel{border-radius:0;border-left:0;border-right:0}.gemu-hero{padding:18px 16px}.quick-actions{padding:0 12px;grid-template-columns:1fr}.gemu-grid{gap:12px}.chat-log{height:56vh;padding:14px}.status-panel{padding:14px}.msg{font-size:.95rem}.chat-header{flex-direction:column;align-items:flex-start}.chat-actions{width:100%;justify-content:stretch}.tiny-btn{flex:1}.chat-form{position:sticky;bottom:0;background:rgba(7,17,31,.96);backdrop-filter:blur(12px);grid-template-columns:auto auto 1fr}.chat-form button[type=submit]{grid-column:1/-1}.gemu-hero h1{font-size:3rem}}
+
+/* GEMU v10: chat AI lebih rapi dan mudah dibaca */
+.ai-answer{display:grid;gap:9px}
+.ai-answer p{margin:0;line-height:1.68}
+.ai-answer h4{margin:8px 0 0;color:#eaf6ff;font-size:.98rem;letter-spacing:.01em}
+.ai-answer .ai-list{margin:2px 0 2px 20px;padding:0;display:grid;gap:7px}
+.ai-answer .ai-list li{padding-left:4px;line-height:1.58}
+.ai-answer .ai-alert{border:1px solid rgba(255,209,102,.35);background:rgba(255,209,102,.1);border-radius:12px;padding:10px 12px;color:#ffe6a6}
+.msg.gemu .ai-answer code{white-space:normal}
+
+
+/* GEMU v11: dock approve, dashboard log, terminal */
+.draft-reaction-dock{display:grid;gap:10px;padding:12px 16px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(255,255,255,.03)}
+.draft-reaction-dock.empty{color:var(--muted)}
+.draft-dock-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.draft-dock-head b{font-size:.95rem}
+.draft-chip-row{display:flex;gap:10px;overflow:auto;padding-bottom:2px;scrollbar-width:thin}
+.draft-chip{min-width:240px;max-width:320px;border:1px solid rgba(26,167,232,.2);background:rgba(26,167,232,.08);border-radius:16px;padding:12px;display:grid;gap:8px}
+.draft-chip b{color:var(--text);font-size:.92rem}
+.draft-chip small{color:#bfeeff;line-height:1.4}
+.draft-chip .dock-actions{display:flex;gap:8px;flex-wrap:wrap}
+.draft-chip .dock-actions button{flex:1;min-width:92px}
+.ai-summary{display:grid;gap:10px}
+.ai-summary .summary-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.ai-summary .summary-badges{display:flex;gap:8px;flex-wrap:wrap}
+.ai-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);font-size:.78rem;color:#dff4ff}
+.ai-progress{display:grid;gap:5px}
+.ai-progress .track{height:9px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+.ai-progress .bar{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--green))}
+.ai-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.ai-card{border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.045);border-radius:14px;padding:11px}
+.ai-card b{display:block;color:var(--text);margin-bottom:4px;font-size:.83rem}
+.ai-card span{color:var(--muted);font-size:.88rem;line-height:1.5}
+.activity-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.activity-stat{padding:10px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+.activity-stat b{display:block;color:var(--text);font-size:1.05rem}
+.activity-stat span{font-size:.78rem;color:var(--muted)}
+.activity-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.activity-col{border:1px solid rgba(255,255,255,.08);border-radius:16px;background:rgba(255,255,255,.03);padding:10px}
+.activity-col h3{margin:0 0 8px;font-size:.88rem;color:#dff4ff}
+.terminal-box{border:1px solid rgba(24,193,132,.18);border-radius:18px;background:#06111b;padding:12px;margin-bottom:16px;color:#c8ffe7;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;line-height:1.55;min-height:160px}
+.terminal-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px;color:#98ffc9;font-size:.8rem}
+.terminal-head .pulse{display:inline-block;width:9px;height:9px;border-radius:50%;background:#22c55e;box-shadow:0 0 12px #22c55e;margin-right:7px;animation:gemuPulse 1.2s infinite}
+.terminal-lines{display:grid;gap:6px;max-height:280px;overflow:auto}
+.terminal-line{display:grid;grid-template-columns:auto auto 1fr;gap:8px;align-items:start;font-size:.82rem;padding:6px 8px;border-radius:10px;background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.08)}
+.terminal-line b{color:#eafff4}
+.terminal-line .kind{color:#7be6ad;text-transform:uppercase;font-size:.72rem}
+@keyframes gemuPulse{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}
+@media(max-width:920px){.activity-columns{grid-template-columns:1fr}.activity-summary,.ai-grid{grid-template-columns:1fr 1fr}.draft-chip{min-width:220px}}
+@media(max-width:640px){.draft-reaction-dock{padding:10px 12px}.draft-chip-row{display:grid;grid-template-columns:1fr}.draft-chip{max-width:none;min-width:0}.activity-summary,.ai-grid{grid-template-columns:1fr}.terminal-line{grid-template-columns:auto 1fr}.terminal-line .kind{grid-column:1/-1}}
+
+
+/* GEMU v12: setting modal, process card, security audit, anti edit stacking */
+button:disabled,.is-busy{opacity:.55;cursor:not-allowed;filter:saturate(.65)}
+.settings-modal{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.55);display:grid;place-items:center;padding:18px;backdrop-filter:blur(8px)}
+.settings-modal[hidden]{display:none!important}
+.settings-card{width:min(720px,100%);border:1px solid rgba(26,167,232,.28);border-radius:24px;background:linear-gradient(145deg,#081827,#10243b);box-shadow:0 30px 100px rgba(0,0,0,.45);padding:18px;color:var(--text);display:grid;gap:12px}
+.settings-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.settings-head button{width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.08);color:white;font-size:22px;cursor:pointer}
+.settings-card label{font-weight:800;color:#dff4ff;font-size:.9rem;display:grid;gap:7px}
+.settings-card textarea,.settings-card select{width:100%;border:1px solid rgba(255,255,255,.12);border-radius:15px;background:rgba(255,255,255,.06);color:var(--text);padding:12px;outline:0;line-height:1.55}
+.settings-card textarea:focus,.settings-card select:focus{border-color:rgba(26,167,232,.75);box-shadow:0 0 0 4px rgba(26,167,232,.12)}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.check-row{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center;gap:10px;font-weight:700!important;color:var(--muted)!important}.check-row input{width:18px;height:18px}.settings-save{border:0;border-radius:16px;background:linear-gradient(135deg,var(--accent),#18c184);color:white;font-weight:900;padding:13px 16px;cursor:pointer}
+.process-card{border:1px solid rgba(26,167,232,.22);background:rgba(26,167,232,.08);border-radius:16px;padding:13px;display:grid;gap:8px}.process-card.ok{border-color:rgba(24,193,132,.3);background:rgba(24,193,132,.08)}.process-card.warn{border-color:rgba(255,209,102,.35);background:rgba(255,209,102,.08)}.process-card b{color:#eaf6ff}.process-card ol{margin:0 0 0 20px;padding:0;display:grid;gap:6px;color:var(--muted)}
+.security-score{display:grid;place-items:center;min-width:88px;height:88px;border-radius:999px;border:1px solid rgba(24,193,132,.35);background:radial-gradient(circle,rgba(24,193,132,.22),rgba(26,167,232,.08));font-size:1.35rem;font-weight:900;color:#c8ffe7}.security-row{display:grid;gap:3px;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:10px;background:rgba(255,255,255,.045);margin-top:8px}.security-row b{color:#fff}.security-row span{font-size:.8rem;color:#bfeeff}.security-row small{color:var(--muted);line-height:1.45}.security-row.critical{border-color:rgba(255,92,117,.55);background:rgba(255,92,117,.1)}.security-row.high{border-color:rgba(255,137,92,.42);background:rgba(255,137,92,.08)}.security-row.medium{border-color:rgba(255,209,102,.38);background:rgba(255,209,102,.08)}
+@media(max-width:640px){.settings-modal{align-items:end;padding:10px}.settings-card{border-radius:22px 22px 0 0;max-height:92vh;overflow:auto}.settings-grid{grid-template-columns:1fr}.security-score{width:76px;height:76px;font-size:1.1rem}.chat-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}.chat-actions .tiny-btn{width:100%}}
+
+/* GEMU V14 Multi-Agent Board */
+.agent-board{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:18px}.agent-card{border:1px solid rgba(56,189,248,.20);background:linear-gradient(135deg,rgba(56,189,248,.10),rgba(16,185,129,.06));border-radius:18px;padding:13px 14px}.agent-card b{display:block;color:#eef8ff;margin-bottom:5px}.agent-card span{color:#a9bfd4;line-height:1.55}.agent-score-card{border:1px solid rgba(56,189,248,.22);background:rgba(255,255,255,.06);border-radius:18px;padding:14px;margin:12px 0}.agent-score-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}.agent-score-num{width:70px;height:70px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(16,185,129,.42);background:rgba(16,185,129,.10);font-weight:900;font-size:1.1rem}.agent-bars{display:grid;gap:8px}.agent-bar-row{display:grid;grid-template-columns:1fr 44px;gap:8px;align-items:center}.agent-bar{height:9px;border-radius:999px;background:rgba(255,255,255,.10);overflow:hidden}.agent-bar i{display:block;height:100%;background:linear-gradient(90deg,#38bdf8,#22c55e);border-radius:inherit}.agent-role-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}.agent-role-box{border:1px solid rgba(255,255,255,.12);background:rgba(15,23,42,.62);border-radius:16px;padding:12px;min-width:0}.agent-role-box b{display:block;margin-bottom:5px}.agent-role-box small{color:#a9bfd4;line-height:1.55}.report-clean-note{border:1px solid rgba(16,185,129,.25);background:rgba(16,185,129,.08);border-radius:14px;padding:10px 12px;color:#bff7dd;margin-top:8px}@media(max-width:760px){.agent-role-grid{grid-template-columns:1fr}.agent-score-top{align-items:flex-start}.agent-score-num{width:58px;height:58px;font-size:.95rem}}
+
+/* GEMU V16: diskusi multi-agent yang benar-benar terlihat */
+.agent-role-box b{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.agent-role-box b em{font-style:normal;font-size:.78rem;color:#bff7dd;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.22);border-radius:999px;padding:4px 8px;white-space:nowrap}
+.agent-dialogue{margin-top:14px;border:1px solid rgba(56,189,248,.18);background:rgba(2,12,23,.36);border-radius:18px;padding:12px;display:grid;gap:9px;max-height:420px;overflow:auto;scrollbar-width:thin}
+.agent-dialogue-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.08)}
+.agent-dialogue-head b{color:#eef8ff}.agent-dialogue-head small{color:#a9bfd4}
+.agent-talk-line{display:grid;grid-template-columns:80px minmax(140px,220px) 1fr;gap:10px;align-items:start;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.045);border-radius:14px;padding:10px}
+.agent-talk-line span{font-size:.76rem;color:#a9bfd4;white-space:nowrap}.agent-talk-line b{font-size:.84rem;color:#bff7dd}.agent-talk-line p{margin:0;color:#e8f3ff;line-height:1.55;font-size:.88rem}
+.agent-policy{margin-top:12px;border:1px solid rgba(16,185,129,.18);background:rgba(16,185,129,.07);border-radius:16px;padding:12px;display:grid;gap:6px}.agent-policy b{color:#dfffee}.agent-policy span{color:#a9bfd4;line-height:1.5;font-size:.88rem}
+@media(max-width:760px){.agent-dialogue{max-height:360px}.agent-talk-line{grid-template-columns:1fr}.agent-talk-line span{order:-2}.agent-talk-line b{order:-1}.agent-role-box b{align-items:flex-start}.agent-role-box b em{margin-left:auto}}
+
+/* GEMU V17: panel agent hidup dan sinkron dengan diskusi terakhir */
+.agent-live-head{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid rgba(56,189,248,.18);background:rgba(2,12,23,.38);border-radius:18px;padding:12px 14px;margin-bottom:10px}
+.agent-live-head b{display:block;color:#eef8ff}.agent-live-head small{display:block;color:#a9bfd4;margin-top:3px;line-height:1.35}.agent-live-score{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;background:rgba(16,185,129,.11);border:1px solid rgba(16,185,129,.35);font-weight:900;color:#dfffee;flex:0 0 auto}
+.agent-card b{display:flex;justify-content:space-between;gap:8px;align-items:center}.agent-card b em{font-style:normal;font-size:.76rem;border:1px solid rgba(16,185,129,.22);background:rgba(16,185,129,.10);color:#bff7dd;border-radius:999px;padding:3px 8px;white-space:nowrap}
+.agent-mini-scores{display:grid;grid-template-columns:1fr;gap:7px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);border-radius:16px;padding:10px;margin-top:2px}.mini-score-row{display:flex;justify-content:space-between;gap:10px;color:#a9bfd4;font-size:.88rem}.mini-score-row b{color:#eef8ff}
+.agent-last-talk{border:1px solid rgba(56,189,248,.16);background:rgba(56,189,248,.055);border-radius:16px;padding:10px;margin-top:2px}.agent-last-talk b{color:#eef8ff}.agent-last-talk ol{margin:8px 0 0 18px;padding:0;color:#a9bfd4;line-height:1.5;font-size:.86rem}.agent-last-talk li+li{margin-top:6px}
+@media(max-width:760px){.agent-live-head{align-items:flex-start}.agent-live-score{width:54px;height:54px;font-size:.9rem}.agent-card b{align-items:flex-start}.agent-card b em{margin-left:auto}}
+
+
+/* ===== GEMU v19: real multi-agent dashboard hardening ===== */
+.v19-agent-review{
+  display:block;
+  padding:18px;
+  border:1px solid rgba(52,211,153,.28);
+  border-radius:24px;
+  background:linear-gradient(135deg,rgba(5,32,48,.92),rgba(8,20,36,.96));
+  box-shadow:0 18px 50px rgba(0,0,0,.18);
+}
+.v19-hero{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:16px;
+  align-items:center;
+  margin-bottom:14px;
+}
+.v19-hero h3{margin:0 0 6px;font-size:1.08rem}
+.v19-hero p{margin:0;color:#b9c8db;line-height:1.55}
+.v19-score-badge{
+  width:130px;
+  min-height:106px;
+  border-radius:26px;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  padding:12px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.06);
+}
+.v19-score-badge b{font-size:2rem;line-height:1}
+.v19-score-badge span{font-size:.78rem;color:#c9d6e7}
+.v19-score-badge.ok{background:rgba(16,185,129,.16);border-color:rgba(16,185,129,.42)}
+.v19-score-badge.warn{background:rgba(245,158,11,.16);border-color:rgba(245,158,11,.42)}
+.v19-score-badge.bad{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.42)}
+.v19-hardblock,.v19-okblock{
+  display:grid;
+  gap:8px;
+  margin:12px 0;
+  padding:12px 14px;
+  border-radius:16px;
+  line-height:1.5;
+}
+.v19-hardblock{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.36)}
+.v19-hardblock span{display:block;color:#ffe5aa}
+.v19-okblock{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.32);color:#c8ffe8}
+.v19-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:14px;
+  margin-top:14px;
+}
+.v19-panel,.v19-role-card,.v19-dialogue{
+  border:1px solid rgba(148,163,184,.18);
+  border-radius:20px;
+  background:rgba(15,35,55,.75);
+  padding:14px;
+}
+.v19-panel h4{margin:0 0 12px}
+.v19-score-row{
+  display:grid;
+  grid-template-columns:minmax(130px,1fr) minmax(90px,160px) 56px;
+  gap:10px;
+  align-items:center;
+  margin:10px 0;
+}
+.v19-score-row span{color:#dce8f7}
+.v19-score-row b{font-size:.86rem;text-align:right}
+.v19-score-bar,.v19-mini-bar{
+  height:10px;
+  border-radius:999px;
+  overflow:hidden;
+  background:rgba(148,163,184,.18);
+}
+.v19-score-bar i,.v19-mini-bar i{
+  display:block;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#38bdf8,#34d399);
+}
+.v19-evidence-row{
+  display:grid;
+  gap:5px;
+  padding:10px 0;
+  border-top:1px dashed rgba(148,163,184,.18);
+}
+.v19-evidence-row b{font-size:.92rem}
+.v19-evidence-row span{color:#b9c8db;font-size:.86rem}
+.v19-roles{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  margin:14px 0;
+}
+.v19-role-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+}
+.v19-role-head span{
+  padding:4px 10px;
+  border-radius:999px;
+  background:rgba(56,189,248,.14);
+  border:1px solid rgba(56,189,248,.25);
+  font-weight:800;
+}
+.v19-role-card p{margin:10px 0;color:#dbeafe;line-height:1.5}
+.v19-role-card ul{margin:8px 0 0;padding-left:18px;color:#b9c8db;line-height:1.45}
+.v19-dialogue summary{
+  cursor:pointer;
+  font-weight:800;
+  margin-bottom:12px;
+}
+.v19-dialogue-line{
+  position:relative;
+  padding:12px 12px 12px 16px;
+  border-radius:16px;
+  margin:10px 0;
+  background:rgba(2,11,23,.35);
+  border:1px solid rgba(148,163,184,.16);
+}
+.v19-dialogue-line::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:12px;
+  bottom:12px;
+  width:4px;
+  border-radius:999px;
+  background:#38bdf8;
+}
+.v19-dialogue-line.backend::before{background:#a78bfa}
+.v19-dialogue-line.sistem::before{background:#34d399}
+.v19-dialogue-line small{display:block;color:#93a4b8;margin-bottom:4px}
+.v19-dialogue-line b{display:block;margin-bottom:4px}
+.v19-dialogue-line p{margin:0;color:#dbeafe;line-height:1.55}
+
+@media (max-width:1100px){
+  .v19-grid,.v19-roles{grid-template-columns:1fr}
+  .v19-hero{grid-template-columns:1fr}
+  .v19-score-badge{width:100%;min-height:auto}
+}
+@media (max-width:640px){
+  .v19-agent-review{padding:12px;border-radius:18px}
+  .v19-score-row{grid-template-columns:1fr;gap:6px}
+  .v19-score-row b{text-align:left}
+  .v19-score-badge b{font-size:1.55rem}
+}
+
+
+/* ===== GEMU v19: log columns + idle terminal ===== */
+.activity-summary{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  margin-bottom:14px;
+}
+.activity-stat{
+  padding:12px;
+  border-radius:16px;
+  background:rgba(15,35,55,.82);
+  border:1px solid rgba(148,163,184,.16);
+}
+.activity-stat b{display:block;font-size:1.25rem}
+.activity-stat span{font-size:.8rem;color:#9fb2c8}
+.activity-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+.activity-col{
+  min-width:0;
+  padding:12px;
+  border-radius:18px;
+  background:rgba(2,11,23,.35);
+  border:1px solid rgba(148,163,184,.15);
+}
+.activity-col h4{margin:0 0 10px}
+.activity-row{
+  display:grid;
+  grid-template-columns:82px 92px 1fr;
+  gap:8px;
+  align-items:start;
+  padding:9px 0;
+  border-top:1px dashed rgba(148,163,184,.14);
+}
+.activity-row small{color:#9fb2c8}
+.activity-row b{color:#7dd3fc;font-size:.78rem}
+.activity-row span{line-height:1.35}
+.idle-grid{
+  display:grid;
+  gap:10px;
+  margin-top:12px;
+}
+.idle-card{
+  padding:12px;
+  border-radius:18px;
+  background:rgba(16,185,129,.10);
+  border:1px solid rgba(16,185,129,.22);
+}
+.idle-card>div:first-child{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:8px;
+}
+.idle-card small{color:#a7b7ca}
+.idle-line{
+  display:grid;
+  grid-template-columns:140px 1fr;
+  gap:10px;
+  padding:7px 0;
+  border-top:1px dashed rgba(148,163,184,.14);
+}
+.idle-line b{color:#bbf7d0}
+.idle-line span{color:#d8e7f7;line-height:1.4}
+.terminal-line{
+  display:grid;
+  grid-template-columns:88px 126px 1fr;
+  gap:8px;
+  padding:8px 10px;
+  border-radius:12px;
+  background:rgba(2,11,23,.34);
+  margin-bottom:8px;
+}
+.terminal-line.idle{background:rgba(16,185,129,.08)}
+.terminal-line span{color:#9fb2c8}
+.terminal-line b{color:#86efac}
+.terminal-line em{font-style:normal;color:#e5f0ff;line-height:1.4}
+
+@media (max-width:900px){
+  .activity-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .activity-grid{grid-template-columns:1fr}
+  .activity-row,.terminal-line,.idle-line{grid-template-columns:1fr;gap:4px}
+}
+
+/* ===== GEMU v20 workspace: proactive multi-agent UI ===== */
+.gemu-workspace{display:grid;grid-template-columns:220px minmax(0,1.12fr) minmax(350px,.72fr);gap:18px;align-items:start}
+.gemu-workspace>.quick-actions{grid-column:1;display:grid;grid-template-columns:1fr;position:sticky;top:18px;max-height:calc(100vh - 36px);overflow:auto;padding-right:4px;scrollbar-width:thin}
+.gemu-workspace>.gemu-grid{grid-column:2 / 4;display:grid;grid-template-columns:minmax(0,1.18fr) minmax(340px,.78fr);gap:18px}
+.mobile-nav-btn{display:none;border:1px solid rgba(56,189,248,.35);background:linear-gradient(135deg,rgba(14,165,233,.18),rgba(15,23,42,.9));color:#eaf8ff;border-radius:18px;padding:12px 16px;font-weight:900;box-shadow:0 12px 30px rgba(0,0,0,.22)}
+.chat-form textarea#chat-input{min-height:48px;max-height:160px;resize:none;line-height:1.45;overflow:auto;border:0;outline:0;background:transparent;color:#eaf8ff;width:100%;font:inherit;padding:13px 2px}
+.chat-form textarea#chat-input::placeholder{color:#7f8da3}
+.v20-agent i{display:block;margin-top:8px;color:#bde9ff;font-style:italic;line-height:1.45}
+.v20-agent small{display:inline-flex;margin-top:8px;padding:4px 8px;border-radius:999px;background:rgba(34,211,238,.11);color:#8df3ff;font-weight:800;text-transform:uppercase;letter-spacing:.03em}
+.activity-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.activity-col{border:1px solid rgba(148,163,184,.18);border-radius:18px;padding:12px;background:rgba(15,23,42,.36);min-width:0}
+.activity-col h3{font-size:13px;margin:0 0 8px;color:#e5fbff}
+.activity-row{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;padding:8px 0;border-top:1px solid rgba(148,163,184,.13)}
+.activity-row:first-of-type{border-top:0}.activity-row b{color:#7dd3fc;font-size:12px}.activity-row span{color:#e9f5ff;font-size:13px;line-height:1.35}.activity-row em{grid-column:1/-1;color:#91a5bb;font-size:11px;font-style:normal}.activity-row.compact b{color:#facc15}
+.terminal-line.feed b{color:#5eead4}.terminal-line.feed{background:linear-gradient(90deg,rgba(20,184,166,.11),rgba(14,165,233,.08))}
+@media (max-width:1180px){.gemu-workspace{grid-template-columns:1fr}.gemu-workspace>.quick-actions{position:static;max-height:none;grid-column:1;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));overflow:visible}.gemu-workspace>.gemu-grid{grid-column:1;grid-template-columns:1fr}.activity-columns{grid-template-columns:1fr 1fr}}
+@media (max-width:900px){body.actions-open::before{content:"";position:fixed;inset:0;background:rgba(2,6,23,.62);z-index:39;backdrop-filter:blur(4px)}.mobile-nav-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;position:sticky;top:10px;z-index:45;width:max-content;margin-bottom:12px}.gemu-workspace>.quick-actions{position:fixed;z-index:50;left:10px;top:10px;bottom:10px;width:min(82vw,340px);display:flex;flex-direction:column;overflow:auto;padding:14px;background:linear-gradient(180deg,rgba(8,22,38,.98),rgba(8,15,28,.98));border:1px solid rgba(56,189,248,.24);border-radius:24px;box-shadow:0 22px 80px rgba(0,0,0,.45);transform:translateX(calc(-100% - 24px));transition:transform .2s ease}.actions-open .gemu-workspace>.quick-actions{transform:translateX(0)}.activity-columns{grid-template-columns:1fr}.gemu-shell{padding:18px 12px}.chat-header{align-items:flex-start}.chat-actions{justify-content:flex-start}.status-panel{max-height:none}}
+@media (max-width:620px){.gemu-hero{grid-template-columns:1fr;gap:14px}.gemu-hero h1{font-size:clamp(38px,12vw,56px)}.hero-tools{align-items:flex-start}.chat-panel,.status-panel{border-radius:22px}.chat-form{grid-template-columns:auto auto minmax(0,1fr) auto;padding:10px}.chat-form button{min-width:46px;padding:0 12px}.draft-reaction-card{grid-template-columns:1fr}.draft-reaction-actions{grid-template-columns:1fr 1fr}.activity-stats{grid-template-columns:repeat(2,1fr)}.terminal-scroll{max-height:220px}.agent-live-head{grid-template-columns:1fr;gap:10px}.agent-live-score{justify-self:start}}

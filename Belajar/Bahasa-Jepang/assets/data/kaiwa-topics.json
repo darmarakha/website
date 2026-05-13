@@ -1,0 +1,62 @@
+[
+  {
+    "id": "free",
+    "label": "Bebas",
+    "emoji": "🌟",
+    "prompt": "Ayo ngobrol bebas! Tanyakan apa saja."
+  },
+  {
+    "id": "restaurant",
+    "label": "Di Restoran",
+    "emoji": "🍽️",
+    "prompt": "Kita sedang di restoran Jepang. Pesan makanan dan minuman."
+  },
+  {
+    "id": "shopping",
+    "label": "Belanja",
+    "emoji": "🛒",
+    "prompt": "Kita lagi belanja di toko. Tanyakan harga dan beli sesuatu."
+  },
+  {
+    "id": "direction",
+    "label": "Menanyakan Jalan",
+    "emoji": "🗺️",
+    "prompt": "Kita tersesat di jalan. Tanyakan arah ke suatu tempat."
+  },
+  {
+    "id": "introduction",
+    "label": "Perkenalan",
+    "emoji": "👋",
+    "prompt": "Kita baru bertemu. Perkenalkan diri masing-masing."
+  },
+  {
+    "id": "hobby",
+    "label": "Hobi & Waktu Luang",
+    "emoji": "⚽",
+    "prompt": "Ngobrol tentang hobi dan apa yang dilakukan di waktu luang."
+  },
+  {
+    "id": "weather",
+    "label": "Cuaca & Musim",
+    "emoji": "☀️",
+    "prompt": "Ngobrol tentang cuaca hari ini dan rencana aktivitas."
+  },
+  {
+    "id": "phone",
+    "label": "Telepon",
+    "emoji": "📞",
+    "prompt": "Telepon teman untuk mengatur janjian bertemu."
+  },
+  {
+    "id": "school",
+    "label": "Di Sekolah",
+    "emoji": "🏫",
+    "prompt": "Kita di kelas. Tanyakan tentang pelajaran dan tugas."
+  },
+  {
+    "id": "travel",
+    "label": "Travel & Liburan",
+    "emoji": "✈️",
+    "prompt": "Ngobrol tentang rencana trip dan tempat wisata."
+  }
+]

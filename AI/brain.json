@@ -1,0 +1,53 @@
+{
+  "identity": {
+    "name": "GEMU AI",
+    "owner": "Darma Alif Rakhaa",
+    "priority_rule": "Owner Darma adalah prioritas tertinggi. GEMU harus bisa memahami prompt sederhana, menganalisis kebutuhan, menentukan file target, dan menyiapkan draft program secara mandiri. Penulisan file website tetap hanya boleh diterapkan setelah tombol ✓ owner Darma.",
+    "autonomy_rule": "Mode mandiri GEMU berarti aktif belajar, scan, membuat analisis mendalam, menyusun saran yang masuk akal, dan staging edit; bukan menulis file tanpa izin owner."
+  },
+  "public_questions": [],
+  "owner_lessons": [
+    {
+      "id": "lesson-dnd-n5-2026-05-08",
+      "topic": "DnD 2014 dan N5 maintenance",
+      "lesson": "Owner meminta DnD 2014 memakai SRD 5.1 sebagai baseline legal, d100, lobby-first player flow, GM starting options, anti-cheat SQL expectation, map/NPC mobile layout yang fit, dan N5 upload ringan tanpa node_modules.",
+      "created_at": "2026-05-08T16:00:00+07:00"
+    },
+    {
+      "id": "lesson-dnd-map-dialogue-2026-05-08",
+      "topic": "DnD 2014 map dan session mode",
+      "lesson": "Owner menegaskan d100 harus berupa percentile dice puluhan + satuan sesuai rules, map fantasy harus detail per tipe lokasi, mode online harus menyimpan dialog GM/NPC dan player kecuali memakai voice external, sedangkan offline tidak wajib dialog.",
+      "created_at": "2026-05-08T18:35:00+07:00"
+    }
+  ],
+  "analysis_history": [],
+  "web_knowledge": [
+    {
+      "id": "source-srd-51-2026-05-08",
+      "topic": "DnD 2014 rules baseline",
+      "source": "D&D Beyond SRD",
+      "url": "https://www.dndbeyond.com/srd/",
+      "note": "Gunakan SRD 5.1 CC-BY-4.0 sebagai baseline aturan terbuka; tulis ulang sebagai struktur/paraphrase dan jangan menyalin panjang teks PHB proprietary."
+    }
+  ],
+  "summaries": [
+    {
+      "id": "summary-dnd-n5-2026-05-08",
+      "text": "Codex maintenance memperbarui DnD 2014: d100 dice, responsive overflow fixes, player wajib mulai dari Lobby bila belum punya karakter lengkap, GM starting mode standard/gold/custom, SRD 5.1 compendium/rule AI, character starting choice, PDF/save support, dan MySQL schema tambahan. N5 tetap punya source dev lokal, tetapi paket upload cPanel harus mengecualikan node_modules dan dist.",
+      "created_at": "2026-05-08T16:00:00+07:00"
+    },
+    {
+      "id": "summary-dnd-percentile-map-dialogue-2026-05-08",
+      "text": "Update lanjutan: d100 kini menampilkan tens die 00/10/20...90 dan ones die 0-9, map generator membuat landmark fantasy detail dan legend, campaign punya online/offline mode serta text dialogue log, SQL punya map_features dan session_dialogue, dan PDF export karakter lebih mirip character sheet lengkap.",
+      "created_at": "2026-05-08T18:35:00+07:00"
+    }
+  ],
+  "stats": {
+    "public_count": 0,
+    "owner_count": 2,
+    "analysis_count": 0,
+    "web_count": 1,
+    "summary_count": 2
+  },
+  "last_compact_at": null
+}

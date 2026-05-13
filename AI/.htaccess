@@ -1,0 +1,9 @@
+Options -Indexes
+
+<FilesMatch "\.(json|log|bak|tmp)$">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "^(memory|scan-log|brain|owner-tasks|secret)\.(json|php)$">
+    Require all denied
+</FilesMatch>

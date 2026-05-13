@@ -1,0 +1,114 @@
+[
+    {
+        "summary": {
+            "checked_files": 70,
+            "issues_total": 2,
+            "danger_total": 0,
+            "time": "2026-05-05 22:08:36",
+            "backup": {
+                "path": "AI\/backups\/20260505_220835_before_smart_edit",
+                "files": 53,
+                "bytes": 731516,
+                "reason": "before_smart_edit"
+            },
+            "note": "Scan ringan level aplikasi. Backup otomatis dibuat sebelum scan. Untuk antivirus server penuh tetap pakai keamanan hosting."
+        },
+        "issues": [
+            {
+                "level": "warning",
+                "file": "Belajar\/Bahasa-Jepang\/hiragana\/flashcard.js",
+                "message": "system() memberi akses command server."
+            },
+            {
+                "level": "warning",
+                "file": "Belajar\/Bahasa-Jepang\/katakana.php",
+                "message": "system() memberi akses command server."
+            }
+        ],
+        "source": "smart-edit"
+    },
+    {
+        "summary": {
+            "checked_files": 70,
+            "issues_total": 2,
+            "danger_total": 0,
+            "time": "2026-05-05 22:06:10",
+            "backup": {
+                "path": "AI\/backups\/20260505_220610_before_smart_edit",
+                "files": 53,
+                "bytes": 724920,
+                "reason": "before_smart_edit"
+            },
+            "note": "Scan ringan level aplikasi. Backup otomatis dibuat sebelum scan. Untuk antivirus server penuh tetap pakai keamanan hosting."
+        },
+        "issues": [
+            {
+                "level": "warning",
+                "file": "Belajar\/Bahasa-Jepang\/hiragana\/flashcard.js",
+                "message": "system() memberi akses command server."
+            },
+            {
+                "level": "warning",
+                "file": "Belajar\/Bahasa-Jepang\/katakana.php",
+                "message": "system() memberi akses command server."
+            }
+        ],
+        "source": "smart-edit"
+    },
+    {
+        "summary": {
+            "checked_files": 70,
+            "issues_total": 2,
+            "danger_total": 0,
+            "time": "2026-05-05 22:05:58",
+            "backup": {
+                "path": "AI\/backups\/20260505_220557_before_smart_edit",
+                "files": 53,
+                "bytes": 722440,
+                "reason": "before_smart_edit"
+            },
+            "note": "Scan ringan level aplikasi. Backup otomatis dibuat sebelum scan. Untuk antivirus server penuh tetap pakai keamanan hosting."
+        },
+        "issues": [
+            {
+                "level": "warning",
+                "file": "Belajar\/Bahasa-Jepang\/hiragana\/flashcard.js",
+                "message": "system() memberi akses command server."
+            },
+            {
+                "level": "warning",
+                "file": "Belajar\/Bahasa-Jepang\/katakana.php",
+                "message": "system() memberi akses command server."
+            }
+        ],
+        "source": "smart-edit"
+    },
+    {
+        "summary": {
+            "checked_files": 70,
+            "issues_total": 2,
+            "danger_total": 0,
+            "time": "2026-05-05 22:05:44",
+            "backup": {
+                "path": "AI\/backups\/20260505_220544_before_smart_edit",
+                "files": 53,
+                "bytes": 719962,
+                "reason": "before_smart_edit"
+            },
+            "note": "Scan ringan level aplikasi. Backup otomatis dibuat sebelum scan. Untuk antivirus server penuh tetap pakai keamanan hosting."
+        },
+        "issues": [
+            {
+                "level": "warning",
+                "file": "Belajar\/Bahasa-Jepang\/hiragana\/flashcard.js",
+                "message": "system() memberi akses command server."
+            },
+            {
+                "level": "warning",
+                "file": "Belajar\/Bahasa-Jepang\/katakana.php",
+                "message": "system() memberi akses command server."
+            }
+        ],
+        "source": "smart-edit"
+    }
+]

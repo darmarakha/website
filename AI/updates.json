@@ -1,0 +1,32 @@
+[
+    {
+        "date": "2026-05-08",
+        "category": "Clean Patch",
+        "title": "N5 Back Home, DND SQL Sync, Responsive Fit, and GEMU AI Chat Cleanup",
+        "description": "Menambahkan Back Home ke Bahasa Jepang pada N5, menghubungkan DND 2014 ke endpoint SQL DND dengan fallback localStorage, memperbaiki auto-fit mobile/PC, serta membersihkan owner-chat lama agar awal GEMU AI tidak menampilkan draft lama."
+    },
+    {
+        "date": "2026-05-08",
+        "category": "N5 Japanese",
+        "title": "Fix White Screen & AI Kaiwa Naturalization",
+        "description": "Memperbaiki bug layar putih pada modul Choukai, meningkatkan kecerdasan AI Kaiwa menggunakan model Gemini 2.0 Flash-Exp, dan menambahkan emoji pada narasi Choukai agar lebih interaktif."
+    },
+    {
+        "date": "2026-05-08",
+        "category": "DND 2014",
+        "title": "Premium Table Expansion & GM Security",
+        "description": "Implementasi sistem keamanan GM (hanya owner), penambahan data Player's Handbook (PHB), modernisasi UI Glassmorphism, Voice-to-Text untuk GM, dan sistem reward reward character."
+    },
+    {
+        "date": "2026-05-08",
+        "category": "Business Portal",
+        "title": "Professional Catalog Modernization",
+        "description": "Modernisasi tampilan katalog bisnis dengan desain premium, perbaikan rendering PDF preview, dan penambahan fitur download dokumen."
+    },
+    {
+        "date": "2026-05-08",
+        "category": "Security",
+        "title": "Backend API Proxy Implementation",
+        "description": "Migrasi ElevenLabs TTS ke backend proxy PHP untuk mengamankan API Key dari client-side exposure."
+    }
+]

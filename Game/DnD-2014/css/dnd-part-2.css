@@ -1,0 +1,845 @@
+
+@media (max-width: 480px) {
+    .stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .dnd-tabs {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+
+/* PATCH 2026-05-08: Auto fit DND 2014 untuk mobile, tablet, dan laptop/PC. */
+html,
+body.dnd-page,
+body.game-directory {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.dnd-page *,
+.dnd-page *::before,
+.dnd-page *::after,
+.game-directory *,
+.game-directory *::before,
+.game-directory *::after {
+  box-sizing: border-box;
+}
+
+.dnd-shell,
+.game-directory-shell {
+  width: min(100%, 1280px);
+  max-width: calc(100vw - 24px);
+  margin-inline: auto;
+  overflow-x: hidden;
+}
+
+.dnd-app,
+.dnd-card,
+.dnd-panel,
+.dnd-section,
+.dnd-toolbar,
+.dnd-grid,
+.dnd-form-grid,
+.dnd-map-board,
+.dnd-map-wrap,
+.dnd-table-wrap,
+.dnd-modal-card,
+.game-entry-card {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.dnd-shell input,
+.dnd-shell select,
+.dnd-shell textarea,
+.dnd-shell button,
+.dnd-shell .dnd-btn {
+  max-width: 100%;
+}
+
+.dnd-shell p,
+.dnd-shell li,
+.dnd-shell td,
+.dnd-shell th,
+.dnd-shell label,
+.dnd-shell small,
+.dnd-shell strong,
+.game-directory p,
+.game-directory small,
+.game-directory strong {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.dnd-toolbar,
+.dnd-actions,
+.dnd-btn-row,
+.dnd-nav,
+.dnd-filter-row,
+.compact-row {
+  flex-wrap: wrap;
+}
+
+.dnd-table-wrap,
+.table-wrap,
+.inventory-table,
+.character-table {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dnd-table-wrap table,
+.table-wrap table,
+.inventory-table table,
+.character-table table {
+  min-width: 680px;
+}
+
+.dnd-map-wrap,
+.map-layout,
+.map-shell,
+.map-area,
+.map-board-frame {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dnd-map-board,
+.map-grid,
+.battle-map {
+  max-width: 100%;
+  transform-origin: top left;
+}
+
+.dnd-toast {
+  max-width: min(420px, calc(100vw - 24px));
+  right: max(12px, env(safe-area-inset-right));
+  left: auto;
+}
+
+@media (max-width: 900px) {
+  .dnd-shell,
+  .game-directory-shell {
+    max-width: calc(100vw - 16px);
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .dnd-hero,
+  .dnd-header,
+  .dnd-topbar,
+  .dnd-card,
+  .dnd-panel,
+  .game-directory-hero,
+  .game-entry-card {
+    border-radius: 20px;
+  }
+
+  .dnd-grid,
+  .dnd-form-grid,
+  .dnd-two-col,
+  .dnd-three-col,
+  .dnd-dashboard-grid,
+  .game-card-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .dnd-header,
+  .dnd-hero,
+  .dnd-topbar,
+  .dnd-toolbar,
+  .dnd-actions,
+  .dnd-filter-row {
+    align-items: stretch;
+  }
+
+  .dnd-header > *,
+  .dnd-hero > *,
+  .dnd-topbar > *,
+  .dnd-toolbar > *,
+  .dnd-actions > *,
+  .dnd-filter-row > * {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  body.dnd-page,
+  body.game-directory {
+    font-size: 14px;
+  }
+
+  .dnd-shell,
+  .game-directory-shell {
+    max-width: 100vw;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: calc(78px + env(safe-area-inset-top));
+  }
+
+  .dnd-card,
+  .dnd-panel,
+  .dnd-modal-card,
+  .game-entry-card {
+    padding: 14px !important;
+    border-radius: 18px !important;
+  }
+
+  .dnd-hero h1,
+  .game-directory-hero h1 {
+    font-size: clamp(1.9rem, 10vw, 3rem) !important;
+    line-height: 1.05;
+  }
+
+  .dnd-hero p,
+  .game-directory-hero p {
+    font-size: .95rem;
+  }
+
+  .dnd-nav,
+  .dnd-toolbar,
+  .dnd-actions,
+  .dnd-btn-row,
+  .dnd-filter-row,
+  .compact-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .dnd-nav .dnd-btn,
+  .dnd-toolbar .dnd-btn,
+  .dnd-actions .dnd-btn,
+  .dnd-btn-row .dnd-btn,
+  .compact-row .dnd-btn {
+    flex: 1 1 140px;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .dnd-shell input,
+  .dnd-shell select,
+  .dnd-shell textarea {
+    width: 100% !important;
+    font-size: 16px;
+  }
+
+  .dnd-shell textarea {
+    min-height: 96px;
+  }
+
+  .dnd-map-wrap,
+  .map-layout,
+  .map-shell,
+  .map-area,
+  .map-board-frame {
+    max-height: 68dvh;
+  }
+
+  .dnd-map-board,
+  .map-grid,
+  .battle-map {
+    min-width: 620px;
+  }
+
+  .dnd-modal,
+  .modal-backdrop {
+    align-items: flex-end !important;
+    padding: 8px !important;
+  }
+
+  .dnd-modal-card,
+  .modal-card {
+    width: 100% !important;
+    max-height: 88dvh;
+    overflow-y: auto;
+  }
+
+  .dnd-toast {
+    left: 10px;
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    width: auto;
+  }
+}
+
+/* === Stability patch: login/logout + responsive anti-overlap === */
+/* Patch ini sengaja hanya mengatur layout/klik. Tidak mengubah logika DND. */
+.dnd-fallback-nav {
+    width: min(1180px, calc(100% - 1.5rem));
+    margin: 0.8rem auto 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(241, 202, 114, 0.22);
+    border-radius: 14px;
+    background: rgba(20, 14, 10, 0.78);
+    backdrop-filter: blur(10px);
+}
+
+.dnd-fallback-nav a,
+.dnd-fallback-nav strong {
+    color: var(--ink);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.dnd-hero::after,
+.game-directory-hero::after,
+body.dnd-page::before,
+body.game-directory::before {
+    pointer-events: none !important;
+}
+
+.dnd-shell,
+.dnd-shell *,
+.game-directory-shell,
+.game-directory-shell * {
+    box-sizing: border-box;
+}
+
+.dnd-shell,
+.dnd-app-grid,
+.dnd-panel,
+.dnd-card,
+.dnd-modal-card,
+.map-layout,
+.map-frame,
+.compact-row,
+.dnd-section-title,
+.dnd-appbar,
+.dnd-grid,
+.dnd-form-grid,
+.dnd-check-grid,
+.stat-grid,
+.ai-feed,
+.item-list,
+.npc-list,
+.map-feature-list {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.dnd-shell button,
+.dnd-shell .dnd-btn,
+.dnd-shell .dnd-tab,
+.dnd-shell input,
+.dnd-shell select,
+.dnd-shell textarea,
+.dnd-fallback-nav a,
+.dnd-fallback-nav button {
+    pointer-events: auto;
+}
+
+.dnd-card p,
+.dnd-card h2,
+.dnd-card h3,
+.dnd-muted,
+.rule-warning,
+.ai-feed,
+.roll-log,
+.map-feature-list,
+.compact-row span,
+.compact-row small,
+.compact-row strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+/* Label jangan pecah per huruf. Ini penyebab teks seperti T-I-P-E / D-E-T-A-I-L tumpang tindih. */
+.dnd-shell label,
+.dnd-shell .dnd-field label {
+    overflow-wrap: normal !important;
+    word-break: keep-all !important;
+    hyphens: none !important;
+    white-space: normal;
+    line-height: 1.25;
+}
+
+.dnd-shell input,
+.dnd-shell select,
+.dnd-shell textarea {
+    width: 100%;
+    min-width: 0;
+}
+
+.dnd-shell select {
+    text-overflow: ellipsis;
+}
+
+.dnd-appbar,
+.dnd-section-title,
+.compact-row,
+.dnd-actions {
+    flex-wrap: wrap;
+}
+
+.dnd-appbar,
+.dnd-section-title {
+    align-items: flex-start;
+}
+
+.dnd-appbar > div:first-child,
+.dnd-section-title > div:first-child,
+.compact-row > span {
+    flex: 1 1 240px;
+    min-width: 0;
+}
+
+.dnd-actions {
+    display: flex;
+    gap: 0.65rem;
+    flex: 0 1 auto;
+}
+
+.dnd-actions .dnd-btn,
+.dnd-actions .dnd-pill,
+.dnd-actions select.dnd-btn {
+    white-space: normal;
+    text-align: center;
+    flex: 0 1 auto;
+    max-width: 100%;
+}
+
+.dnd-actions select.dnd-btn {
+    min-width: 9rem;
+}
+
+.dnd-tabs {
+    overflow-x: auto;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+}
+
+.dnd-tab {
+    white-space: nowrap;
+}
+
+/* Form otomatis turun kolom sebelum label/field sempit. */
+.dnd-form-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
+    align-items: start;
+}
+
+.dnd-form-grid > .span-12 {
+    grid-column: 1 / -1;
+}
+
+.dnd-check-grid,
+.stat-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+}
+
+.map-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 24rem);
+}
+
+.map-frame {
+    aspect-ratio: 1 / 1;
+    min-height: clamp(18rem, 54vw, 36rem);
+}
+
+#dnd-map-canvas {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+}
+
+.modal-backdrop {
+    overflow: auto;
+}
+
+.dnd-modal-card {
+    max-height: calc(100dvh - 2rem);
+    overflow: auto;
+}
+
+@media (max-width: 1320px) {
+    .span-4,
+    .span-3 {
+        grid-column: span 6;
+    }
+
+    .map-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .map-layout > aside,
+    .map-layout > .dnd-card,
+    .map-layout > .map-frame {
+        width: 100%;
+    }
+}
+
+@media (max-width: 1100px) {
+    .span-8,
+    .span-7,
+    .span-6,
+    .span-5,
+    .span-4,
+    .span-3 {
+        grid-column: span 12;
+    }
+
+    .dnd-appbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dnd-appbar > div,
+    .dnd-section-title > div,
+    .dnd-section-title .dnd-actions,
+    .dnd-appbar .dnd-actions {
+        width: 100%;
+    }
+
+    .dnd-section-title .dnd-actions,
+    .dnd-appbar .dnd-actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 860px) {
+    .dnd-shell,
+    .game-directory-shell {
+        width: min(100%, calc(100vw - 0.75rem));
+        padding-inline: 0.5rem;
+    }
+
+    .dnd-hero,
+    .dnd-app-grid,
+    .dnd-panel,
+    .dnd-card {
+        padding: 1rem;
+    }
+
+    .dnd-hero h1 {
+        font-size: clamp(1.65rem, 9vw, 2.6rem);
+        line-height: 1.05;
+    }
+
+    .dnd-form-grid,
+    .dnd-check-grid,
+    .stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dnd-grid {
+        gap: 1rem;
+    }
+
+    .dnd-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+        width: 100%;
+        gap: 0.55rem;
+    }
+
+    .dnd-actions .dnd-btn,
+    .dnd-actions .dnd-pill,
+    .dnd-actions select.dnd-btn {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .dnd-tabs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dnd-tab {
+        white-space: normal;
+    }
+
+    .sheet-header {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .avatar-medallion {
+        margin-inline: auto;
+    }
+
+    .map-layout {
+        max-height: none;
+        overflow: visible;
+    }
+
+    .map-frame {
+        min-height: auto;
+        aspect-ratio: 1 / 1;
+    }
+
+    .map-help {
+        position: static;
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+
+    .compact-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+@media (max-width: 430px) {
+    .dnd-tabs {
+        grid-template-columns: 1fr;
+    }
+
+    .dnd-fallback-nav {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+
+/* === Skill proficiency: rapikan checkbox + label, tanpa ubah logika lain === */
+.dnd-check-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+    gap: 0.7rem;
+    align-items: stretch;
+}
+
+.dnd-check {
+    display: grid;
+    grid-template-columns: 1.1rem minmax(0, 1fr);
+    align-items: center;
+    column-gap: 0.75rem;
+    min-height: 3.2rem;
+    padding: 0.7rem 0.85rem;
+    text-align: left;
+    line-height: 1.25;
+}
+
+.dnd-check input {
+    margin: 0;
+    width: 1rem;
+    height: 1rem;
+    justify-self: center;
+    align-self: center;
+}
+
+@media (max-width: 860px) {
+    .dnd-check {
+        min-height: 3rem;
+    }
+}
+
+/* === Skill proficiency guide: tambah penjelasan bonus tanpa mengubah logika checkbox === */
+.skill-proficiency-note {
+    margin: 0 0 0.8rem;
+    max-width: 100%;
+    line-height: 1.55;
+}
+
+.skill-check-card {
+    align-items: flex-start;
+    min-height: 6.2rem;
+    padding: 0.85rem 0.9rem;
+}
+
+.skill-check-card input {
+    margin-top: 0.2rem;
+}
+
+.dnd-check-body {
+    min-width: 0;
+    display: grid;
+    gap: 0.28rem;
+}
+
+.dnd-check-body strong {
+    display: block;
+    color: var(--text);
+    font-size: 0.98rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.dnd-check-body small,
+.dnd-check-body em {
+    display: block;
+    min-width: 0;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.dnd-check-body small {
+    color: var(--gold);
+    font-size: 0.76rem;
+    font-weight: 850;
+    letter-spacing: 0.01em;
+}
+
+.dnd-check-body em {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-style: normal;
+    font-weight: 650;
+}
+
+.skill-check-card .skill-checked {
+    display: none;
+}
+
+.skill-check-card input:checked + .dnd-check-body .skill-unchecked {
+    display: none;
+}
+
+.skill-check-card input:checked + .dnd-check-body .skill-checked {
+    display: block;
+}
+
+@media (max-width: 720px) {
+    .skill-check-card {
+        min-height: auto;
+        padding: 0.8rem;
+    }
+
+    .dnd-check-body strong {
+        font-size: 0.94rem;
+    }
+
+    .dnd-check-body small,
+    .dnd-check-body em {
+        font-size: 0.74rem;
+    }
+}
+
+/* === Starting package detail: tampilkan isi item tanpa mengubah logika pilihan === */
+.starting-package-help {
+    display: grid;
+    gap: 0.55rem;
+    margin-top: 0.75rem;
+}
+
+.starting-package-detail {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.035);
+    padding: 0.65rem 0.75rem;
+}
+
+.starting-package-detail summary {
+    cursor: pointer;
+    color: var(--text);
+    font-weight: 900;
+    line-height: 1.35;
+}
+
+.starting-package-detail summary small {
+    color: var(--gold);
+    margin-left: 0.3rem;
+    font-weight: 800;
+}
+
+.starting-package-detail p {
+    margin: 0.55rem 0 0.45rem;
+    color: var(--muted);
+    font-size: 0.86rem;
+    line-height: 1.5;
+}
+
+.starting-package-detail ul {
+    margin: 0;
+    padding-left: 1.15rem;
+    color: var(--text);
+    font-size: 0.86rem;
+    line-height: 1.55;
+    columns: 2;
+    column-gap: 1.4rem;
+}
+
+.starting-package-detail li {
+    break-inside: avoid;
+    margin-bottom: 0.12rem;
+}
+
+@media (max-width: 720px) {
+    .starting-package-detail ul {
+        columns: 1;
+    }
+}
+
+/* === Character builder Roll20-style: kiri input, kanan penjelasan === */
+.character-builder-layout {
+    display: grid;
+    grid-template-columns: minmax(420px, 0.95fr) minmax(360px, 1.05fr);
+    gap: 1rem;
+    align-items: start;
+    margin-top: 1rem;
+}
+
+.character-builder-form,
+.character-builder-guide,
+.character-sheet-preview {
+    min-width: 0;
+}
+
+.character-builder-guide {
+    position: relative;
+    overflow: visible;
+}
+
+.guide-sticky-inner {
+    display: grid;
+    gap: 0.85rem;
+}
+
+@media (min-width: 1101px) {
+    .guide-sticky-inner {
+        position: sticky;
+        top: 5.5rem;
+        max-height: calc(100vh - 7rem);
+        overflow: auto;
+        padding-right: 0.25rem;
+    }
+}
+
+.character-builder-guide h3 {
+    margin: 0;
+    font-size: clamp(1.35rem, 2.2vw, 2rem);
+    line-height: 1.1;
+}
+
+.guide-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.55rem;
+}
+
+.guide-summary-grid span,
+.guide-two-cols > div {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.18);
+    padding: 0.65rem;
+    min-width: 0;
+}
+
+.guide-summary-grid strong,
+.guide-two-cols strong {
+    display: block;
+    color: var(--gold);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.25;
+}
+
+.guide-summary-grid small,
+.guide-two-cols small {
+    display: block;
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 850;
+    line-height: 1.35;
+    margin-top: 0.15rem;
+}

@@ -1,0 +1,7 @@
+# Blokir eksekusi script di folder upload
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<FilesMatch "\.(php|phtml|php3|php4|php5|phps|phar|sh|cgi|pl|py)$">
+    Require all denied
+</FilesMatch>

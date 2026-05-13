@@ -1,0 +1,34 @@
+DnD 2014 Patch v35 - isi file yang berubah saja
+
+Cara pasang:
+1. Backup folder DnD-2014 lama.
+2. Extract zip ini ke root folder DnD-2014 di hosting.
+3. Replace file yang sama path-nya.
+4. Hard refresh browser / clear cache jika tampilan lama masih muncul.
+
+File berubah:
+- index.php
+- dnd.css
+- dnd-map-ai.js
+- css/dnd-v34-extra-3.css
+- js/dnd-app-part-1.js
+- js/dnd-app-part-2.js
+- js/dnd-app-part-3.js
+- js/dnd-app-part-4.js
+- js/dnd-app-part-5.js
+- js/dnd-app-part-6.js
+
+Perbaikan utama:
+1. Skill proficiency class tidak overloop lagi karena yang di-render ulang adalah wrapper yang benar, bukan grid bagian dalam.
+2. Tentukan Skor Kemampuan: player hanya bisa roll/standard array sekali; Owner tetap bisa roll ulang.
+3. PDF printable ditambah halaman detail Features & Traits, Spellcasting summary, dan detail Spells.
+4. Announcement berjalan dari Owner ditampilkan di atas tabs, tombol edit hanya muncul untuk Owner.
+5. Map Director diarahkan gridless; grid presisi digambar aplikasi sebagai VTT overlay.
+6. AI map punya collision layer logis dari Map Director, dan token NPC tidak bisa ditempatkan di tile blokir.
+7. Cache version index ikut membaca perubahan file js/css part agar update lebih cepat muncul di browser.
+
+Validasi yang sudah dijalankan:
+- node --check gabungan js/dnd-app-part-*.js
+- node --check dnd-map-ai.js
+- php -l index.php
+- php -l dnd-app.php

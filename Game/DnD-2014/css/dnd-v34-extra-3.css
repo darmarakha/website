@@ -1,0 +1,521 @@
+.map-tool-head span:not(.lobby-kicker),
+.map-score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 34px;
+  border: 1px solid rgba(126, 210, 121, .35);
+  border-radius: 999px;
+  background: rgba(20, 58, 29, .45);
+  color: #d8ffd0;
+  font-weight: 950;
+  font-size: .88rem;
+}
+.map-ai-director {
+  padding: .72rem;
+  border: 1px solid rgba(83, 173, 255, .22);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(7, 20, 34, .62), rgba(23, 15, 10, .72));
+  margin-bottom: .75rem;
+}
+.map-ai-director p {
+  margin: .52rem 0 0;
+  color: rgba(255, 238, 212, .74);
+  line-height: 1.45;
+  font-size: .9rem;
+}
+.map-ai-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .38rem;
+}
+.map-ai-chips span {
+  padding: .28rem .48rem;
+  border-radius: 999px;
+  background: rgba(232, 184, 82, .12);
+  border: 1px solid rgba(232, 184, 82, .24);
+  color: #ffe1a1;
+  font-size: .74rem;
+  font-weight: 900;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+.compact-map-grid {
+  gap: .55rem;
+  margin: .52rem 0;
+}
+.compact-map-grid label,
+.map-control-group label {
+  margin-bottom: .55rem;
+}
+.map-control-group input,
+.map-control-group select,
+.map-control-group textarea {
+  width: 100%;
+}
+.map-action-row .dnd-btn {
+  flex: 1 1 135px;
+}
+.compact-upload {
+  min-height: auto;
+  padding: .7rem;
+  border-radius: 16px;
+}
+.compact-details {
+  border: 1px solid rgba(236, 188, 85, .18);
+  border-radius: 16px;
+  background: rgba(8, 5, 4, .28);
+  padding: .62rem .75rem;
+  margin-top: .65rem;
+}
+.compact-details summary {
+  cursor: pointer;
+  color: #ffe0a0;
+  font-weight: 950;
+}
+.compact-details[open] summary {
+  margin-bottom: .55rem;
+}
+.compact-panel {
+  padding: .75rem;
+}
+.monster-compact {
+  display: block;
+}
+.monster-compact .monster-list {
+  max-height: 360px;
+  overflow: auto;
+  padding-right: .25rem;
+}
+.uploaded-map-wrap img {
+  display: block;
+  width: 100%;
+  max-height: min(78vh, 980px);
+  object-fit: contain;
+  border-radius: 16px;
+}
+@media (max-width: 980px) {
+  .map-layout {
+    grid-template-columns: 1fr;
+  }
+  .map-layout > aside.dnd-card {
+    max-height: none;
+    overflow: visible;
+  }
+}
+@media (max-width: 620px) {
+  .map-tool-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .map-score {
+    width: max-content;
+  }
+  .compact-map-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* v35: owner announcement, one-roll ability lock, gridless AI map + VTT overlay */
+.dnd-announcement-strip {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: .7rem;
+  align-items: center;
+  margin: .75rem 0 .9rem;
+  padding: .55rem .7rem;
+  border: 1px solid rgba(242,196,93,.24);
+  border-radius: 14px;
+  background: linear-gradient(90deg, rgba(34,18,12,.82), rgba(11,8,7,.74));
+  overflow: hidden;
+}
+.announcement-label {
+  color: #f2c45d;
+  font-size: .72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  white-space: nowrap;
+}
+.announcement-viewport { overflow: hidden; min-width: 0; }
+.announcement-track {
+  display: flex;
+  width: max-content;
+  gap: 2.5rem;
+  animation: dnd-announcement-marquee 28s linear infinite;
+  color: #ffe4ad;
+  font-weight: 800;
+  white-space: nowrap;
+}
+@keyframes dnd-announcement-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.ability-roll-tools.is-locked .dnd-btn[disabled] { opacity: .55; cursor: not-allowed; }
+.ability-roll-lock-note { border-color: rgba(255,118,118,.22) !important; color: #ffd0c2 !important; }
+.uploaded-map-stage {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  max-height: min(78vh, 980px);
+  line-height: 0;
+}
+.uploaded-map-stage > img {
+  display: block;
+  max-width: 100%;
+  max-height: min(78vh, 980px);
+  object-fit: contain;
+  border-radius: 16px;
+}
+.map-vtt-grid,
+.map-collision-layer,
+.map-token-layer,
+.map-image-hitbox {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+}
+.map-vtt-grid {
+  pointer-events: none;
+  background-image: linear-gradient(to right, rgba(255,244,206,.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,244,206,.22) 1px, transparent 1px);
+  background-size: calc(100% / var(--map-size, 32)) calc(100% / var(--map-size, 32));
+  box-shadow: inset 0 0 0 1px rgba(255,244,206,.16);
+}
+.map-collision-layer { pointer-events: none; }
+.map-collision-cell {
+  position: absolute;
+  background: rgba(174, 35, 35, .18);
+  outline: 1px solid rgba(255, 91, 91, .18);
+}
+.map-token-layer { pointer-events: none; }
+.map-image-token {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  min-height: 22px;
+  padding: 2px 4px;
+  border-radius: 999px;
+  background: rgba(122, 37, 37, .92);
+  border: 2px solid rgba(255,241,189,.92);
+  color: #fff7df;
+  font-size: .66rem;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 4px 14px rgba(0,0,0,.35);
+}
+.map-image-hitbox {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  cursor: crosshair;
+}
+.map-image-hitbox:disabled { cursor: default; }
+.ai-grid-map .map-help small {
+  display: block;
+  margin-top: .22rem;
+  color: #bfae91;
+}
+@media (max-width: 720px) {
+  .dnd-announcement-strip { grid-template-columns: 1fr; }
+  .announcement-track { animation-duration: 22s; }
+  .map-image-token { min-width: 18px; min-height: 18px; font-size: .56rem; }
+}
+
+/* v36 owner database + locked ability score UX */
+input[data-ability-locked="1"] {
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.035);
+  border-style: dashed;
+}
+.ability-roll-tools.is-locked .dnd-btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+.owner-db-btn {
+  border-color: rgba(250, 204, 21, .42);
+  box-shadow: 0 0 0 1px rgba(250, 204, 21, .08) inset;
+}
+.owner-db-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+.owner-db-title p {
+  max-width: 780px;
+}
+.owner-db-card {
+  min-width: 0;
+}
+.owner-db-card > h3 {
+  margin: 0 0 .85rem;
+  color: var(--dnd-gold, #f4d27a);
+}
+.owner-db-row,
+.owner-db-character {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(230px, .8fr);
+  gap: .75rem;
+  align-items: center;
+  padding: .85rem;
+  margin-bottom: .7rem;
+  border: 1px solid rgba(244, 210, 122, .16);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, .18);
+}
+.owner-db-main,
+.owner-db-character > div:first-child {
+  display: grid;
+  gap: .32rem;
+  min-width: 0;
+}
+.owner-db-main small,
+.owner-db-character small,
+.owner-db-character span {
+  color: var(--dnd-muted, #c9bca8);
+  overflow-wrap: anywhere;
+}
+.owner-db-controls,
+.owner-db-character-actions {
+  display: grid;
+  gap: .45rem;
+}
+.owner-db-controls label {
+  font-size: .72rem;
+  color: var(--dnd-muted, #c9bca8);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.owner-db-controls select,
+.owner-db-controls input {
+  width: 100%;
+}
+.dnd-btn.danger {
+  border-color: rgba(239, 68, 68, .45);
+  background: rgba(127, 29, 29, .35);
+}
+@media (max-width: 980px) {
+  .owner-db-grid,
+  .owner-db-row,
+  .owner-db-character {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* v37 lobby room flow: explicit Play button + separated room dashboards */
+.room-play-btn {
+  width: 100%;
+  justify-content: center;
+  font-weight: 950;
+  letter-spacing: .02em;
+}
+.dungeon-room-inside-shell {
+  display: grid;
+  gap: 1rem;
+}
+.room-inside-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+.room-inside-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, .75fr);
+  gap: 1rem;
+  padding: 1.1rem;
+  border: 1px solid rgba(244, 210, 122, .22);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top right, rgba(250, 204, 21, .13), transparent 34%),
+    linear-gradient(135deg, rgba(36, 18, 10, .92), rgba(9, 7, 6, .82));
+  box-shadow: 0 18px 55px rgba(0,0,0,.24);
+}
+.room-inside-hero h2 {
+  margin: .15rem 0 .45rem;
+  color: #fff2c7;
+}
+.room-inside-hero p {
+  margin: 0;
+  color: var(--dnd-muted, #c9bca8);
+  line-height: 1.55;
+}
+.room-inside-actions,
+.owner-entry-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-top: .85rem;
+}
+.room-inside-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .65rem;
+}
+.room-inside-stat-grid > div,
+.room-inside-info > div {
+  padding: .75rem;
+  border: 1px solid rgba(244, 210, 122, .16);
+  border-radius: 16px;
+  background: rgba(0,0,0,.2);
+}
+.room-inside-stat-grid strong {
+  display: block;
+  color: #ffe08a;
+  font-size: 1.35rem;
+}
+.room-inside-stat-grid span,
+.room-inside-info span {
+  color: var(--dnd-muted, #c9bca8);
+}
+.room-inside-info {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .65rem;
+}
+.room-inside-info b {
+  display: block;
+  color: #f4d27a;
+  margin-bottom: .22rem;
+}
+.room-inside-info .span-all {
+  grid-column: 1 / -1;
+}
+.owner-entry-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .85rem;
+  border: 1px solid rgba(56, 189, 248, .22);
+  border-radius: 18px;
+  background: rgba(8, 19, 31, .48);
+}
+.owner-entry-switcher small {
+  display: block;
+  color: var(--dnd-muted, #c9bca8);
+  margin-top: .18rem;
+}
+@media (max-width: 860px) {
+  .room-inside-hero,
+  .room-inside-info {
+    grid-template-columns: 1fr;
+  }
+  .owner-entry-switcher {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+/* v38: in-room game mode, GM map sync, turn lock, player-only token movement, full dice set */
+.dnd-appbar.is-in-game {
+  border-color: rgba(239, 68, 68, .24);
+  background: linear-gradient(135deg, rgba(25, 8, 8, .72), rgba(10, 8, 6, .82));
+}
+.in-game-nav-hidden-note,
+.turn-lock-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .7rem .85rem;
+  border-radius: 16px;
+  border: 1px solid rgba(244, 210, 122, .18);
+  background: rgba(0,0,0,.24);
+  color: var(--dnd-muted, #c9bca8);
+}
+.in-game-nav-hidden-note span,
+.turn-lock-banner strong {
+  color: #ffe08a;
+  font-weight: 950;
+}
+.turn-lock-banner.is-locked {
+  border-color: rgba(239, 68, 68, .28);
+  background: rgba(80, 20, 20, .28);
+}
+.turn-lock-banner.can-act {
+  border-color: rgba(34, 197, 94, .28);
+  background: rgba(16, 77, 45, .28);
+}
+.turn-panel,
+.in-game-map-card,
+.in-game-dice-card {
+  margin-top: 1rem;
+}
+.compact-title {
+  margin-bottom: .75rem;
+}
+.turn-control-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto auto auto;
+  gap: .55rem;
+  align-items: end;
+}
+.turn-control-grid label {
+  display: grid;
+  gap: .35rem;
+  color: var(--dnd-muted, #c9bca8);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.turn-control-grid select,
+#room-active-map-select {
+  width: 100%;
+}
+.in-room-map-frame {
+  min-height: 340px;
+}
+.in-game-map-tools > .map-control-group:first-child {
+  margin-top: .75rem;
+}
+.compact-dice {
+  min-height: 170px;
+}
+.dice-all-buttons {
+  margin: .75rem 0;
+}
+.in-game-skill-roll {
+  margin-top: .8rem;
+}
+.in-game-dice-card.is-locked button,
+.in-game-dice-card.is-locked select {
+  opacity: .58;
+  cursor: not-allowed;
+}
+.in-game-roll-log {
+  max-height: 260px;
+  overflow: auto;
+  margin-top: .85rem;
+}
+.map-image-token.character-token {
+  background: rgba(30, 82, 130, .94);
+  border-color: rgba(191, 219, 254, .95);
+}
+.map-image-token.character-token.is-mine {
+  background: rgba(22, 120, 80, .96);
+  border-color: rgba(187, 247, 208, .98);
+}
+@media (max-width: 900px) {
+  .turn-control-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .in-game-nav-hidden-note,
+  .turn-lock-banner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+@media (max-width: 560px) {
+  .turn-control-grid {
+    grid-template-columns: 1fr;
+  }
+  .dice-all-buttons .dnd-btn {
+    flex: 1 1 74px;
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Gemu Nihongo - N5 Learn",
+  "description": "Platform belajar Bahasa Jepang interaktif buatan Darma (Gemu Nihongo). Dilengkapi Gemu AI, Kuis AI cerdas, Flashcards interaktif, serta materi lengkap Hiragana, Katakana, Kanji, dan Tata Bahasa JLPT N5.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": []
+}
