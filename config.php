@@ -4,9 +4,11 @@ declare(strict_types=1);
 /**
  * GEMU cPanel Config
  *
- * Catatan:
- * - Nilai default di bawah mengikuti konfigurasi database hosting yang dipakai website.
- * - Environment variable tetap diprioritaskan supaya hosting bisa override tanpa mengubah kode.
+ * Prioritas konfigurasi:
+ * 1. Environment variable hosting: GEMU_DB_HOST, GEMU_DB_NAME, GEMU_DB_USER, GEMU_DB_PASS.
+ * 2. File lokal non-repository: config.local.php.
+ *
+ * Jangan menyimpan username/password database asli di GitHub.
  */
 
 function gemu_config(): array
@@ -16,10 +18,24 @@ function gemu_config(): array
         return $cfg;
     }
 
-    $host = getenv('GEMU_DB_HOST') ?: 'localhost';
-    $dbname = getenv('GEMU_DB_NAME') ?: 'httpgemu_website';
-    $username = getenv('GEMU_DB_USER') ?: 'httpgemu_darma';
-    $password = getenv('GEMU_DB_PASS') ?: 'Macanputih123;';
+    $local = [];
+    $localFile = __DIR__ . '/config.local.php';
+    if (is_file($localFile)) {
+        $loaded = require $localFile;
+        if (is_array($loaded)) {
+            $local = $loaded;
+        }
+    }
+
+    $localDb = $local['db'] ?? $local;
+    if (!is_array($localDb)) {
+        $localDb = [];
+    }
+
+    $host = getenv('GEMU_DB_HOST') ?: (string)($localDb['host'] ?? 'localhost');
+    $dbname = getenv('GEMU_DB_NAME') ?: (string)($localDb['name'] ?? $localDb['dbname'] ?? '');
+    $username = getenv('GEMU_DB_USER') ?: (string)($localDb['user'] ?? $localDb['username'] ?? '');
+    $password = getenv('GEMU_DB_PASS') ?: (string)($localDb['pass'] ?? $localDb['password'] ?? '');
 
     $cfg = [
         'db' => [
@@ -42,6 +58,10 @@ function gemu_pdo(): PDO
     }
 
     $c = gemu_config()['db'];
+    if ($c['name'] === '' || $c['user'] === '') {
+        throw new RuntimeException('Konfigurasi database belum lengkap. Isi environment variable GEMU_DB_* atau buat config.local.php dari config.local.example.php.');
+    }
+
     $dsn = "mysql:host={$c['host']};dbname={$c['name']};charset={$c['charset']}";
 
     $pdo = new PDO($dsn, $c['user'], $c['pass'], [
