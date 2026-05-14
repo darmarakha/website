@@ -7,6 +7,7 @@ const T = {
     'nav.skills':       { id:'Keahlian',        en:'Skills' },
     'nav.certificates': { id:'Sertifikat',      en:'Certificates' },
     'nav.projects':     { id:'Proyek',          en:'Projects' },
+    'nav.game':         { id:'Game',            en:'Game' },
     'nav.business':     { id:'Bisnis',          en:'Business' },
     'nav.learn':        { id:'Belajar',         en:'Learn' },
     'nav.ai':           { id:'GEMU AI',         en:'GEMU AI' },

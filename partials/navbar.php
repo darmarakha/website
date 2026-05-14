@@ -108,6 +108,7 @@ $gemu_user_role = isset($_SESSION['user_role']) ? (string)$_SESSION['user_role']
             <a href="#skills" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">⚡</span><span data-i18n="nav.skills">Keahlian</span></a>
             <a href="#certifications" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">🏅</span><span data-i18n="nav.certificates">Sertifikat</span></a>
             <a href="#projects" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">📁</span><span data-i18n="nav.projects">Proyek</span></a>
+            <a href="<?php echo $gemu_base_path; ?>Game/" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">🎮</span><span data-i18n="nav.game">Game</span></a>
             <a href="<?php echo $gemu_base_path; ?>Belajar/Index.php" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">📚</span><span data-i18n="nav.learn">Belajar</span></a>
             <a href="<?php echo $gemu_base_path; ?>Bisnis/" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">📊</span><span data-i18n="nav.business">Bisnis</span></a>
             <?php if($gemu_is_owner): ?>
