@@ -94,6 +94,8 @@ $gemu_signup_url = '../../index.php';
     <div id="dnd-toast" class="dnd-toast" role="status" aria-live="polite"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js" defer></script>
+    <script src="../../data.js?v=<?php echo (int)$gemu_asset_version; ?>"></script>
+    <script src="../../app.js?v=<?php echo (int)$gemu_asset_version; ?>"></script>
     <script src="dnd-data.php?v=<?php echo (int)$gemu_asset_version; ?>" defer></script>
     <script src="dnd-expansion.js?v=<?php echo (int)$gemu_asset_version; ?>" defer></script>
     <script src="dnd-map-ai.js?v=<?php echo (int)$gemu_asset_version; ?>" defer></script>

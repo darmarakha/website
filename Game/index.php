@@ -3,7 +3,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-$gemu_base_path = '../../';
+$gemu_base_path = '../';
 $gemu_js_parts_version = 0;
 foreach (glob(__DIR__ . '/js/dnd-app-part-*.js') ?: [] as $gemu_part_file) {
     $gemu_js_parts_version = max($gemu_js_parts_version, @filemtime($gemu_part_file) ?: 0);
@@ -49,9 +49,9 @@ if (empty($_SESSION['gemu_dnd_token'])) {
     $_SESSION['gemu_dnd_token'] = bin2hex(random_bytes(24));
 }
 $gemu_dnd_token = $_SESSION['gemu_dnd_token'];
-$gemu_site_auth_api = '../../auth.php';
-$gemu_login_url = '../../index.php';
-$gemu_signup_url = '../../index.php';
+$gemu_site_auth_api = '../auth.php';
+$gemu_login_url = '../index.php';
+$gemu_signup_url = '../index.php';
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -67,11 +67,11 @@ $gemu_signup_url = '../../index.php';
         window.switchLang = window.switchLang || function(lang){ document.documentElement.lang = lang || 'id'; };
     </script>
     <?php
-    $gemu_navbar = __DIR__ . '/../../partials/navbar.php';
+    $gemu_navbar = __DIR__ . '/../partials/navbar.php';
     if (is_file($gemu_navbar)) {
         require $gemu_navbar;
     } else {
-        echo '<nav class="dnd-fallback-nav"><a href="../../bahasa-jepang/">← Back Home</a><strong>GemuYokai DnD 2014</strong></nav>';
+        echo '<nav class="dnd-fallback-nav"><a href="../">← Back Home</a><strong>GemuYokai DnD 2014</strong></nav>';
     }
     ?>
 
@@ -94,6 +94,8 @@ $gemu_signup_url = '../../index.php';
     <div id="dnd-toast" class="dnd-toast" role="status" aria-live="polite"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js" defer></script>
+    <script src="../data.js?v=<?php echo (int)$gemu_asset_version; ?>"></script>
+    <script src="../app.js?v=<?php echo (int)$gemu_asset_version; ?>"></script>
     <script src="dnd-data.php?v=<?php echo (int)$gemu_asset_version; ?>" defer></script>
     <script src="dnd-expansion.js?v=<?php echo (int)$gemu_asset_version; ?>" defer></script>
     <script src="dnd-map-ai.js?v=<?php echo (int)$gemu_asset_version; ?>" defer></script>
