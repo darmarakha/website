@@ -1,0 +1,84 @@
+{
+  "concepts": {
+    "buah": {
+      "id": ["buah", "buah-buahan"],
+      "en": ["fruit", "fruits"],
+      "examples": ["apel", "pisang", "jeruk", "mangga", "anggur"],
+      "properties": ["warna", "rasa", "vitamin"]
+    },
+    "apel": {
+      "id": ["apel"],
+      "en": ["apple"],
+      "parent": "buah",
+      "colors": ["merah", "hijau"],
+      "tastes": ["manis", "asam"]
+    },
+    "pisang": {
+      "id": ["pisang"],
+      "en": ["banana"],
+      "parent": "buah",
+      "colors": ["kuning", "hijau"],
+      "tastes": ["manis"]
+    },
+    "warna": {
+      "id": ["warna"],
+      "en": ["color", "colour"],
+      "values": ["merah", "kuning", "hijau", "biru", "hitam", "putih", "abu-abu", "cokelat", "jingga", "ungu"]
+    },
+    "bahasa": {
+      "id": ["bahasa"],
+      "en": ["language"],
+      "values": ["indonesia", "inggris", "jepang", "jerman", "perancis"]
+    },
+    "teknologi": {
+      "id": ["teknologi", "it", "komputer"],
+      "en": ["technology", "it", "computer"],
+      "sub": ["software", "hardware", "ai", "coding"]
+    },
+    "coding": {
+      "id": ["coding", "pemrograman", "program"],
+      "en": ["coding", "programming", "program"],
+      "languages": ["python", "javascript", "php", "html", "css", "sql", "java", "cpp"]
+    },
+    "pendidikan": {
+      "id": ["pendidikan", "sekolah", "kuliah", "universitas"],
+      "en": ["education", "school", "college", "university"],
+      "values": ["s1", "s2", "fisika", "malang"]
+    }
+  },
+  "translations": {
+    "merah": "red",
+    "kuning": "yellow",
+    "hijau": "green",
+    "biru": "blue",
+    "hitam": "black",
+    "putih": "white",
+    "manis": "sweet",
+    "asam": "sour",
+    "pahit": "bitter",
+    "pedas": "spicy",
+    "bagus": "good",
+    "jelek": "bad",
+    "cepat": "fast",
+    "lambat": "slow",
+    "besar": "large",
+    "kecil": "small",
+    "apel": "apple",
+    "pisang": "banana",
+    "jeruk": "orange",
+    "anggur": "grape",
+    "buah": "fruit"
+  },
+  "context_rules": [
+    {
+      "trigger": ["apel", "warna"],
+      "must_contain": ["merah", "hijau"],
+      "must_not_contain": ["biru", "ungu"]
+    },
+    {
+      "trigger": ["pisang", "warna"],
+      "must_contain": ["kuning", "hijau"],
+      "must_not_contain": ["merah", "biru"]
+    }
+  ]
+}

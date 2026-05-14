@@ -248,10 +248,25 @@ function website_profile_answer(string $q, string $mode = 'public'): array {
         $msg = 'Pengalaman Darma di website menonjolkan riset internasional di Korea Selatan/IBS, COSINE-100, analisis data eksperimen, background modeling, Gaussian peak fitting, dan simulasi efisiensi.';
     } elseif (preg_match('/kontak|contact|hubungi|email/i', $q)) {
         $msg = 'Untuk menghubungi Darma, gunakan section Contact Me di website. Form kontak meminta nama, email, subjek, dan pesan.';
+    } elseif (preg_match('/apel|pisang|buah/i', $q)) {
+        // Jawaban cerdas berbasis lexicon untuk contoh user
+        $lex = load_gemu_lexicon();
+        $term = preg_match('/apel/i', $q) ? 'apel' : (preg_match('/pisang/i', $q) ? 'pisang' : 'buah');
+        $data = $lex['concepts'][$term] ?? [];
+        if ($term === 'apel') $msg = "Apel itu biasanya berwarna " . implode(' atau ', $data['colors'] ?? []) . " dan rasanya " . implode('/', $data['tastes'] ?? []) . ".";
+        elseif ($term === 'pisang') $msg = "Pisang itu biasanya berwarna " . implode(' atau ', $data['colors'] ?? []) . " dan rasanya " . ($data['tastes'][0] ?? 'manis') . ".";
+        else $msg = "Darma suka buah-buahan seperti " . implode(', ', $lex['concepts']['buah']['examples'] ?? []) . ".";
     } else {
         $about = $ctx['about'] ? ' '.$ctx['about'][0] : '';
         $msg = 'Darma Alif Rakhaa adalah owner website ini. '.$ctx['hero'].$about.' Website ini berisi profil, pengalaman, skill, sertifikat, proyek, bisnis, belajar, dan GEMU AI.';
     }
+    
+    // Semantic Check
+    $check = gemu_semantic_check($q, $msg);
+    if (!$check['ok']) {
+        $msg .= " (Catatan: GEMU mendeteksi kemungkinan jawaban kurang nyambung secara semantik)";
+    }
+    
     return ['message'=>safe_text($msg, 900), 'context'=>$ctx];
 }
 

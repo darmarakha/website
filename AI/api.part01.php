@@ -401,6 +401,9 @@ function save_brain(array $brain): bool {
 
 function normalize_prompt(string $q): string {
     $q = trim($q);
+    $lexicon = load_gemu_lexicon();
+    $translations = $lexicon['translations'] ?? [];
+    
     $replacements = [
         '/\brapih\b/i' => 'rapi',
         '/\beror\b/i' => 'error',
@@ -411,6 +414,12 @@ function normalize_prompt(string $q): string {
         '/\bmemberishkan\b/i' => 'membersihkan',
         '/\bkatif\b/i' => 'aktif'
     ];
+    
+    // Add translations to replacements for better understanding
+    foreach ($translations as $id => $en) {
+        $replacements['/\b'.preg_quote($en, '/').'\b/i'] = $id; // Normalisasi ke Bahasa Indonesia sebagai baseline
+    }
+    
     foreach ($replacements as $pattern => $replacement) $q = preg_replace($pattern, $replacement, $q);
     return preg_replace('/\s+/', ' ', (string)$q);
 }
