@@ -141,7 +141,15 @@ $gemu_asset_version = max(
                 <h1 class="font-serif text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight leading-[1.1] mb-4 sm:mb-6 reveal" style="transition-delay:.2s">
                     Darma Alif<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-300 via-accent-400 to-accent-500">Rakhaa</span>
                 </h1>
-                <p class="text-base sm:text-lg md:text-xl text-navy-300 leading-relaxed max-w-xl mb-8 sm:mb-10 reveal i18n-fade" style="transition-delay:.3s" data-i18n="hero.desc">Lulusan S1 Fisika dari Universitas Negeri Malang yang berfokus pada <span class="text-white font-medium">Data Analysis</span> dan <span class="text-white font-medium">Python Programming</span>.</p>
+                <p class="text-base sm:text-lg md:text-xl text-navy-300 leading-relaxed max-w-xl mb-4 sm:mb-6 reveal i18n-fade" style="transition-delay:.3s" data-i18n="hero.desc">Lulusan S1 Fisika dari Universitas Negeri Malang yang berfokus pada <span class="text-white font-medium">Data Analysis</span> dan <span class="text-white font-medium">Python Programming</span>.</p>
+                <div class="flex items-center gap-4 mb-8 sm:mb-10 reveal" style="transition-delay:.35s">
+                    <a href="https://www.linkedin.com/in/darmarakhaa" target="_blank" rel="noopener" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-accent-400 hover:border-accent-400/50 hover:bg-accent-400/10 transition-all duration-300 shadow-lg" title="LinkedIn">
+                        <i data-lucide="linkedin" class="w-5 h-5"></i>
+                    </a>
+                    <a href="https://github.com/darmarakha" target="_blank" rel="noopener" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-white/50 hover:bg-white/10 transition-all duration-300 shadow-lg" title="GitHub">
+                        <i data-lucide="github" class="w-5 h-5"></i>
+                    </a>
+                </div>
                 <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 reveal" style="transition-delay:.4s">
                     <a href="#certifications" class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-accent-500 text-white font-semibold rounded-xl active:scale-[0.98] transition-all duration-200 shadow-xl shadow-accent-500/25 text-sm sm:text-base">
                         <i data-lucide="award" class="w-4 h-4 sm:w-5 sm:h-5"></i>
@@ -150,14 +158,6 @@ $gemu_asset_version = max(
                     <a href="#projects" class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-accent-500 text-white font-semibold rounded-xl active:scale-[0.98] transition-all duration-200 shadow-xl shadow-accent-500/25 text-sm sm:text-base">
                         <i data-lucide="folder-open" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                         <span>Lihat Projek</span>
-                    </a>
-                    <a href="https://www.linkedin.com/in/darmarakhaa" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-[#0077b5] text-white font-semibold rounded-xl active:scale-[0.98] transition-all duration-200 shadow-xl shadow-blue-500/25 text-sm sm:text-base">
-                        <i data-lucide="linkedin" class="w-4 h-4 sm:w-5 sm:h-5"></i>
-                        <span>LinkedIn</span>
-                    </a>
-                    <a href="https://github.com/darmarakha" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-[#24292e] text-white font-semibold rounded-xl active:scale-[0.98] transition-all duration-200 shadow-xl shadow-gray-500/25 text-sm sm:text-base">
-                        <i data-lucide="github" class="w-4 h-4 sm:w-5 sm:h-5"></i>
-                        <span>GitHub</span>
                     </a>
                     <a href="#contact" class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-white/5 border border-white/20 text-white font-semibold rounded-xl active:scale-[0.98] transition-all duration-200 backdrop-blur-sm text-sm sm:text-base">
                         <i data-lucide="mail" class="w-4 h-4 sm:w-5 sm:h-5"></i>

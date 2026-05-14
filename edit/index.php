@@ -401,7 +401,6 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
             projects.forEach((p, index) => {
                 const title = projI18n[p.titleKey] || { id: '', en: '' };
                 const desc = projI18n[p.descKey] || { id: '', en: '' };
-                const detail = projI18n[p.detailKey] || { id: '', en: '' };
 
                 const card = document.createElement('div');
                 card.className = 'packet-card p-6 rounded-3xl flex flex-col gap-6';
@@ -413,32 +412,76 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                         </div>
                         <button onclick="removePacket(${index})" class="text-slate-600 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
+                    
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
                             <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Judul (ID)</label>
-                            <input type="text" value="${title.id}" onchange="updatePacket(${index}, 'p_title_id', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none">
+                            <input type="text" value="${title.id}" onchange="updatePacket(${index}, 'p_title_id', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-blue-500">
                         </div>
                         <div class="flex flex-col gap-2">
                             <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Title (EN)</label>
-                            <input type="text" value="${title.en}" onchange="updatePacket(${index}, 'p_title_en', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none">
+                            <input type="text" value="${title.en}" onchange="updatePacket(${index}, 'p_title_en', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-blue-500">
                         </div>
                     </div>
+
                     <div class="flex flex-col gap-2">
                         <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Ringkasan (ID)</label>
-                        <textarea onchange="updatePacket(${index}, 'p_desc_id', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white h-16 outline-none">${desc.id}</textarea>
+                        <textarea onchange="updatePacket(${index}, 'p_desc_id', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white h-20 outline-none focus:border-blue-500">${desc.id}</textarea>
                     </div>
-                    <div class="flex flex-col gap-2">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Link / File URL</label>
-                        <input type="text" value="${p.fileUrl}" onchange="updatePacket(${index}, 'fileUrl', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-blue-400 outline-none">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Cover Image Upload -->
+                        <div class="flex flex-col gap-3">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Cover Image</label>
+                            <div class="relative group h-40 rounded-2xl border border-slate-800 border-dashed bg-slate-900/50 overflow-hidden flex flex-col items-center justify-center">
+                                ${p.imgSrc ? `
+                                    <img src="${p.imgSrc}" class="w-full h-full object-cover opacity-40">
+                                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950/60">
+                                        <button onclick="triggerProjectUpload(${index}, 'img')" class="px-4 py-2 bg-blue-600 text-[10px] font-bold text-white rounded-lg">GANTI COVER</button>
+                                    </div>
+                                ` : `
+                                    <button onclick="triggerProjectUpload(${index}, 'img')" class="flex flex-col items-center gap-2 text-slate-500 hover:text-white transition-colors">
+                                        <i data-lucide="image" class="w-6 h-6"></i>
+                                        <span class="text-[10px] font-bold">UPLOAD COVER</span>
+                                    </button>
+                                `}
+                                <input type="file" id="p-img-${index}" class="hidden" onchange="handleProjectUpload(${index}, 'img', this)">
+                            </div>
+                            <input type="text" value="${p.imgSrc}" onchange="updatePacket(${index}, 'imgSrc', this.value)" class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-[10px] text-slate-400 outline-none" placeholder="Atau paste URL gambar...">
+                        </div>
+
+                        <!-- Project File Upload -->
+                        <div class="flex flex-col gap-3">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Project File / Link</label>
+                            <div class="relative group h-40 rounded-2xl border border-slate-800 border-dashed bg-slate-900/50 overflow-hidden flex flex-col items-center justify-center">
+                                ${p.fileUrl ? `
+                                    <div class="flex flex-col items-center gap-2">
+                                        <i data-lucide="${p.fileUrl.endsWith('.pdf') ? 'file-text' : 'link'}" class="w-8 h-8 text-blue-500"></i>
+                                        <span class="text-[10px] font-medium text-slate-400 truncate max-w-[150px]">${p.fileUrl.split('/').pop()}</span>
+                                    </div>
+                                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950/60">
+                                        <button onclick="triggerProjectUpload(${index}, 'file')" class="px-4 py-2 bg-blue-600 text-[10px] font-bold text-white rounded-lg">GANTI FILE</button>
+                                    </div>
+                                ` : `
+                                    <button onclick="triggerProjectUpload(${index}, 'file')" class="flex flex-col items-center gap-2 text-slate-500 hover:text-white transition-colors">
+                                        <i data-lucide="file-up" class="w-6 h-6"></i>
+                                        <span class="text-[10px] font-bold">UPLOAD FILE</span>
+                                    </button>
+                                `}
+                                <input type="file" id="p-file-${index}" class="hidden" onchange="handleProjectUpload(${index}, 'file', this)">
+                            </div>
+                            <input type="text" value="${p.fileUrl}" onchange="updatePacket(${index}, 'fileUrl', this.value)" class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-[10px] text-blue-400 outline-none" placeholder="Atau paste URL/Link...">
+                        </div>
                     </div>
+
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tags (comma separated)</label>
-                            <input type="text" value="${(p.tags || []).join(', ')}" onchange="updatePacket(${index}, 'tags', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tags (pisahkan koma)</label>
+                            <input type="text" value="${(p.tags || []).join(', ')}" onchange="updatePacket(${index}, 'tags', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-blue-500" placeholder="e.g. Python, AI, React">
                         </div>
                         <div class="flex flex-col gap-2">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Image Source</label>
-                            <input type="text" value="${p.imgSrc}" onchange="updatePacket(${index}, 'imgSrc', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">File Label</label>
+                            <input type="text" value="${p.fileLabel || ''}" onchange="updatePacket(${index}, 'fileLabel', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-blue-500" placeholder="e.g. Website Belajar">
                         </div>
                     </div>
                 `;
@@ -504,8 +547,9 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                 else if (field === 'p_title_en') projectsI18n[p.titleKey].en = value;
                 else if (field === 'p_desc_id') projectsI18n[p.descKey].id = value;
                 else if (field === 'fileUrl') p.fileUrl = value;
+                else if (field === 'fileLabel') p.fileLabel = value;
                 else if (field === 'imgSrc') p.imgSrc = value;
-                else if (field === 'tags') p.tags = value.split(',').map(t => t.trim());
+                else if (field === 'tags') p.tags = value.split(',').map(t => t.trim()).filter(t => t !== '');
             }
         }
 
@@ -519,12 +563,12 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
             showLoading(true);
             try {
                 const fd = new FormData();
-                fd.append('action', 'upload_project_file');
-                fd.append('project_file', file);
+                fd.append('action', 'upload_image'); // Di api.php, upload_image simpan ke uploads/
+                fd.append('image', file);
                 const res = await fetch('api.php', { method: 'POST', body: fd });
                 const data = await res.json();
                 if (data.status === 'success') {
-                    const url = data.url.replace(/^\//, '');
+                    const url = '/' + data.url.replace(/^\//, '');
                     if (file.name.toLowerCase().endsWith('.pdf')) {
                         certs[index].pdfSrc = url;
                         certs[index].imgSrc = url;
@@ -533,9 +577,53 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                         certs[index].pdfSrc = '';
                     }
                     renderPackets();
+                    lucide.createIcons();
                 } else alert(data.message);
             } catch(e) { alert('Upload gagal.'); }
             finally { showLoading(false); }
+        }
+
+        function triggerProjectUpload(index, type) {
+            if (type === 'img') document.getElementById(`p-img-${index}`).click();
+            else document.getElementById(`p-file-${index}`).click();
+        }
+
+        async function handleProjectUpload(index, type, input) {
+            const file = input.files[0];
+            if (!file) return;
+            showLoading(true);
+            try {
+                const fd = new FormData();
+                if (type === 'img') {
+                    fd.append('action', 'upload_image');
+                    fd.append('image', file);
+                } else {
+                    fd.append('action', 'upload_project_file');
+                    fd.append('project_file', file);
+                }
+                
+                const res = await fetch('api.php', { method: 'POST', body: fd });
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    const url = data.url.startsWith('/') ? data.url : '/' + data.url;
+                    if (type === 'img') {
+                        projects[index].imgSrc = url;
+                        projects[index].fullSrc = url;
+                    } else {
+                        projects[index].fileUrl = url;
+                    }
+                    renderPackets();
+                    lucide.createIcons();
+                } else {
+                    alert(data.message);
+                }
+            } catch(e) {
+                console.error(e);
+                alert('Upload gagal.');
+            } finally {
+                showLoading(false);
+            }
         }
 
         async function saveAll() {
