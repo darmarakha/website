@@ -103,9 +103,9 @@ function renderSkills() {
 function renderCerts() {
     const grid = document.getElementById('cert-grid');
     grid.innerHTML = certsData.map((c, i) => `
-        <div class="cert-card group cursor-pointer bg-white/5 border ${c.featured ? 'border-accent-500/30' : 'border-white/10'} rounded-xl sm:rounded-2xl overflow-hidden backdrop-blur-sm reveal visible ${c.span}"
+        <div class="cert-card group cursor-pointer bg-white/5 border ${c.featured ? 'border-accent-500/30' : 'border-white/10'} rounded-xl sm:rounded-2xl overflow-hidden backdrop-blur-sm reveal visible ${c.span} flex flex-col h-full"
              onclick="openLightbox('${c.fullSrc || c.coverSrc || c.imgSrc || ''}','${certsI18n[c.titleKey][currentLang]}','${c.pdfSrc || ''}')">
-            ${c.featured ? `<div class="relative"><div class="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-10 px-2 sm:px-3 py-0.5 sm:py-1 bg-accent-500 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-lg">${t('cert.featured')}</div>` : '<div>'}
+            ${c.featured ? `<div class="relative flex-shrink-0"><div class="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-10 px-2 sm:px-3 py-0.5 sm:py-1 bg-accent-500 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-lg">${t('cert.featured')}</div>` : '<div class="flex-shrink-0">'}
             <div class="aspect-[4/3] overflow-hidden bg-navy-900/50 relative">
                 ${(c.imgSrc || '').toLowerCase().endsWith('.pdf') || (c.pdfSrc || '').toLowerCase().endsWith('.pdf') 
                     ? `<iframe src="${c.pdfSrc || c.imgSrc}#toolbar=0&navpanes=0&scrollbar=0" class="w-full h-full pointer-events-none scale-110" style="border:none;"></iframe>
@@ -114,14 +114,14 @@ function renderCerts() {
                 }
             </div>
             ${c.featured ? '</div>' : '</div>'}
-            <div class="p-4 sm:p-6">
-                <div class="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+            <div class="p-4 sm:p-6 flex flex-col flex-grow">
+                <div class="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3 flex-shrink-0">
                     <i data-lucide="${c.tagIcon}" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent-400"></i>
                     <span class="text-[10px] sm:text-xs font-medium text-accent-400 uppercase tracking-wider">${certsI18n[c.tagKey][currentLang]}</span>
                 </div>
-                <h3 class="text-base sm:text-lg font-bold text-white mb-1 sm:mb-2">${certsI18n[c.titleKey][currentLang]}</h3>
-                <p class="text-xs sm:text-sm text-navy-300 leading-relaxed">${certsI18n[c.descKey][currentLang]}</p>
-                <div class="flex items-center gap-1.5 sm:gap-2 mt-3 sm:mt-4 text-accent-400 text-xs sm:text-sm font-medium">
+                <h3 class="text-base sm:text-lg font-bold text-white mb-1 sm:mb-2 flex-shrink-0">${certsI18n[c.titleKey][currentLang]}</h3>
+                <p class="text-xs sm:text-sm text-navy-300 leading-relaxed flex-grow">${certsI18n[c.descKey][currentLang]}</p>
+                <div class="flex items-center gap-1.5 sm:gap-2 mt-4 text-accent-400 text-xs sm:text-sm font-medium flex-shrink-0">
                     <span>${t('cert.viewBtn')}</span>
                     <i data-lucide="expand" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </div>
@@ -152,17 +152,17 @@ function renderProjects() {
         }));
 
         return `
-            <div class="project-card bg-white rounded-xl sm:rounded-2xl border border-navy-100 overflow-hidden reveal visible ${p.span || ''} flex flex-col shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                <button type="button" onclick="openProjectModalFromData('${payload}')" class="block text-left aspect-[16/10] overflow-hidden bg-navy-50 group w-full" aria-label="${t('proj.openFileBtn')}: ${title}">
+            <div class="project-card bg-white rounded-xl sm:rounded-2xl border border-navy-100 overflow-hidden reveal visible ${p.span || ''} flex flex-col h-full shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <button type="button" onclick="openProjectModalFromData('${payload}')" class="block text-left aspect-[16/10] overflow-hidden bg-navy-50 group w-full flex-shrink-0" aria-label="${t('proj.openFileBtn')}: ${title}">
                     <img src="${p.imgSrc}" alt="${title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy">
                 </button>
-                <div class="p-4 sm:p-6 flex flex-col flex-1">
-                    <div class="flex flex-wrap gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+                <div class="p-4 sm:p-6 flex flex-col flex-grow">
+                    <div class="flex flex-wrap gap-1.5 sm:gap-2 mb-2 sm:mb-3 flex-shrink-0">
                         ${(p.tags || []).map(tag => `<span class="px-2 sm:px-2.5 py-0.5 sm:py-1 bg-accent-500/10 text-accent-600 text-[10px] sm:text-xs font-medium rounded-md">${tag}</span>`).join('')}
                     </div>
-                    <h3 class="text-base sm:text-lg font-bold text-navy-900 mb-1 sm:mb-2 leading-snug">${title}</h3>
-                    <p class="text-xs sm:text-sm text-navy-500 leading-relaxed line-clamp-3">${desc}</p>
-                    <div class="mt-4 pt-4 border-t border-navy-100 flex flex-col sm:flex-row gap-2 sm:items-center">
+                    <h3 class="text-base sm:text-lg font-bold text-navy-900 mb-1 sm:mb-2 leading-snug flex-shrink-0">${title}</h3>
+                    <p class="text-xs sm:text-sm text-navy-500 leading-relaxed line-clamp-3 flex-grow">${desc}</p>
+                    <div class="mt-auto pt-4 border-t border-navy-100 flex flex-col sm:flex-row gap-2 sm:items-center flex-shrink-0">
                         <button type="button" onclick="openProjectModalFromData('${payload}')" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-navy-900 text-white text-xs sm:text-sm font-semibold rounded-xl hover:bg-navy-800 active:scale-[0.98] transition-all">
                             <i data-lucide="folder-open" class="w-4 h-4"></i>
                             <span>${t('proj.openFileBtn')}</span>

@@ -66,6 +66,10 @@
         <a href="#materi" class="text-sm text-neutral-400 hover:text-white transition-colors">Materi</a>
         <a href="#misi-harian" class="text-sm text-neutral-400 hover:text-white transition-colors">Misi</a>
         <a href="#progress" class="text-sm text-neutral-400 hover:text-white transition-colors">Progress</a>
+        <a href="/index.php" class="text-sm font-bold text-sakura-400 hover:text-sakura-300 transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sakura-400/10 border border-sakura-400/20">
+          <i data-lucide="home" class="w-4 h-4"></i>
+          Home Utama
+        </a>
       </div>
       <div class="flex items-center gap-3">
         <!-- INTEGRASI PHP: Menampilkan Profil / Logout jika ada Session -->
@@ -115,6 +119,10 @@
     <a href="#materi" class="text-2xl font-semibold text-neutral-300 hover:text-white transition-colors mobile-link">Materi</a>
     <a href="#misi-harian" class="text-2xl font-semibold text-neutral-300 hover:text-white transition-colors mobile-link">Misi Harian</a>
     <a href="#progress" class="text-2xl font-semibold text-neutral-300 hover:text-white transition-colors mobile-link">Progress</a>
+    <a href="/index.php" class="text-2xl font-bold text-sakura-400 hover:text-sakura-300 transition-colors mobile-link flex items-center gap-2">
+      <i data-lucide="home" class="w-6 h-6"></i>
+      Home Utama
+    </a>
     
     <?php if (!empty($_SESSION['user_name'])): ?>
         <a href="?logout=1" class="btn-secondary text-lg font-semibold text-rose-400 hover:text-white px-8 py-3 rounded-xl mt-4 border border-rose-500/30 text-center block">Keluar</a>
@@ -831,10 +839,9 @@
       <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
         <p class="text-xs text-neutral-600">© 2026 NihongoLab. All rights reserved.</p>
         <div class="flex items-center gap-4">
-          <a href="#" class="text-neutral-600 hover:text-sakura-400 transition-colors"><i data-lucide="twitter" class="w-4 h-4"></i></a>
+          <a href="https://www.linkedin.com/in/darmarakhaa" target="_blank" rel="noopener" class="text-neutral-600 hover:text-sakura-400 transition-colors"><i data-lucide="linkedin" class="w-4 h-4"></i></a>
+          <a href="https://github.com/darmarakha" target="_blank" rel="noopener" class="text-neutral-600 hover:text-sakura-400 transition-colors"><i data-lucide="github" class="w-4 h-4"></i></a>
           <a href="#" class="text-neutral-600 hover:text-sakura-400 transition-colors"><i data-lucide="instagram" class="w-4 h-4"></i></a>
-          <a href="#" class="text-neutral-600 hover:text-sakura-400 transition-colors"><i data-lucide="youtube" class="w-4 h-4"></i></a>
-          <a href="#" class="text-neutral-600 hover:text-sakura-400 transition-colors"><i data-lucide="github" class="w-4 h-4"></i></a>
         </div>
       </div>
     </div>
@@ -907,6 +914,100 @@
     }
   </script>
   
+  <!-- ========== LEVEL MODAL ========== -->
+  <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 transition-all duration-500 opacity-0 pointer-events-none" id="levelModal">
+    <div class="absolute inset-0 bg-dark-900/80 backdrop-blur-sm" onclick="closeLevelModal()"></div>
+    <div class="relative w-full max-w-lg glass-card rounded-[2rem] border border-white/10 p-8 shadow-2xl scale-95 transition-transform duration-500 overflow-hidden" id="levelCard">
+      <!-- Decor -->
+      <div class="absolute -top-12 -right-12 w-32 h-32 bg-sakura-500/20 rounded-full blur-3xl"></div>
+      
+      <!-- Quiz Content -->
+      <div id="quizContent">
+        <div class="flex items-center justify-between mb-8">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-sakura-400/10 flex items-center justify-center border border-sakura-400/20">
+              <i data-lucide="clipboard-list" class="w-5 h-5 text-sakura-400"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-white">Quiz Penempatan</h3>
+              <p class="text-xs text-neutral-500">Pertanyaan <span id="qNum">1</span>/5</p>
+            </div>
+          </div>
+          <button onclick="closeLevelModal()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-neutral-400 hover:text-white transition-colors">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div class="mb-8">
+          <div class="flex justify-between text-xs font-medium text-neutral-500 mb-2">
+            <span>Progress Quiz</span>
+            <span id="qProgress">0%</span>
+          </div>
+          <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-sakura-400 to-orange-400 transition-all duration-500" id="qBar" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <h4 class="text-xl font-semibold text-white mb-6 leading-relaxed" id="questionText">Memuat pertanyaan...</h4>
+        
+        <div class="space-y-3" id="optionsContainer">
+          <!-- Options injected by JS -->
+        </div>
+      </div>
+
+      <!-- Result Content -->
+      <div id="quizResult" class="hidden text-center py-4">
+        <div class="text-6xl mb-6" id="resultEmoji">🏆</div>
+        <h3 class="text-2xl font-bold text-white mb-2" id="resultTitle">Level Kamu: N5</h3>
+        <p class="text-neutral-400 mb-8" id="resultDesc">Selamat! Kamu siap untuk mulai belajar materi N5.</p>
+        <button onclick="closeLevelModal()" class="btn-primary w-full py-4 rounded-2xl font-bold">Mulai Belajar Sekarang</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== TOAST NOTIFICATION ========== -->
+  <div class="fixed bottom-8 right-8 z-[70] translate-y-24 transition-all duration-500" id="toast">
+    <div class="glass-card rounded-2xl border border-white/10 p-4 shadow-2xl flex items-center gap-4 min-w-[300px]">
+      <div class="w-10 h-10 rounded-xl bg-sakura-400/15 flex items-center justify-center shrink-0" id="toastIconBox">
+        <i data-lucide="check-circle" class="w-5 h-5 text-sakura-400" id="toastIcon"></i>
+      </div>
+      <div>
+        <h4 class="text-sm font-bold text-white" id="toastTitle">Berhasil</h4>
+        <p class="text-xs text-neutral-400" id="toastMsg">Progress kamu telah disimpan.</p>
+      </div>
+      <button onclick="hideToast()" class="ml-auto text-neutral-500 hover:text-white">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <style>
+    /* Additional Modal & Toast Styles */
+    #levelModal.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #levelModal.active #levelCard {
+      transform: scale(1);
+    }
+    #toast.show {
+      transform: translateY(0);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(244, 114, 182, 0.3);
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(244, 114, 182, 0.5);
+    }
+  </style>
+
   <script src="assets/js/script.js"></script>
 </body>
 </html>

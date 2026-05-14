@@ -151,6 +151,14 @@ $gemu_asset_version = max(
                         <i data-lucide="folder-open" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                         <span>Lihat Projek</span>
                     </a>
+                    <a href="https://www.linkedin.com/in/darmarakhaa" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-[#0077b5] text-white font-semibold rounded-xl active:scale-[0.98] transition-all duration-200 shadow-xl shadow-blue-500/25 text-sm sm:text-base">
+                        <i data-lucide="linkedin" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                        <span>LinkedIn</span>
+                    </a>
+                    <a href="https://github.com/darmarakha" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-[#24292e] text-white font-semibold rounded-xl active:scale-[0.98] transition-all duration-200 shadow-xl shadow-gray-500/25 text-sm sm:text-base">
+                        <i data-lucide="github" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                        <span>GitHub</span>
+                    </a>
                     <a href="#contact" class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-white/5 border border-white/20 text-white font-semibold rounded-xl active:scale-[0.98] transition-all duration-200 backdrop-blur-sm text-sm sm:text-base">
                         <i data-lucide="mail" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                         <span data-i18n="hero.cta2">Hubungi Saya</span>
