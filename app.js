@@ -106,8 +106,12 @@ function renderCerts() {
         <div class="cert-card group cursor-pointer bg-white/5 border ${c.featured ? 'border-accent-500/30' : 'border-white/10'} rounded-xl sm:rounded-2xl overflow-hidden backdrop-blur-sm reveal visible ${c.span}"
              onclick="openLightbox('${c.fullSrc || c.coverSrc || c.imgSrc || ''}','${certsI18n[c.titleKey][currentLang]}','${c.pdfSrc || ''}')">
             ${c.featured ? `<div class="relative"><div class="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-10 px-2 sm:px-3 py-0.5 sm:py-1 bg-accent-500 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-lg">${t('cert.featured')}</div>` : '<div>'}
-            <div class="aspect-[4/3] overflow-hidden">
-                <img src="${c.coverSrc || c.imgSrc || c.fullSrc || ''}" alt="${certsI18n[c.titleKey][currentLang]}" class="w-full h-full object-cover transition-transform duration-500" loading="lazy">
+            <div class="aspect-[4/3] overflow-hidden bg-navy-900/50 relative">
+                ${(c.imgSrc || '').toLowerCase().endsWith('.pdf') || (c.pdfSrc || '').toLowerCase().endsWith('.pdf') 
+                    ? `<iframe src="${c.pdfSrc || c.imgSrc}#toolbar=0&navpanes=0&scrollbar=0" class="w-full h-full pointer-events-none scale-110" style="border:none;"></iframe>
+                       <div class="absolute inset-0 z-10"></div>` 
+                    : `<img src="${c.coverSrc || c.imgSrc || c.fullSrc || ''}" alt="${certsI18n[c.titleKey][currentLang]}" class="w-full h-full object-cover transition-transform duration-500" loading="lazy">`
+                }
             </div>
             ${c.featured ? '</div>' : '</div>'}
             <div class="p-4 sm:p-6">
