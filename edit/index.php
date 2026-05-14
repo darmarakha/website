@@ -260,7 +260,7 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                 document.getElementById('editor').value = rawData;
             }
         }
-
+        function loadSection(section) {
             currentSection = section;
             currentFile = '../data.js';
             setMode('visual');
@@ -381,6 +381,10 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20"><i data-lucide="${s.icon}" class="w-4 h-4"></i></div>
+                            <span class="text-xs font-bold text-slate-300">SKILL PACKET</span>
+                        </div>
+                        <button onclick="removePacket(${index})" class="text-slate-600 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
                             <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Nama (ID)</label>
