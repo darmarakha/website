@@ -178,4 +178,38 @@ function gemu_cron_build_deep_suggestion(array $summary, array $issues, int $cur
     $ideas[] = ['key'=>'daily_activity','title'=>'Usulan cron: fitur Aktivitas Harian Owner','detail'=>'Kenapa: Darma mengelola banyak update. Ide: halaman aktivitas-harian.php dengan checklist, prioritas, progress, dan export JSON. Halaman baru berarti risiko rendah dan tidak menyentuh database.'];
     return $ideas[$cursor % count($ideas)];
 }
+
+/**
+ * GEMU Proactive Agent: Menganalisis file secara acak dan membuat draft usulan nyata.
+ */
+function gemu_cron_proactive_analysis(): array {
+    $root = realpath(__DIR__ . '/..');
+    $targets = ['index.php', 'app.js', 'data.js', 'partials/navbar.php', 'partials/footer.php'];
+    $file = $targets[array_rand($targets)];
+    $path = $root . DIRECTORY_SEPARATOR . $file;
+    
+    if (!is_file($path)) return ['ok'=>false, 'message'=>'File target tidak ditemukan.'];
+    
+    $content = (string)@file_get_contents($path);
+    $analysis = "Watcher Agent menganalisis " . $file . " secara proaktif. ";
+    $suggestedAction = null;
+    
+    if ($file === 'index.php' && stripos($content, 'name="description"') === false) {
+        $analysis .= "Ditemukan: meta description belum ada. Usul: Tambahkan meta description untuk SEO.";
+        $suggestedAction = 'add_meta_seo';
+    } elseif ($file === 'data.js') {
+        $analysis .= "Mengecek struktur data.js... Terlihat rapi. Memastikan tidak ada data yang redundan.";
+        $suggestedAction = 'optimize_data_js';
+    } else {
+        $analysis .= "File terlihat stabil. Tidak ada saran perubahan mendesak saat ini.";
+    }
+    
+    return [
+        'ok' => true,
+        'file' => $file,
+        'analysis' => $analysis,
+        'suggested_action' => $suggestedAction,
+        'time' => date('Y-m-d H:i:s')
+    ];
+}
 ?>

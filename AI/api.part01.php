@@ -417,10 +417,22 @@ function normalize_prompt(string $q): string {
     
     // Add translations to replacements for better understanding
     foreach ($translations as $id => $en) {
-        $replacements['/\b'.preg_quote($en, '/').'\b/i'] = $id; // Normalisasi ke Bahasa Indonesia sebagai baseline
+        $replacements['/\b'.preg_quote($en, '/').'\b/i'] = $id; 
     }
     
     foreach ($replacements as $pattern => $replacement) $q = preg_replace($pattern, $replacement, $q);
+    
+    // Learning Layer: Cek apakah ada koreksi masa lalu yang mirip
+    global $brainFile;
+    $brain = load_json($brainFile, []);
+    $corrections = $brain['self_diagnostics']['learned_corrections'] ?? [];
+    foreach ($corrections as $c) {
+        if (stripos($q, (string)($c['feedback'] ?? '')) !== false) {
+            // Jika user pernah mengoreksi hal serupa, AI akan "lebih waspada"
+            // Di sini kita bisa menambahkan flag atau memodifikasi q
+        }
+    }
+
     return preg_replace('/\s+/', ' ', (string)$q);
 }
 

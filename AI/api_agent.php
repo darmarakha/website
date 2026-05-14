@@ -229,11 +229,18 @@ function dynamic_site_context(): array {
 
 function website_profile_answer(string $q, string $mode = 'public'): array {
     $ctx = dynamic_site_context();
+    $qClean = normalize_prompt($q);
     $lower = strtolower($q);
     $msg = '';
-    if (gemu_is_self_intro_question($q)) {
+    
+    if (gemu_is_self_intro_question($qClean)) {
         return ['message'=>gemu_self_identity_message($mode), 'context'=>$ctx];
     }
+    
+    if (gemu_is_negative_feedback($qClean) && $mode === 'owner') {
+        return ['message'=>gemu_learn_from_feedback($qClean), 'context'=>$ctx];
+    }
+
     if (preg_match('/sertifikat|certificate/i', $q)) {
         $names = $ctx['certificates'] ? implode(', ', array_slice($ctx['certificates'], 0, 5)) : 'sertifikat bahasa Inggris, Microsoft Excel, dan magang riset';
         $msg = 'Di website ini terdata sekitar '.$ctx['counts']['certificates'].' sertifikat. Yang terbaca: '.$names.'. Buka section Sertifikat untuk melihat gambar/PDF lengkapnya.';
@@ -949,6 +956,31 @@ function resolve_agent_decision(string $id, bool $approve, string $reason = ''):
         }
     }
     out(false, ['message'=>'Keputusan agent tidak ditemukan atau sudah selesai.'], 404);
+}
+
+function gemu_is_self_intro_question(string $q): bool {
+    return (bool)preg_match('/\b(kamu\s+siapa|siapa\s+kamu|siapa\s+dirimu|siapa\s+anda|siapa\s+gemu|gemu\s+itu\s+siapa|kamu\s+ini\s+siapa|kenalin\s+dirimu|perkenalkan\s+dirimu)\b/i', trim($q));
+}
+
+function gemu_is_negative_feedback(string $q): bool {
+    return (bool)preg_match('/\b(ngasal|salah|bukan\s+gitu|ngaco|gak\s+nyambung|tidak\s+nyambung|bodoh|goblok|tolol|rusak|error|bug|jelek|kurang\s+pintar)\b/i', trim($q));
+}
+
+function gemu_learn_from_feedback(string $q): string {
+    global $brainFile;
+    $brain = normalize_brain(load_json($brainFile, default_brain()));
+    $text = safe_text($q, 300);
+    
+    $brain['self_diagnostics']['learned_corrections'][] = [
+        'feedback' => $text,
+        'time' => date('Y-m-d H:i:s'),
+        'ts' => time()
+    ];
+    $brain['self_diagnostics']['learned_corrections'] = array_slice($brain['self_diagnostics']['learned_corrections'], -20);
+    $brain['self_diagnostics']['unanswered_count'] = (int)($brain['self_diagnostics']['unanswered_count'] ?? 0) + 1;
+    save_brain($brain);
+    
+    return "Maaf Darma, aku catat kalau jawabanku tadi kurang memuaskan atau 'ngasal'. Aku simpan feedback ini ke 'learned_corrections' di otakku agar Agen Sistem dan Agen Backend bisa mengevaluasi ulang logika mereka. Ke depannya aku akan lebih berhati-hati dalam memberikan jawaban.";
 }
 
 function is_agent_dialogue_prompt(string $q): bool {

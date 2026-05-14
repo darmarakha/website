@@ -164,6 +164,12 @@ if ($hour === 8 && gemu_cron_due($autonomy, 'last_report_ts', 20 * 3600, $now)) 
     gemu_cron_feed('GEMU Frontline', 'MORNING-REPORT', 'Morning report siap: kondisi scan, cleanup, dan saran pending diringkas di panel owner.', ['issues'=>count($issues), 'suggestion_made'=>$suggestionMade]);
 }
 
+// Proactive Analysis: Agen "Penasaran" mengecek file secara acak.
+$proactive = gemu_cron_proactive_analysis();
+if ($proactive['ok'] && $proactive['suggested_action']) {
+    gemu_cron_feed('Watcher Agent', 'CURIOSITY', $proactive['analysis'], ['file'=>$proactive['file'], 'action'=>$proactive['suggested_action']]);
+}
+
 gemu_cron_save_json($autonomyFile, $autonomy);
 
 // Idle dialogue 3 agent: terlihat seperti diskusi, tetapi tetap berbasis scan nyata.
