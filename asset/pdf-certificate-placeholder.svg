@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+  <title id="title">PDF Certificate</title>
+  <desc id="desc">Preview card for PDF certificate files.</desc>
+  <rect width="800" height="600" rx="36" fill="#0f172a"/>
+  <rect x="210" y="88" width="380" height="424" rx="24" fill="#ffffff"/>
+  <path d="M500 88v118h90" fill="#dbeafe"/>
+  <path d="M500 88v118h90" fill="none" stroke="#93c5fd" stroke-width="8"/>
+  <rect x="260" y="280" width="280" height="88" rx="18" fill="#ef4444"/>
+  <text x="400" y="338" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" fill="#ffffff">PDF</text>
+  <text x="400" y="427" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#1e293b">CERTIFICATE</text>
+  <text x="400" y="463" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#64748b">Klik untuk melihat file lengkap</text>
+</svg>
