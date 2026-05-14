@@ -14,13 +14,13 @@ $_GEMU_DB = [
         'host' => 'localhost',
         'name' => 'httpgemu_website',
         'user' => 'httpgemu_darma',
-        'pass' => 'macanputih123',
+        'pass' => 'Macanputih123',
     ],
     'dnd' => [
         'host' => 'localhost',
         'name' => 'httpgemu_dnd',
-        'user' => 'httpgemu_darma', // Assuming same user/pass or update if different
-        'pass' => 'macanputih123',
+        'user' => 'httpgemu_darma',
+        'pass' => 'Macanputih123',
     ]
 ];
 

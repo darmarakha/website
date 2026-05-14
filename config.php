@@ -33,9 +33,9 @@ function gemu_config(): array
     }
 
     $host = getenv('GEMU_DB_HOST') ?: (string)($localDb['host'] ?? 'localhost');
-    $dbname = getenv('GEMU_DB_NAME') ?: (string)($localDb['name'] ?? $localDb['dbname'] ?? '');
-    $username = getenv('GEMU_DB_USER') ?: (string)($localDb['user'] ?? $localDb['username'] ?? '');
-    $password = getenv('GEMU_DB_PASS') ?: (string)($localDb['pass'] ?? $localDb['password'] ?? '');
+    $dbname = getenv('GEMU_DB_NAME') ?: (string)($localDb['name'] ?? $localDb['dbname'] ?? 'httpgemu_website');
+    $username = getenv('GEMU_DB_USER') ?: (string)($localDb['user'] ?? $localDb['username'] ?? 'httpgemu_darma');
+    $password = getenv('GEMU_DB_PASS') ?: (string)($localDb['pass'] ?? $localDb['password'] ?? 'Macanputih123');
 
     $cfg = [
         'db' => [
