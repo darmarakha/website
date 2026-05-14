@@ -183,6 +183,7 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
     <script>
         let currentMode = 'visual';
         let currentSection = 'certs';
+        let currentFile = '../data.js';
         let rawData = '';
         
         let certs = [];
@@ -260,8 +261,10 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
             }
         }
 
-        function loadSection(section) {
             currentSection = section;
+            currentFile = '../data.js';
+            setMode('visual');
+            
             document.querySelectorAll('aside nav button').forEach(btn => {
                 btn.classList.remove('bg-blue-500/10', 'text-blue-400', 'border', 'border-blue-500/20');
                 btn.classList.add('text-slate-400');
@@ -378,13 +381,19 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20"><i data-lucide="${s.icon}" class="w-4 h-4"></i></div>
-                            <input type="text" value="${name.id}" onchange="updatePacket(${index}, 'skill_name', this.value)" class="bg-transparent border-none text-sm font-bold text-white focus:outline-none">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Nama (ID)</label>
+                            <input type="text" value="${name.id}" onchange="updatePacket(${index}, 'skill_name', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white">
                         </div>
-                        <button onclick="removePacket(${index})" class="text-slate-600 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Name (EN)</label>
+                            <input type="text" value="${name.en}" onchange="updatePacket(${index}, 'skill_name_en', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white">
+                        </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Icon Name</label>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Icon Name (Lucide)</label>
                             <input type="text" value="${s.icon}" onchange="updatePacket(${index}, 'icon', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white">
                         </div>
                         <div class="flex flex-col gap-2">
@@ -399,8 +408,9 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
 
         function renderProjectPackets(container) {
             projects.forEach((p, index) => {
-                const title = projI18n[p.titleKey] || { id: '', en: '' };
-                const desc = projI18n[p.descKey] || { id: '', en: '' };
+                const title = projectsI18n[p.titleKey] || { id: '', en: '' };
+                const desc = projectsI18n[p.descKey] || { id: '', en: '' };
+                const detail = projectsI18n[p.detailKey] || { id: '', en: '' };
 
                 const card = document.createElement('div');
                 card.className = 'packet-card p-6 rounded-3xl flex flex-col gap-6';
@@ -424,9 +434,26 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                         </div>
                     </div>
 
-                    <div class="flex flex-col gap-2">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Ringkasan (ID)</label>
-                        <textarea onchange="updatePacket(${index}, 'p_desc_id', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white h-20 outline-none focus:border-blue-500">${desc.id}</textarea>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Ringkasan (ID)</label>
+                            <textarea onchange="updatePacket(${index}, 'p_desc_id', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white h-20 outline-none focus:border-blue-500">${desc.id}</textarea>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Summary (EN)</label>
+                            <textarea onchange="updatePacket(${index}, 'p_desc_en', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white h-20 outline-none focus:border-blue-500">${desc.en}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Detail Lengkap (ID)</label>
+                            <textarea onchange="updatePacket(${index}, 'p_detail_id', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white h-32 outline-none focus:border-blue-500" placeholder="Jelaskan lebih detail tentang proyek ini...">${detail.id}</textarea>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Full Details (EN)</label>
+                            <textarea onchange="updatePacket(${index}, 'p_detail_en', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white h-32 outline-none focus:border-blue-500" placeholder="Explain project details in English...">${detail.en}</textarea>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -482,6 +509,14 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                         <div class="flex flex-col gap-2">
                             <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">File Label</label>
                             <input type="text" value="${p.fileLabel || ''}" onchange="updatePacket(${index}, 'fileLabel', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-blue-500" placeholder="e.g. Website Belajar">
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Project Span (Grid Layout)</label>
+                            <select onchange="updatePacket(${index}, 'span', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-blue-500">
+                                <option value="" ${p.span === '' ? 'selected' : ''}>Normal (1 Column)</option>
+                                <option value="sm:col-span-2" ${p.span === 'sm:col-span-2' ? 'selected' : ''}>Wide (2 Columns)</option>
+                                <option value="sm:col-span-2 md:col-span-3" ${p.span === 'sm:col-span-2 md:col-span-3' ? 'selected' : ''}>Full (3 Columns)</option>
+                            </select>
                         </div>
                     </div>
                 `;
@@ -546,10 +581,14 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                 if (field === 'p_title_id') projectsI18n[p.titleKey].id = value;
                 else if (field === 'p_title_en') projectsI18n[p.titleKey].en = value;
                 else if (field === 'p_desc_id') projectsI18n[p.descKey].id = value;
+                else if (field === 'p_desc_en') projectsI18n[p.descKey].en = value;
+                else if (field === 'p_detail_id') projectsI18n[p.detailKey].id = value;
+                else if (field === 'p_detail_en') projectsI18n[p.detailKey].en = value;
                 else if (field === 'fileUrl') p.fileUrl = value;
                 else if (field === 'fileLabel') p.fileLabel = value;
                 else if (field === 'imgSrc') p.imgSrc = value;
                 else if (field === 'tags') p.tags = value.split(',').map(t => t.trim()).filter(t => t !== '');
+                else if (field === 'span') p.span = value;
             }
         }
 
@@ -632,22 +671,30 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                 let content = rawData;
                 if (currentMode === 'code') content = document.getElementById('editor').value;
                 else {
-                    content = content.replace(/const certsData = \[[\s\S]*?\];/, "const certsData = " + JSON.stringify(certs, null, 4) + ";");
-                    content = content.replace(/const certsI18n = \{[\s\S]*?\};/, "const certsI18n = " + JSON.stringify(certsI18n, null, 4) + ";");
-                    content = content.replace(/const skillsData = \[[\s\S]*?\];/, "const skillsData = " + JSON.stringify(skills, null, 4) + ";");
-                    content = content.replace(/const skillsI18n = \{[\s\S]*?\};/, "const skillsI18n = " + JSON.stringify(skillsI18n, null, 4) + ";");
-                    content = content.replace(/const projData = \[[\s\S]*?\];/, "const projData = " + JSON.stringify(projects, null, 4) + ";");
-                    content = content.replace(/const projI18n = \{[\s\S]*?\};/, "const projI18n = " + JSON.stringify(projectsI18n, null, 4) + ";");
+                    // Update regex to be more resilient (handle spaces/newlines/missing semicolons)
+                    content = content.replace(/const certsData\s*=\s*\[[\s\S]*?\]\s*;?/, "const certsData = " + JSON.stringify(certs, null, 4) + ";");
+                    content = content.replace(/const certsI18n\s*=\s*\{[\s\S]*?\}\s*;?/, "const certsI18n = " + JSON.stringify(certsI18n, null, 4) + ";");
+                    content = content.replace(/const skillsData\s*=\s*\[[\s\S]*?\]\s*;?/, "const skillsData = " + JSON.stringify(skills, null, 4) + ";");
+                    content = content.replace(/const skillsI18n\s*=\s*\{[\s\S]*?\}\s*;?/, "const skillsI18n = " + JSON.stringify(skillsI18n, null, 4) + ";");
+                    content = content.replace(/const projData\s*=\s*\[[\s\S]*?\]\s*;?/, "const projData = " + JSON.stringify(projects, null, 4) + ";");
+                    content = content.replace(/const projI18n\s*=\s*\{[\s\S]*?\}\s*;?/, "const projI18n = " + JSON.stringify(projectsI18n, null, 4) + ";");
                 }
                 const fd = new FormData();
                 fd.append('action', 'save_file');
-                fd.append('filename', '../data.js');
+                fd.append('filename', currentFile);
                 fd.append('content', content);
                 const res = await fetch('api.php', { method: 'POST', body: fd });
                 const data = await res.json();
-                if (data.status === 'success') { rawData = content; alert('Data disinkronkan!'); }
+                if (data.status === 'success') { 
+                    rawData = content; 
+                    alert('Data disinkronkan!'); 
+                    if (currentFile !== '../data.js') {
+                        // Jika mengedit file sistem lain, muat ulang datanya agar konsisten
+                        location.reload();
+                    }
+                }
                 else alert(data.message);
-            } catch(e) { alert('Simpan gagal.'); }
+            } catch(e) { console.error(e); alert('Simpan gagal.'); }
             finally { showLoading(false); }
         }
 
@@ -656,9 +703,27 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
             document.getElementById('loading-overlay').classList.toggle('flex', show);
         }
 
-        function loadRawFile(filename) {
-            setMode('code');
-            document.getElementById('file-name').textContent = "EDITING: " + filename.split('/').pop();
+        async function loadRawFile(filename) {
+            showLoading(true);
+            try {
+                const fd = new FormData();
+                fd.append('action', 'load_file');
+                fd.append('filename', filename);
+
+                const res = await fetch('api.php', { method: 'POST', body: fd });
+                const data = await res.json();
+                
+                if(data.status === 'success') {
+                    currentFile = filename;
+                    setMode('code');
+                    document.getElementById('editor').value = data.content;
+                    document.getElementById('file-name').textContent = "EDITING: " + filename.split('/').pop();
+                }
+            } catch(e) {
+                alert('Gagal memuat file.');
+            } finally {
+                showLoading(false);
+            }
         }
     </script>
 </body>

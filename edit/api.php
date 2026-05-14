@@ -39,6 +39,9 @@ if ($action === 'load_file') {
 
     // Tulis ulang file dengan konten baru
     if (file_put_contents($filename, $content) !== false) {
+        // Update timestamp index.php agar cache-busting di frontend terpicu
+        @touch('../index.php');
+        clearstatcache();
         echo json_encode(['status' => 'success', 'message' => 'File berhasil diperbarui!']);
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Gagal menyimpan file. Pastikan Permission file di cPanel adalah 0644.']);
