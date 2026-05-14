@@ -38,17 +38,35 @@ function applyLang(lang, animate) {
     });
 
     const els = document.querySelectorAll('[data-i18n]');
-    if (animate) {
-        els.forEach(el => el.classList.add('i18n-fading'));
-        setTimeout(() => {
-            els.forEach(el => {
-                el.innerHTML = t(el.dataset.i18n);
-                el.classList.remove('i18n-fading');
-            });
-        }, 150);
-    } else {
-        els.forEach(el => { el.innerHTML = t(el.dataset.i18n); });
-    }
+    els.forEach(el => {
+        const translation = t(el.dataset.i18n);
+        // Find a span with i18n-text or replace text content if no icon exists
+        const textSpan = el.querySelector('.i18n-text');
+        if (textSpan) {
+            if (animate) {
+                textSpan.classList.add('i18n-fading');
+                setTimeout(() => {
+                    textSpan.innerHTML = translation;
+                    textSpan.classList.remove('i18n-fading');
+                }, 150);
+            } else {
+                textSpan.innerHTML = translation;
+            }
+        } else {
+            // Fallback for simple elements
+            if (animate) {
+                el.classList.add('i18n-fading');
+                setTimeout(() => {
+                    el.innerHTML = translation;
+                    el.classList.remove('i18n-fading');
+                    // Re-create icons if they were wiped
+                    gemuCreateIcons();
+                }, 150);
+            } else {
+                el.innerHTML = translation;
+            }
+        }
+    });
 
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         const key = el.dataset.i18nPlaceholder;
