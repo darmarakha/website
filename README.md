@@ -40,23 +40,27 @@ Berikut adalah gambaran mendetail tentang susunan folder dalam proyek ini:
 
 ## 🚀 Panduan Deployment (Garis Keras)
 > [!IMPORTANT]
-> Harap ikuti protokol ini dengan ketat untuk menjaga keamanan dan kestabilan proyek:
+> Harap ikuti protokol ini dengan ketat untuk menjaga keamanan dan kestabilan proyek.
 
 ### 1️⃣ Update ke GitHub
 Pastikan semua kode terbaru sudah masuk ke repository:
 `https://github.com/darmarakha/website`
 
-### 2️⃣ Upload ke Hosting (FTP)
-Prosedur pengunggahan:
-1. Bersihkan file `.zip`, `.rar`, atau `.tar` lama dari folder proyek.
-2. Buat file `website_deploy.zip` (tanpa folder `.git`).
-3. Upload ke direktori `/home/httpgemu/public_html` via FTP.
-4. **Ekstrak** file ZIP di File Manager hosting.
+### 2️⃣ Aturan Paket Setelah Perubahan GitHub
+Setiap perubahan yang sudah disetujui dan siap dipakai wajib mengikuti alur berikut:
+1. Ambil versi terbaru dari branch utama.
+2. Buat paket `website_deploy.zip` dari isi project terbaru.
+3. Jangan masukkan folder `.git`, file arsip lama, file backup, cache, atau file lokal pribadi.
+4. Kirim paket ZIP ke lokasi produksi yang sudah ditentukan oleh owner.
+5. Ekstrak paket ZIP di lokasi produksi.
+6. Setelah ekstrak, cek minimal halaman utama, login, register, dan fitur yang baru diubah.
+7. Jika muncul error, baca log server terlebih dahulu sebelum mengubah kode lagi.
 
 ### 3️⃣ Konfigurasi Database
-- Nama DB: `httpgemu_dnd`.
-- Impor skema terbaru dari folder `/SQL`.
-- Pastikan kredensial di `config/database.php` sudah benar.
+- Koneksi utama website memakai `config.php`.
+- Konfigurasi lokal memakai `config.local.php` atau environment variable.
+- `config.local.php` tidak boleh masuk commit karena berisi data khusus server.
+- Jangan mengubah struktur database tanpa menyesuaikan kode backend yang memakainya.
 
 ---
 
@@ -64,6 +68,8 @@ Prosedur pengunggahan:
 - 🛑 **Jangan mengubah struktur file `.md`** tanpa permintaan eksplisit.
 - 🔗 Pastikan semua path bersifat relatif agar sistem tetap berjalan di server manapun.
 - 🧹 Selalu bersihkan file arsip lokal setelah proses deployment selesai.
+- 📦 Setiap perubahan GitHub yang sudah final wajib dibuatkan paket ZIP deployment sebelum dikirim ke lokasi produksi.
+- ✅ Setelah deployment, wajib cek minimal halaman utama, autentikasi, dan fitur yang baru diubah.
 
 ---
 *Dibuat dengan ❤️ untuk komunitas Gemu Yokai.*
