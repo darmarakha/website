@@ -1,0 +1,36 @@
+{
+  "level": "N5",
+  "nouns": [
+    {"id":"apple","jp":"りんご","ro":"ringo","idn":"apel","type":"food","attrs":{"color":"red","taste":"sweet"}},
+    {"id":"banana","jp":"バナナ","ro":"banana","idn":"pisang","type":"food","attrs":{"color":"yellow","taste":"sweet"}},
+    {"id":"water","jp":"水[みず]","plain":"水","ro":"mizu","idn":"air","type":"drink","attrs":{"color":"clear"}},
+    {"id":"tea","jp":"お茶[ちゃ]","plain":"お茶","ro":"ocha","idn":"teh","type":"drink","attrs":{"color":"green"}},
+    {"id":"rice","jp":"ご飯[はん]","plain":"ご飯","ro":"gohan","idn":"nasi","type":"food","attrs":{"color":"white"}},
+    {"id":"school","jp":"学校[がっこう]","plain":"学校","ro":"gakkou","idn":"sekolah","type":"place"},
+    {"id":"station","jp":"駅[えき]","plain":"駅","ro":"eki","idn":"stasiun","type":"place"},
+    {"id":"book","jp":"本[ほん]","plain":"本","ro":"hon","idn":"buku","type":"thing"},
+    {"id":"cat","jp":"猫[ねこ]","plain":"猫","ro":"neko","idn":"kucing","type":"animal"},
+    {"id":"dog","jp":"犬[いぬ]","plain":"犬","ro":"inu","idn":"anjing","type":"animal"}
+  ],
+  "colors": [
+    {"id":"red","jp":"赤[あか]い","plain":"赤い","ro":"akai","idn":"merah"},
+    {"id":"blue","jp":"青[あお]い","plain":"青い","ro":"aoi","idn":"biru"},
+    {"id":"yellow","jp":"黄色[きいろ]い","plain":"黄色い","ro":"kiiroi","idn":"kuning"},
+    {"id":"green","jp":"緑[みどり]","plain":"緑","ro":"midori","idn":"hijau"},
+    {"id":"white","jp":"白[しろ]い","plain":"白い","ro":"shiroi","idn":"putih"},
+    {"id":"black","jp":"黒[くろ]い","plain":"黒い","ro":"kuroi","idn":"hitam"}
+  ],
+  "adjectives": [
+    {"id":"sweet","jp":"甘[あま]い","plain":"甘い","ro":"amai","idn":"manis"},
+    {"id":"delicious","jp":"おいしい","ro":"oishii","idn":"enak"},
+    {"id":"big","jp":"大[おお]きい","plain":"大きい","ro":"ookii","idn":"besar"},
+    {"id":"small","jp":"小[ちい]さい","plain":"小さい","ro":"chiisai","idn":"kecil"},
+    {"id":"near","jp":"近[ちか]い","plain":"近い","ro":"chikai","idn":"dekat"},
+    {"id":"far","jp":"遠[とお]い","plain":"遠い","ro":"tooi","idn":"jauh"}
+  ],
+  "phrases": [
+    {"intent":"greeting","jp":"こんにちは。今日[きょう]は何[なに]を話[はな]しますか？","ro":"Konnichiwa. Kyou wa nani o hanashimasu ka?","idn":"Halo. Hari ini mau ngobrol apa?"},
+    {"intent":"repeat","jp":"もう一度[いちど]お願[ねが]いします。","ro":"Mou ichido onegai shimasu.","idn":"Tolong sekali lagi."},
+    {"intent":"like","jp":"いいですね。私[わたし]も好[す]きです。","ro":"Ii desu ne. Watashi mo suki desu.","idn":"Bagus ya. Aku juga suka."}
+  ]
+}
