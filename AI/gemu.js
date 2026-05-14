@@ -264,12 +264,41 @@ function saveChat(who,text){
   if(!token || isLoadingHistory || !text || String(text).length < 1) return;
   fetch('api.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'owner_chat_add',token,who,text})}).catch(()=>{});
 }
+function typeWriter(element, html, speed = 10) {
+  let i = 0;
+  element.innerHTML = "";
+  
+  // temporary div to parse HTML
+  const temp = document.createElement('div');
+  temp.innerHTML = html;
+  const nodes = Array.from(temp.childNodes);
+  
+  function render() {
+    if (i < nodes.length) {
+      const node = nodes[i].cloneNode(true);
+      element.appendChild(node);
+      i++;
+      chatLog.scrollTop = chatLog.scrollHeight;
+      setTimeout(render, speed);
+    }
+  }
+  render();
+}
+
 function addMsg(text, who='gemu', extra='', persist=true){
   const div=document.createElement('div');
   div.className=`msg ${who} ${extra}`.trim();
   const pretty = who==='gemu' && !String(extra||'').includes('thinking');
-  div.innerHTML=pretty ? formatAiMessage(text) : nl2br(text);
-  chatLog.appendChild(div);
+  const html = pretty ? formatAiMessage(text) : nl2br(text);
+  
+  if (pretty && !isLoadingHistory) {
+    chatLog.appendChild(div);
+    typeWriter(div, html);
+  } else {
+    div.innerHTML=html;
+    chatLog.appendChild(div);
+  }
+  
   chatLog.scrollTop=chatLog.scrollHeight;
   if(persist && !extra.includes('thinking') && (who==='gemu' || who==='owner')) saveChat(who,text);
   if(who==='gemu' && speakOn && !extra.includes('thinking')) speak(text);

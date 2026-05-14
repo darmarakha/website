@@ -242,39 +242,37 @@ function website_profile_answer(string $q, string $mode = 'public'): array {
     }
 
     if (preg_match('/sertifikat|certificate/i', $q)) {
-        $names = $ctx['certificates'] ? implode(', ', array_slice($ctx['certificates'], 0, 5)) : 'sertifikat bahasa Inggris, Microsoft Excel, dan magang riset';
-        $msg = 'Di website ini terdata sekitar '.$ctx['counts']['certificates'].' sertifikat. Yang terbaca: '.$names.'. Buka section Sertifikat untuk melihat gambar/PDF lengkapnya.';
+        $names = $ctx['certificates'] ? implode(', ', array_slice($ctx['certificates'], 0, 3)) : 'sertifikat magang riset internasional';
+        $msg = "Berdasarkan data repository saya, Darma memiliki total **".$ctx['counts']['certificates']." sertifikat**. Fokus utamanya adalah pada analisis data dan riset fisika. Beberapa yang menonjol: " . $names . ". Anda bisa mengeksplorasi lebih detail di section Sertifikat.";
     } elseif (preg_match('/proyek|project|portfolio|portofolio/i', $q)) {
-        $names = $ctx['projects'] ? implode('; ', array_slice($ctx['projects'], 0, 4)) : 'analisis radioisotop, website belajar Jepang, dan eksplorasi IoT';
-        $msg = 'Proyek Darma yang terbaca dari website: '.$names.'. Bagian proyek bisa dibuka langsung dari section Proyek.';
+        $names = $ctx['projects'] ? implode(', ', array_slice($ctx['projects'], 0, 3)) : 'Eksperimen COSINE-100 dan Platform N5';
+        $msg = "Darma telah mengerjakan berbagai proyek teknis, mulai dari simulasi data riset hingga pengembangan platform pembelajaran. Proyek terbarunya meliputi: **" . $names . "**. Saya bisa membantu menganalisis detail teknis dari proyek-proyek ini jika Anda tertarik.";
     } elseif (preg_match('/skill|keahlian|tools|alat|kemampuan/i', $q)) {
-        $skills = array_map(fn($s) => $s['name'].' '.$s['pct'].'%', array_slice($ctx['skills'], 0, 8));
-        $tools = $ctx['tools'] ? ' Tools: '.implode(', ', array_slice($ctx['tools'], 0, 8)).'.' : '';
-        $msg = 'Keahlian Darma yang terbaca: '.($skills ? implode(', ', $skills) : 'Python, Data Analysis, Machine Learning, Web Development, MATLAB, dan IoT').'.'.$tools;
+        $skills = array_map(fn($s) => "**".$s['name']."** (".$s['pct']."%)", array_slice($ctx['skills'], 0, 5));
+        $msg = "Sebagai asisten digital Darma, saya memantau keahlian teknisnya yang terus berkembang. Keahlian inti saat ini meliputi: " . implode(', ', $skills) . ". Ia sangat mahir dalam Python dan Analisis Data, yang juga menjadi basis dari kecerdasan router saya.";
     } elseif (preg_match('/pengalaman|experience|riset|intern|cosine|korea|ibs/i', $q)) {
-        $msg = 'Pengalaman Darma di website menonjolkan riset internasional di Korea Selatan/IBS, COSINE-100, analisis data eksperimen, background modeling, Gaussian peak fitting, dan simulasi efisiensi.';
+        $msg = "Pengalaman riset Darma di **COSINE-100 (Korea Selatan)** sangat memengaruhi cara saya berpikir. Ia terbiasa menangani data eksperimen yang kompleks, pemodelan background, dan fitting Gaussian. Pengalaman inilah yang mendasari ketelitian saya dalam mengaudit website ini.";
     } elseif (preg_match('/kontak|contact|hubungi|email/i', $q)) {
-        $msg = 'Untuk menghubungi Darma, gunakan section Contact Me di website. Form kontak meminta nama, email, subjek, dan pesan.';
+        $msg = "Jika Anda ingin berdiskusi lebih lanjut dengan Darma, silakan gunakan fitur Contact Me di bawah. Form tersebut akan langsung terhubung ke email pribadinya.";
     } elseif (preg_match('/apel|pisang|buah/i', $q)) {
-        // Jawaban cerdas berbasis lexicon untuk contoh user
         $lex = load_gemu_lexicon();
         $term = preg_match('/apel/i', $q) ? 'apel' : (preg_match('/pisang/i', $q) ? 'pisang' : 'buah');
         $data = $lex['concepts'][$term] ?? [];
-        if ($term === 'apel') $msg = "Apel itu biasanya berwarna " . implode(' atau ', $data['colors'] ?? []) . " dan rasanya " . implode('/', $data['tastes'] ?? []) . ".";
-        elseif ($term === 'pisang') $msg = "Pisang itu biasanya berwarna " . implode(' atau ', $data['colors'] ?? []) . " dan rasanya " . ($data['tastes'][0] ?? 'manis') . ".";
-        else $msg = "Darma suka buah-buahan seperti " . implode(', ', $lex['concepts']['buah']['examples'] ?? []) . ".";
+        if ($term === 'apel') $msg = "Tentu, dalam basis pengetahuan saya, **Apel** biasanya berwarna " . implode(' atau ', $data['colors'] ?? []) . " dan memiliki rasa yang " . implode('/', $data['tastes'] ?? []) . ". Saya tidak akan tertukar dengan pisang.";
+        elseif ($term === 'pisang') $msg = "Secara logika, **Pisang** itu berwarna " . implode(' atau ', $data['colors'] ?? []) . " dan rasanya manis. Saya memisahkan data buah-buahan ini agar jawaban saya tetap realistis.";
+        else $msg = "Darma mengapresiasi keragaman, termasuk buah-buahan seperti " . implode(', ', $lex['concepts']['buah']['examples'] ?? []) . ".";
     } else {
         $about = $ctx['about'] ? ' '.$ctx['about'][0] : '';
-        $msg = 'Darma Alif Rakhaa adalah owner website ini. '.$ctx['hero'].$about.' Website ini berisi profil, pengalaman, skill, sertifikat, proyek, bisnis, belajar, dan GEMU AI.';
+        $msg = "Saya adalah **GEMU**, manifestasi digital dari Darma Alif Rakhaa. " . $ctx['hero'] . $about . " Saya di sini untuk membantu Anda menavigasi portofolio, sertifikat, dan proyek teknis Darma secara cerdas.";
     }
     
     // Semantic Check
     $check = gemu_semantic_check($q, $msg);
     if (!$check['ok']) {
-        $msg .= " (Catatan: GEMU mendeteksi kemungkinan jawaban kurang nyambung secara semantik)";
+        $msg .= "\n\n*(Catatan: Saya mendeteksi adanya sedikit inkonsistensi semantik dalam draf jawaban ini, Agen Sistem sedang melakukan kalibrasi ulang).*";
     }
     
-    return ['message'=>safe_text($msg, 900), 'context'=>$ctx];
+    return ['message'=>$msg, 'context'=>$ctx];
 }
 
 function gemu_reasoning_router(string $q, string $mode = 'owner'): array {

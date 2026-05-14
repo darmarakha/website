@@ -90,7 +90,6 @@ $token = $_SESSION['gemu_ai_token'];
                 <div id="file-box" class="file-box"></div>
             </aside>
         </section>
-        </section>
     </main>
     <script src="gemu.js?v=<?php echo filemtime(__DIR__.'/gemu.js'); ?>"></script>
 </body>
