@@ -103,11 +103,11 @@ $gemu_user_role = isset($_SESSION['user_role']) ? (string)$_SESSION['user_role']
         <div class="gemu-menu-divider"></div>
 
         <div class="gemu-nav-section">
-            <a href="#about" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">👤</span><span data-i18n="nav.about">Tentang</span></a>
-            <a href="#experience" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">💼</span><span data-i18n="nav.experience">Pengalaman</span></a>
-            <a href="#skills" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">⚡</span><span data-i18n="nav.skills">Keahlian</span></a>
-            <a href="#certifications" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">🏅</span><span data-i18n="nav.certificates">Sertifikat</span></a>
-            <a href="#projects" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">📁</span><span data-i18n="nav.projects">Proyek</span></a>
+            <a href="<?php echo $gemu_base_path; ?>#about" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">👤</span><span data-i18n="nav.about">Tentang</span></a>
+            <a href="<?php echo $gemu_base_path; ?>#experience" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">💼</span><span data-i18n="nav.experience">Pengalaman</span></a>
+            <a href="<?php echo $gemu_base_path; ?>#skills" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">⚡</span><span data-i18n="nav.skills">Keahlian</span></a>
+            <a href="<?php echo $gemu_base_path; ?>#certifications" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">🏅</span><span data-i18n="nav.certificates">Sertifikat</span></a>
+            <a href="<?php echo $gemu_base_path; ?>#projects" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">📁</span><span data-i18n="nav.projects">Proyek</span></a>
             <a href="<?php echo $gemu_base_path; ?>Game/" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">🎮</span><span data-i18n="nav.game">Game</span></a>
             <a href="<?php echo $gemu_base_path; ?>Belajar/Index.php" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">📚</span><span data-i18n="nav.learn">Belajar</span></a>
             <a href="<?php echo $gemu_base_path; ?>Bisnis/" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">📊</span><span data-i18n="nav.business">Bisnis</span></a>

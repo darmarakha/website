@@ -156,7 +156,7 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                 </div>
 
                 <!-- Packets Grid -->
-                <div id="packets-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div id="packets-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-20">
                     <!-- Packets will be injected here -->
                 </div>
             </div>
@@ -184,8 +184,13 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
         let currentMode = 'visual';
         let currentSection = 'certs';
         let rawData = '';
+        
         let certs = [];
         let certsI18n = {};
+        let skills = [];
+        let skillsI18n = {};
+        let projects = [];
+        let projectsI18n = {};
         
         // --- Initialization ---
         window.onload = async () => {
@@ -217,19 +222,20 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
         }
 
         function parseData(content) {
-            // Very simplified extraction logic for this specific structure
             try {
                 const certsMatch = content.match(/const certsData = (\[[\s\S]*?\]);/);
-                const i18nMatch = content.match(/const certsI18n = (\{[\s\S]*?\});/);
+                const certsI18nMatch = content.match(/const certsI18n = (\{[\s\S]*?\});/);
+                const skillsMatch = content.match(/const skillsData = (\[[\s\S]*?\]);/);
+                const skillsI18nMatch = content.match(/const skillsI18n = (\{[\s\S]*?\});/);
+                const projMatch = content.match(/const projData = (\[[\s\S]*?\]);/);
+                const projI18nMatch = content.match(/const projI18n = (\{[\s\S]*?\});/);
 
-                if (certsMatch) {
-                    // Use eval sparingly, only because we trust the source (our own data.js)
-                    // and JSON.parse won't work with JS objects/trailing commas
-                    certs = eval(certsMatch[1]);
-                }
-                if (i18nMatch) {
-                    certsI18n = eval('(' + i18nMatch[1] + ')');
-                }
+                if (certsMatch) certs = eval(certsMatch[1]);
+                if (certsI18nMatch) certsI18n = eval('(' + certsI18nMatch[1] + ')');
+                if (skillsMatch) skills = eval(skillsMatch[1]);
+                if (skillsI18nMatch) skillsI18n = eval('(' + skillsI18nMatch[1] + ')');
+                if (projMatch) projects = eval(projMatch[1]);
+                if (projI18nMatch) projectsI18n = eval('(' + projI18nMatch[1] + ')');
             } catch (e) {
                 console.error("Parse Error", e);
             }
@@ -263,13 +269,20 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
             document.getElementById('nav-' + section).classList.add('bg-blue-500/10', 'text-blue-400', 'border', 'border-blue-500/20');
             document.getElementById('nav-' + section).classList.remove('text-slate-400');
             
+            const title = document.getElementById('section-title');
+            const desc = document.getElementById('section-desc');
+
             if (section === 'certs') {
-                document.getElementById('section-title').textContent = "Manage Certificates";
-                document.getElementById('section-desc').textContent = "Edit, add, or remove your professional certifications and uploads.";
-                renderPackets();
-            } else {
-                document.getElementById('packets-container').innerHTML = `<div class="col-span-2 py-20 text-center glass rounded-3xl"><p class="text-slate-500 italic">Editor untuk bagian ini sedang dalam pengembangan. Gunakan Code Editor sementara.</p></div>`;
+                title.textContent = "Manage Certificates";
+                desc.textContent = "Edit, add, or remove your professional certifications and uploads.";
+            } else if (section === 'projects') {
+                title.textContent = "Manage Projects";
+                desc.textContent = "Showcase your work, technical stacks, and project details.";
+            } else if (section === 'skills') {
+                title.textContent = "Manage Skills";
+                desc.textContent = "Update your technical proficiency levels and icons.";
             }
+            renderPackets();
             lucide.createIcons();
         }
 
@@ -277,6 +290,16 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
             const container = document.getElementById('packets-container');
             container.innerHTML = '';
 
+            if (currentSection === 'certs') {
+                renderCertPackets(container);
+            } else if (currentSection === 'skills') {
+                renderSkillPackets(container);
+            } else if (currentSection === 'projects') {
+                renderProjectPackets(container);
+            }
+        }
+
+        function renderCertPackets(container) {
             certs.forEach((c, index) => {
                 const title = certsI18n[c.titleKey] || { id: '', en: '' };
                 const desc = certsI18n[c.descKey] || { id: '', en: '' };
@@ -287,16 +310,11 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                 card.innerHTML = `
                     <div class="flex items-start justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 text-xs font-bold border border-slate-700">
-                                ${index + 1}
-                            </div>
+                            <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 text-xs font-bold border border-slate-700">${index + 1}</div>
                             <span class="text-xs font-bold text-slate-300">CERTIFICATE PACKET</span>
                         </div>
-                        <button onclick="removePacket(${index})" class="text-slate-600 hover:text-red-500 transition-colors">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
+                        <button onclick="removePacket(${index})" class="text-slate-600 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
-
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
                             <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Judul (ID)</label>
@@ -307,12 +325,10 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                             <input type="text" value="${title.en}" onchange="updatePacket(${index}, 'title_en', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:border-blue-500 outline-none">
                         </div>
                     </div>
-
                     <div class="flex flex-col gap-2">
                         <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Deskripsi (ID)</label>
                         <textarea onchange="updatePacket(${index}, 'desc_id', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:border-blue-500 outline-none h-20">${desc.id}</textarea>
                     </div>
-
                     <div class="grid grid-cols-3 gap-4">
                         <div class="flex flex-col gap-2">
                             <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tag (ID)</label>
@@ -320,14 +336,13 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                         </div>
                         <div class="flex flex-col gap-2">
                             <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Icon</label>
-                            <input type="text" value="${c.tagIcon}" onchange="updatePacket(${index}, 'tagIcon', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:border-blue-500 outline-none" placeholder="e.g. code, award">
+                            <input type="text" value="${c.tagIcon}" onchange="updatePacket(${index}, 'tagIcon', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:border-blue-500 outline-none">
                         </div>
                         <div class="flex items-center gap-2 pt-6">
                             <input type="checkbox" ${c.featured ? 'checked' : ''} onchange="updatePacket(${index}, 'featured', this.checked)" class="w-4 h-4 rounded border-slate-800 bg-slate-900 text-blue-600">
                             <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Featured</label>
                         </div>
                     </div>
-
                     <div class="flex flex-col gap-3">
                         <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Upload File (PDF / Image)</label>
                         <div class="flex items-center gap-4">
@@ -347,54 +362,151 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                                 `}
                                 <input type="file" id="file-${index}" class="hidden" onchange="handleUpload(${index}, this)">
                             </div>
-                            <div class="flex flex-col gap-2 flex-1">
-                                <p class="text-[10px] text-slate-500 leading-relaxed">
-                                    <b class="text-slate-400">Rekomendasi:</b> Gunakan file PDF asli untuk kualitas terbaik di preview.
-                                </p>
-                                <input type="text" readonly value="${c.pdfSrc || c.imgSrc}" class="bg-transparent border-none text-[10px] text-blue-400 outline-none truncate w-full">
-                            </div>
                         </div>
                     </div>
                 `;
                 container.appendChild(card);
             });
-            lucide.createIcons();
+        }
+
+        function renderSkillPackets(container) {
+            skills.forEach((s, index) => {
+                const name = skillsI18n[s.key] || { id: s.key, en: s.key };
+                const card = document.createElement('div');
+                card.className = 'packet-card p-6 rounded-3xl flex flex-col gap-4';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20"><i data-lucide="${s.icon}" class="w-4 h-4"></i></div>
+                            <input type="text" value="${name.id}" onchange="updatePacket(${index}, 'skill_name', this.value)" class="bg-transparent border-none text-sm font-bold text-white focus:outline-none">
+                        </div>
+                        <button onclick="removePacket(${index})" class="text-slate-600 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Icon Name</label>
+                            <input type="text" value="${s.icon}" onchange="updatePacket(${index}, 'icon', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white">
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Percentage (%)</label>
+                            <input type="number" value="${s.pct}" onchange="updatePacket(${index}, 'pct', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderProjectPackets(container) {
+            projects.forEach((p, index) => {
+                const title = projI18n[p.titleKey] || { id: '', en: '' };
+                const desc = projI18n[p.descKey] || { id: '', en: '' };
+                const detail = projI18n[p.detailKey] || { id: '', en: '' };
+
+                const card = document.createElement('div');
+                card.className = 'packet-card p-6 rounded-3xl flex flex-col gap-6';
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 text-xs font-bold border border-slate-700">${index + 1}</div>
+                            <span class="text-xs font-bold text-slate-300">PROJECT PACKET</span>
+                        </div>
+                        <button onclick="removePacket(${index})" class="text-slate-600 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Judul (ID)</label>
+                            <input type="text" value="${title.id}" onchange="updatePacket(${index}, 'p_title_id', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none">
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Title (EN)</label>
+                            <input type="text" value="${title.en}" onchange="updatePacket(${index}, 'p_title_en', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none">
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Ringkasan (ID)</label>
+                        <textarea onchange="updatePacket(${index}, 'p_desc_id', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white h-16 outline-none">${desc.id}</textarea>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Link / File URL</label>
+                        <input type="text" value="${p.fileUrl}" onchange="updatePacket(${index}, 'fileUrl', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-blue-400 outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tags (comma separated)</label>
+                            <input type="text" value="${(p.tags || []).join(', ')}" onchange="updatePacket(${index}, 'tags', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none">
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Image Source</label>
+                            <input type="text" value="${p.imgSrc}" onchange="updatePacket(${index}, 'imgSrc', this.value)" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white outline-none">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
         }
 
         // --- Actions ---
         function addPacket() {
             const id = Date.now();
-            const newCert = {
-                imgSrc: '', pdfSrc: '',
-                tagKey: `cert.tag_${id}`, tagIcon: 'award',
-                titleKey: `cert.t_${id}`, descKey: `cert.d_${id}`,
-                featured: false, span: ''
-            };
-            certsI18n[newCert.tagKey] = { id: 'Sertifikat', en: 'Certificate' };
-            certsI18n[newCert.titleKey] = { id: 'Judul Baru', en: 'New Title' };
-            certsI18n[newCert.descKey] = { id: 'Deskripsi baru di sini...', en: 'New description here...' };
-            
-            certs.push(newCert);
+            if (currentSection === 'certs') {
+                certs.push({
+                    imgSrc: '', pdfSrc: '',
+                    tagKey: `cert.tag_${id}`, tagIcon: 'award',
+                    titleKey: `cert.t_${id}`, descKey: `cert.d_${id}`,
+                    featured: false, span: ''
+                });
+                certsI18n[`cert.tag_${id}`] = { id: 'Sertifikat', en: 'Certificate' };
+                certsI18n[`cert.t_${id}`] = { id: 'Judul Baru', en: 'New Title' };
+                certsI18n[`cert.d_${id}`] = { id: 'Deskripsi...', en: 'Description...' };
+            } else if (currentSection === 'skills') {
+                const key = `Skill_${id}`;
+                skills.push({ icon: 'code-2', key: key, pct: 50 });
+                skillsI18n[key] = { id: 'Skill Baru', en: 'New Skill' };
+            } else if (currentSection === 'projects') {
+                projects.push({
+                    imgSrc: '', fullSrc: '', fileUrl: '', fileLabel: '', tags: [],
+                    titleKey: `proj.t_${id}`, descKey: `proj.d_${id}`, detailKey: `proj.detail_${id}`, span: '', linkUrl: ''
+                });
+                projectsI18n[`proj.t_${id}`] = { id: 'Proyek Baru', en: 'New Project' };
+                projectsI18n[`proj.d_${id}`] = { id: 'Ringkasan...', en: 'Summary...' };
+                projectsI18n[`proj.detail_${id}`] = { id: 'Detail...', en: 'Detail...' };
+            }
             renderPackets();
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
         function removePacket(index) {
-            if (confirm('Hapus paket sertifikat ini?')) {
-                certs.splice(index, 1);
-                renderPackets();
-            }
+            if (!confirm('Hapus item ini?')) return;
+            if (currentSection === 'certs') certs.splice(index, 1);
+            else if (currentSection === 'skills') skills.splice(index, 1);
+            else if (currentSection === 'projects') projects.splice(index, 1);
+            renderPackets();
         }
 
         function updatePacket(index, field, value) {
-            const c = certs[index];
-            if (field === 'title_id') certsI18n[c.titleKey].id = value;
-            else if (field === 'title_en') certsI18n[c.titleKey].en = value;
-            else if (field === 'desc_id') certsI18n[c.descKey].id = value;
-            else if (field === 'desc_en') certsI18n[c.descKey].en = value;
-            else if (field === 'tag_id') certsI18n[c.tagKey].id = value;
-            else if (field === 'tagIcon') c.tagIcon = value;
-            else if (field === 'featured') c.featured = value;
+            if (currentSection === 'certs') {
+                const c = certs[index];
+                if (field === 'title_id') certsI18n[c.titleKey].id = value;
+                else if (field === 'title_en') certsI18n[c.titleKey].en = value;
+                else if (field === 'desc_id') certsI18n[c.descKey].id = value;
+                else if (field === 'tag_id') certsI18n[c.tagKey].id = value;
+                else if (field === 'tagIcon') c.tagIcon = value;
+                else if (field === 'featured') c.featured = value;
+            } else if (currentSection === 'skills') {
+                const s = skills[index];
+                if (field === 'skill_name') skillsI18n[s.key].id = value;
+                else if (field === 'icon') s.icon = value;
+                else if (field === 'pct') s.pct = parseInt(value) || 0;
+            } else if (currentSection === 'projects') {
+                const p = projects[index];
+                if (field === 'p_title_id') projectsI18n[p.titleKey].id = value;
+                else if (field === 'p_title_en') projectsI18n[p.titleKey].en = value;
+                else if (field === 'p_desc_id') projectsI18n[p.descKey].id = value;
+                else if (field === 'fileUrl') p.fileUrl = value;
+                else if (field === 'imgSrc') p.imgSrc = value;
+                else if (field === 'tags') p.tags = value.split(',').map(t => t.trim());
+            }
         }
 
         function triggerUpload(index) {
@@ -404,72 +516,51 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
         async function handleUpload(index, input) {
             const file = input.files[0];
             if (!file) return;
-
             showLoading(true);
             try {
                 const fd = new FormData();
                 fd.append('action', 'upload_project_file');
                 fd.append('project_file', file);
-
                 const res = await fetch('api.php', { method: 'POST', body: fd });
                 const data = await res.json();
-
                 if (data.status === 'success') {
-                    const url = data.url.replace(/^\//, '../'); // Adjust path for local context
+                    const url = data.url.replace(/^\//, '');
                     if (file.name.toLowerCase().endsWith('.pdf')) {
-                        certs[index].pdfSrc = url.replace('../', '');
-                        certs[index].imgSrc = url.replace('../', '');
+                        certs[index].pdfSrc = url;
+                        certs[index].imgSrc = url;
                     } else {
-                        certs[index].imgSrc = url.replace('../', '');
+                        certs[index].imgSrc = url;
                         certs[index].pdfSrc = '';
                     }
                     renderPackets();
-                } else {
-                    alert(data.message);
-                }
-            } catch (e) {
-                alert('Gagal upload file.');
-            } finally {
-                showLoading(false);
-                input.value = '';
-            }
+                } else alert(data.message);
+            } catch(e) { alert('Upload gagal.'); }
+            finally { showLoading(false); }
         }
 
         async function saveAll() {
             showLoading(true);
             try {
                 let content = rawData;
-                
-                if (currentMode === 'code') {
-                    content = document.getElementById('editor').value;
-                } else {
-                    // Regenerate certsData and certsI18n part in rawData
-                    const certsStr = "const certsData = " + JSON.stringify(certs, null, 4) + ";";
-                    const i18nStr = "const certsI18n = " + JSON.stringify(certsI18n, null, 4) + ";";
-                    
-                    content = content.replace(/const certsData = \[[\s\S]*?\];/, certsStr);
-                    content = content.replace(/const certsI18n = \{[\s\S]*?\};/, i18nStr);
+                if (currentMode === 'code') content = document.getElementById('editor').value;
+                else {
+                    content = content.replace(/const certsData = \[[\s\S]*?\];/, "const certsData = " + JSON.stringify(certs, null, 4) + ";");
+                    content = content.replace(/const certsI18n = \{[\s\S]*?\};/, "const certsI18n = " + JSON.stringify(certsI18n, null, 4) + ";");
+                    content = content.replace(/const skillsData = \[[\s\S]*?\];/, "const skillsData = " + JSON.stringify(skills, null, 4) + ";");
+                    content = content.replace(/const skillsI18n = \{[\s\S]*?\};/, "const skillsI18n = " + JSON.stringify(skillsI18n, null, 4) + ";");
+                    content = content.replace(/const projData = \[[\s\S]*?\];/, "const projData = " + JSON.stringify(projects, null, 4) + ";");
+                    content = content.replace(/const projI18n = \{[\s\S]*?\};/, "const projI18n = " + JSON.stringify(projectsI18n, null, 4) + ";");
                 }
-
                 const fd = new FormData();
                 fd.append('action', 'save_file');
                 fd.append('filename', '../data.js');
                 fd.append('content', content);
-
                 const res = await fetch('api.php', { method: 'POST', body: fd });
                 const data = await res.json();
-                
-                if (data.status === 'success') {
-                    rawData = content;
-                    alert('Data berhasil disimpan dan disinkronkan!');
-                } else {
-                    alert(data.message);
-                }
-            } catch (e) {
-                alert('Gagal menyimpan data.');
-            } finally {
-                showLoading(false);
-            }
+                if (data.status === 'success') { rawData = content; alert('Data disinkronkan!'); }
+                else alert(data.message);
+            } catch(e) { alert('Simpan gagal.'); }
+            finally { showLoading(false); }
         }
 
         function showLoading(show) {
