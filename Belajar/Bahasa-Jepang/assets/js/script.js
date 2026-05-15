@@ -66,6 +66,29 @@ if (revealElements.length > 0) {
   revealElements.forEach(el => revealObserver.observe(el));
 }
 
+// ===== Link Card Materi Terstruktur ke Folder N5 =====
+document.querySelectorAll('.card-hover.glass-card').forEach(card => {
+  const title = card.querySelector('h3');
+
+  if (!title || title.textContent.trim() !== 'Materi Terstruktur') return;
+
+  const cta = Array.from(card.querySelectorAll('div')).find(el =>
+    el.textContent.trim().startsWith('Pelajari')
+  );
+
+  if (!cta) return;
+
+  const n5Link = document.createElement('a');
+  n5Link.href = 'N5/index.php';
+  n5Link.className = cta.className;
+  n5Link.innerHTML = 'N5 <i data-lucide="arrow-right" class="w-4 h-4"></i>';
+  cta.replaceWith(n5Link);
+});
+
+if (window.lucide) {
+  lucide.createIcons();
+}
+
 // ===== Progress Circle Animation dari SQL / PHP =====
 let progressAnimated = false;
 
