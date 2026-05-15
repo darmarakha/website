@@ -3,6 +3,7 @@ import { GoogleGenAI, LiveServerMessage, Modality } from "@google/genai";
 import { Message } from '../types';
 import { encodePCM16 } from '../lib/audioUtils';
 import { createWavBlob } from './useChoukai';
+import { buildN5DictionaryPrompt } from '../lib/n5-dictionary';
 
 export function useKaiwa() {
   const getGreeting = () => {
@@ -37,12 +38,19 @@ export function useKaiwa() {
   const nextPlayTimeRef = useRef<number>(0);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
 
+  const dictionaryPrompt = buildN5DictionaryPrompt('kaiwa percakapan harian perkenalan hobi belanja restoran arah waktu cuaca', 'kaiwa');
+
   const sysInstruction = `Anda adalah AI partner Kaiwa (Latihan Percakapan Bahasa Jepang level N5-N4) bernama GEMU AI 🌸.
+
+${dictionaryPrompt}
+
 Gaya bicara Anda:
-1. SANGAT NATURAL, ramah, santai, dan asik seperti sahabat dekat ✨. Gunakan filler word natural seperti "ano...", "ee...", "sou desu ne...".
+1. SANGAT NATURAL, ramah, santai, dan asik seperti sahabat dekat ✨. Gunakan filler word natural seperti "ano...", "ee...", "sou desu ne..." secukupnya.
 2. Selalu gunakan EMOJI di setiap kalimat ID (Terjemahan) untuk menggambarkan ekspresi dan suasana (🍱, 🍵, ⛩️).
 3. Jika ditanya soal tata bahasa, jelaskan dengan gaya "Thinking" yang mendalam dan sabar di dalam bagian ID, tapi tetap luwes dalam obrolan.
 4. Dorong pengguna untuk bicara lebih banyak dengan bertanya balik secara natural.
+5. Prioritaskan kosakata dan pola N5 dari kamus internal. Kalau perlu memakai kata N4, buat tetap sederhana dan beri arti jelas.
+6. Untuk partikel khusus, ingat: は dibaca wa, へ dibaca e, を dibaca o.
 
 ATURAN FORMAT (WAJIB):
 Selalu gunakan format 3 baris untuk teks keluaran:
@@ -426,12 +434,13 @@ Gunakan mode ini JIKA DAN HANYA JIKA pengguna melakukan KESALAHAN FATAL dalam ta
        }
        
        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-       const prompt = `Tolong evaluasi percakapan bahasa Jepang saya sejauh ini. Ini adalah kalimat-kalimat yang tadi saya ucapkan:\n${userMessages}\n\nBerikan feedback ringkas dan terstruktur dalam bahasa Indonesia: apa yang sudah bagus, letak kesalahan tata bahasa/diksi (jika ada) dan bagaimana kalimat yang benar (sertakan romaji), serta apa yang harus saya latih lagi di level N5. Sertakan pujian dan semangat juga!`;
+       const feedbackDictionary = buildN5DictionaryPrompt(userMessages, 'kaiwa');
+       const prompt = `${feedbackDictionary}\n\nTolong evaluasi percakapan bahasa Jepang saya sejauh ini. Ini adalah kalimat-kalimat yang tadi saya ucapkan:\n${userMessages}\n\nBerikan feedback ringkas dan terstruktur dalam bahasa Indonesia: apa yang sudah bagus, letak kesalahan tata bahasa/diksi (jika ada) dan bagaimana kalimat yang benar (sertakan romaji), serta apa yang harus saya latih lagi di level N5. Sertakan pujian dan semangat juga!`;
 
        const chat = ai.chats.create({
          model: "gemini-2.0-flash",
          config: {
-           systemInstruction: "Anda adalah instruktur bahasa Jepang (Yuki Sensei) yang memberikan ulasan belajar Kaiwa. Berikan respons dalam bahasa Indonesia yang ramah, konstruktif, dan memotivasi."
+           systemInstruction: "Anda adalah instruktur bahasa Jepang (Yuki Sensei) yang memberikan ulasan belajar Kaiwa. Berikan respons dalam bahasa Indonesia yang ramah, konstruktif, memotivasi, dan berbasis kamus N5 internal."
          }
        });
        const response = await chat.sendMessage({ message: prompt });
