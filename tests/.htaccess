@@ -1,2 +1,8 @@
-# Blokir akses langsung ke tests
-Require all denied
+# Blokir akses langsung ke tests, kecuali sandbox otonom
+<FilesMatch "^$">
+    Require all denied
+</FilesMatch>
+
+<Directory "gemu_autonomy">
+    Require all granted
+</Directory>
