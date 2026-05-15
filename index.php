@@ -457,6 +457,60 @@ $gemu_asset_version = max(
                 width: min(390px, 92vw)
             }
         }
+        /* Success Overlay */
+        #success-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(10, 25, 41, 0.85);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        #success-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .success-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 32px;
+            padding: 48px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        #success-overlay.active .success-card {
+            transform: scale(1) translateY(0);
+        }
+
+        .check-icon {
+            width: 80px;
+            height: 80px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            color: white;
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.4);
+            animation: check-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes check-pop {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 
@@ -1014,14 +1068,16 @@ $gemu_asset_version = max(
         </div>
     </div>
 
-    <div id="toast"
-        class="toast fixed top-3 right-3 sm:top-6 sm:right-6 z-[110] bg-white rounded-xl shadow-2xl border border-navy-100 p-3 sm:p-4 flex items-center gap-2.5 sm:gap-3 w-[calc(100vw-1.5rem)] sm:w-auto sm:max-w-sm">
-        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-green-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
-            <i data-lucide="check-circle" class="w-4 h-4 sm:w-5 sm:h-5 text-green-500"></i></div>
-        <div class="min-w-0">
-            <p class="text-xs sm:text-sm font-semibold text-navy-900" id="toast-title">Pesan Terkirim!</p>
-            <p class="text-[10px] sm:text-xs text-navy-500 truncate" id="toast-desc">Terima kasih, saya akan segera
-                membalas.</p>
+    </div>
+
+    <!-- SUCCESS OVERLAY FOR LOGIN/REGISTER -->
+    <div id="success-overlay">
+        <div class="success-card">
+            <div class="check-icon">
+                <i data-lucide="check" class="w-10 h-10"></i>
+            </div>
+            <h2 id="success-title" class="text-2xl font-bold text-white mb-2">Login Berhasil!</h2>
+            <p id="success-message" class="text-navy-300">Selamat datang kembali, Darma.</p>
         </div>
     </div>
 

@@ -411,6 +411,26 @@ document.addEventListener('keydown', e => {
 });
 
 // ================================================================
+// UI UTILITIES
+// ================================================================
+function showSuccessOverlay(title, message) {
+    const overlay = document.getElementById('success-overlay');
+    const tEl = document.getElementById('success-title');
+    const mEl = document.getElementById('success-message');
+    if (overlay && tEl && mEl) {
+        tEl.textContent = title;
+        mEl.textContent = message;
+        overlay.classList.add('active');
+        if (window.lucide) window.lucide.createIcons();
+    }
+}
+
+function hideSuccessOverlay() {
+    const overlay = document.getElementById('success-overlay');
+    if (overlay) overlay.classList.remove('active');
+}
+
+// ================================================================
 // AUTH MODAL LOGIC (LOGIN / REGISTER)
 // ================================================================
 const authModal = document.getElementById('auth-modal');
@@ -501,12 +521,23 @@ authForm.addEventListener('submit', async e => {
 
         // Menangani respons dari server
         if (result.status === 'success') {
-            alert(result.message); // Notifikasi sukses
+            closeAuthModal();
+            showSuccessOverlay(
+                action === 'register' ? 'Pendaftaran Berhasil!' : 'Login Berhasil!',
+                result.message
+            );
+
             if (action === 'register') {
-                toggleAuthMode(); // Pindah ke layar login jika sukses daftar
+                setTimeout(() => {
+                    hideSuccessOverlay();
+                    toggleAuthMode();
+                    openAuthModal();
+                }, 2000);
             } else {
                 // Paksa browser memuat ulang halaman agar sesi PHP terbaca dan navbar berubah
-                window.location.reload(); 
+                setTimeout(() => {
+                    window.location.reload(); 
+                }, 1500);
             }
         } else {
             alert('Gagal: ' + result.message);
