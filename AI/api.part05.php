@@ -1,4 +1,34 @@
 <?php
+if ($action === 'dual_brain_status') {
+    out(true, ['dual_brain'=>gemu_dual_status(), 'nvidia'=>gemu_nvidia_config()]);
+}
+
+if ($action === 'dual_brain_reply') {
+    $question = safe_text($body['question'] ?? $body['message'] ?? '', 1400);
+    if ($question === '') out(false, ['message'=>'Prompt dual brain kosong.'], 400);
+    out(true, gemu_dual_reply($question, 'owner'));
+}
+
+if ($action === 'dual_brain_task') {
+    $title = safe_text($body['title'] ?? $body['task'] ?? '', 700);
+    $type = safe_text($body['type'] ?? 'analysis', 60);
+    if ($title === '') out(false, ['message'=>'Task dual brain kosong.'], 400);
+    out(true, ['message'=>'Task masuk queue dual-brain GEMU.', 'task'=>gemu_dual_add_task($title, $type), 'dual_brain'=>gemu_dual_status()]);
+}
+
+if ($action === 'dual_brain_cycle') {
+    out(true, gemu_dual_run_cycle('owner_action'));
+}
+
+if ($action === 'nvidia_test') {
+    $prompt = safe_text($body['prompt'] ?? 'Jawab singkat: NVIDIA API GEMU aktif.', 300);
+    $result = gemu_nvidia_chat([
+        ['role'=>'system','content'=>'Jawab singkat dalam bahasa Indonesia.'],
+        ['role'=>'user','content'=>$prompt]
+    ], ['max_tokens'=>160, 'temperature'=>0.2]);
+    out(!empty($result['ok']), $result, !empty($result['ok']) ? 200 : 500);
+}
+
 if ($action === 'staged_edits') {
     out(true, ['staged_edits'=>public_staged_edits(), 'agent_decisions'=>public_agent_decisions(), 'autonomy'=>autonomy_state()]);
 }
