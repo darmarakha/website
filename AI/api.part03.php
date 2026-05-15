@@ -139,6 +139,8 @@ function website_profile_answer(string $q, string $mode = 'public'): array {
         $msg = 'Pengalaman Darma di website menonjolkan riset internasional di Korea Selatan/IBS, COSINE-100, analisis data eksperimen, background modeling, Gaussian peak fitting, dan simulasi efisiensi.';
     } elseif (preg_match('/kontak|contact|hubungi|email/i', $q)) {
         $msg = 'Untuk menghubungi Darma, gunakan section Contact Me di website. Form kontak meminta nama, email, subjek, dan pesan.';
+    } elseif (preg_match('/kurang|jelek|buruk|lemah|cacat|salah|kekurangan|kelemahan|kritik|saran/i', $q)) {
+        $msg = 'Sebagai asisten AI, saya selalu memantau performa website ini. Saat ini Darma terus melakukan optimasi pada kecepatan load, responsivitas mobile, dan integrasi fitur AI. Jika Anda memiliki kritik atau saran spesifik, silakan sampaikan melalui formulir kontak agar bisa dipelajari lebih lanjut.';
     } else {
         $about = $ctx['about'] ? ' '.$ctx['about'][0] : '';
         $msg = 'Darma Alif Rakhaa adalah owner website ini. '.$ctx['hero'].$about.' Website ini berisi profil, pengalaman, skill, sertifikat, proyek, bisnis, belajar, dan GEMU AI.';

@@ -579,7 +579,8 @@ function learn_from_internet(string $q, string $mode = 'public'): array {
         }
         $answer = safe_text(implode(' ', $answerParts), 520);
         $message = $answer !== '' ? $answer : 'Aku menemukan beberapa rujukan, tapi isinya terlalu pendek untuk diringkas.';
-        $message .= "\n\nIntinya: aku menyimpan topik ini ke otak GEMU. Pertanyaan kenapa yang kupakai: " . implode(' • ', array_slice($why, 0, 2));
+        $introText = $mode === 'owner' ? 'Intinya: aku menyimpan topik ini ke otak GEMU.' : 'Intinya: saya telah mencatat topik ini untuk dipelajari lebih lanjut.';
+        $message .= "\n\n" . $introText . " Pertanyaan yang saya gunakan sebagai referensi: " . implode(' • ', array_slice($why, 0, 2));
         append_brain_event('web', $qClean, ['why'=>$why, 'snippets'=>$snippets, 'mode'=>$mode]);
         add_activity('internet', 'GEMU belajar dari internet: '.$qClean, ['snippets'=>count($snippets), 'mode'=>$mode]);
         return ['message'=>$message, 'url'=>$snippets[0]['url'] ?: $googleUrl, 'snippets'=>$snippets, 'why'=>$why];
@@ -587,8 +588,9 @@ function learn_from_internet(string $q, string $mode = 'public'): array {
 
     append_brain_event('web', $qClean, ['why'=>$why, 'snippets'=>[], 'mode'=>$mode, 'fallback'=>'google']);
     add_activity('internet', 'GEMU menyiapkan pencarian internet: '.$qClean, ['mode'=>$mode]);
+    $introText = $mode === 'owner' ? 'Topik ini tetap kusimpan ke otak GEMU.' : 'Topik ini telah saya catat sebagai referensi baru.';
     return [
-        'message' => 'Aku belum bisa mengambil ringkasan langsung dari server, jadi aku bukakan pencarian internetnya. Topik ini tetap kusimpan ke otak GEMU. Kenapa yang kupakai: '.implode(' • ', array_slice($why,0,2)),
+        'message' => 'Aku belum bisa mengambil ringkasan langsung dari server, jadi aku bukakan pencarian internetnya. ' . $introText . ' Referensi yang saya gunakan: '.implode(' • ', array_slice($why,0,2)),
         'url' => $googleUrl,
         'snippets' => [],
         'why' => $why
