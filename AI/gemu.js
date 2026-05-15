@@ -608,8 +608,7 @@ async function runSmartEdit(text){
   }finally{ setEditBusy(false); }
 }
 function isAgentDialogueCommand(text){
-  return /\b(3\s*role|tiga\s*role|agent|agen|frontline|backend|sistem|diskusi|ngobrol|rating|skor|score)\b/i.test(text)
-    && /\b(gemu|ai|role|agent|frontline|backend|sistem|diskusi|ngobrol)\b/i.test(text);
+  return /\b(3\s*role|tiga\s*role|agent|agen|frontline|backend|sistem|diskusi|ngobrol|rating|skor|score|stress\s*test|sandbox|otonom|autonomy)\b/i.test(text);
 }
 function isSmartEditCommand(text){
   return /(gemu\s+tolong|tolong|buatkan|buat|tambahkan|tambah|edit|ubah|perbaiki|fix|fitur|halaman|website|aktivitas\s*harian|lebih\s+menarik|rapihkan|rapikan|modern|cantik|aesthetic)/i.test(text);

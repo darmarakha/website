@@ -52,8 +52,9 @@ function resolve_safe_path(string $rel): array {
     $rel = trim(str_replace('\\', '/', $rel));
     $rel = ltrim($rel, '/');
     if ($rel === '' || strpos($rel, '..') !== false || preg_match('/(^|\/)\./', $rel)) out(false, ['message'=>'Path file tidak aman.'], 400);
-    $deny = ['auth.php','AI/api.php','AI/secret.php','AI/cron.php','AI/api-cron-lib.php','.htaccess'];
+    $deny = ['auth.php','AI/api.php','AI/secret.php','AI/cron.php','AI/api-cron-lib.php'];
     foreach ($deny as $d) if (strcasecmp($rel, $d) === 0) out(false, ['message'=>'File ini dilindungi dan tidak boleh diedit lewat GEMU.'], 403);
+    if (basename($rel) === '.htaccess') out(false, ['message'=>'File konfigurasi server (.htaccess) dilindungi.'], 403);
     if (strpos($rel, 'AI/backups/') === 0 || strpos($rel, 'AI/file-brain/') === 0) out(false, ['message'=>'Folder internal AI tidak boleh diedit lewat GEMU.'], 403);
     $allowedExt = ['php','js','css','html','json','txt','md'];
     $ext = strtolower(pathinfo($rel, PATHINFO_EXTENSION));
@@ -822,8 +823,7 @@ function resolve_agent_decision(string $id, bool $approve, string $reason = ''):
 }
 
 function is_agent_dialogue_prompt(string $q): bool {
-    return preg_match('/\b(3\s*role|tiga\s*role|agent|agen|frontline|backend|sistem|diskusi|ngobrol|rating|skor|score)\b/i', $q)
-        && preg_match('/\b(gemu|ai|role|agent|frontline|backend|sistem|diskusi|ngobrol)\b/i', $q);
+    return (bool)preg_match('/\b(3\s*role|tiga\s*role|agent|agen|frontline|backend|sistem|diskusi|ngobrol|rating|skor|score|stress\s*test|sandbox|otonom|autonomy)\b/i', $q);
 }
 
 function gemu_agent_dialogue_request(string $question): array {

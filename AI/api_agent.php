@@ -984,8 +984,7 @@ function gemu_learn_from_feedback(string $q): string {
 }
 
 function is_agent_dialogue_prompt(string $q): bool {
-    return preg_match('/\b(3\s*role|tiga\s*role|agent|agen|frontline|backend|sistem|diskusi|ngobrol|rating|skor|score)\b/i', $q)
-        && preg_match('/\b(gemu|ai|role|agent|frontline|backend|sistem|diskusi|ngobrol)\b/i', $q);
+    return (bool)preg_match('/\b(3\s*role|tiga\s*role|agent|agen|frontline|backend|sistem|diskusi|ngobrol|rating|skor|score|stress\s*test|sandbox|otonom|autonomy)\b/i', $q);
 }
 
 function gemu_agent_dialogue_request(string $question): array {
