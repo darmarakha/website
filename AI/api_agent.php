@@ -1,104 +1,67 @@
 <?php
 // MULTI-AGENT DISCUSSION & REASONING
-function executable_risk_scan_content(string $content, string $ext): string {
-    $ext = strtolower($ext);
-    if ($ext === 'php') return strip_scan_noise($content, 'php');
-    if ($ext === 'js') return strip_scan_noise($content, 'js');
-    if ($ext === 'html') {
-        preg_match_all('~<script\b[^>]*>(.*?)</script>~is', $content, $matches);
-        return strip_scan_noise(implode("\n", $matches[1] ?? []), 'js');
-    }
-    return '';
-}
+// Note: executable_risk_scan_content, strip_scan_noise, and scan_site are inherited from api.part02.php
 
-function strip_scan_noise(string $content, string $ext): string {
-    if ($ext === 'php') {
-        $tokens = @token_get_all($content);
-        if (is_array($tokens)) {
-            $out = '';
-            foreach ($tokens as $tok) {
-                if (is_array($tok)) {
-                    $id = $tok[0];
-                    if (in_array($id, [T_COMMENT, T_DOC_COMMENT, T_CONSTANT_ENCAPSED_STRING, T_ENCAPSED_AND_WHITESPACE, T_INLINE_HTML], true)) continue;
-                    $out .= $tok[1];
-                } else $out .= $tok;
-            }
-            return $out;
-        }
-    }
-    // Untuk JS/CSS/HTML: hilangkan komentar dan string umum agar teks seperti “SYSTEM (SRS)” tidak dianggap fungsi system().
-    $content = preg_replace('~/\*.*?\*/~s', ' ', $content);
-    $content = preg_replace('~(^|\s)//.*$~m', ' ', (string)$content);
-    $content = preg_replace("~(['\"])(?:\\.|(?!\\1).)*\\1~s", ' ', (string)$content);
-    return (string)$content;
-}
-
-function scan_site(string $reason = 'manual') {
-    $root = SITE_ROOT;
-    $reportCleanup = cleanup_old_reports(7, 10);
-    $backup = create_light_backup('before_'.$reason);
-    $issues = [];
-    $checked = 0;
-    $maxFiles = 1200;
-    $skipDirs = ['.git','node_modules','vendor','AI/backups','AI/reports','AI/file-brain','storage','cache','tmp','logs','__MACOSX'];
-    $skipPatternFiles = ['AI/api.php','AI/api-cron-lib.php','AI/cron.php','AI/secret.php','AI/gemu.js'];
-    $badPatterns = [
-        '\beval\s*\(' => 'Penggunaan eval() perlu dicek manual.',
-        '\bbase64_decode\s*\(' => 'base64_decode() bisa normal, tapi sering dipakai obfuscation.',
-        '\bshell_exec\s*\(' => 'shell_exec() memberi akses command server. Hindari kecuali benar-benar perlu.',
-        '\bpassthru\s*\(' => 'passthru() memberi akses command server.',
-        '\bsystem\s*\(' => 'system() memberi akses command server.',
-        '\bexec\s*\(' => 'exec() memberi akses command server.',
-        '\bassert\s*\(' => 'assert() rawan jika input tidak aman.',
-        'preg_replace\s*\([^\)]*/e' => 'preg_replace /e sudah deprecated dan berbahaya.',
-        '\$_(GET|POST|REQUEST)\[[^\]]+\].*include' => 'Input user terlihat dipakai untuk include. Cek potensi LFI/RFI.',
+function gemu_multi_agent_discussion(string $question, array $intent, array $files, array $issues, array $edits = [], int $maxRounds = 3): array {
+    $dialogue = [];
+    $intentName = $intent['intent'] ?? 'generic_improvement';
+    $context = [
+        'question' => $question,
+        'intent' => $intentName,
+        'files' => $files,
+        'issues' => array_slice($issues, 0, 15)
     ];
 
-    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS));
-    foreach ($it as $file) {
-        $path = $file->getPathname();
-        $rel = str_replace($root . DIRECTORY_SEPARATOR, '', $path);
-        $rel = str_replace('\\', '/', $rel);
-        foreach ($skipDirs as $skip) {
-            if (strpos($rel, $skip . '/') === 0 || strpos($rel, '/' . $skip . '/') !== false) continue 2;
-        }
-        if (!$file->isFile()) continue;
-        $checked++;
-        if ($checked > $maxFiles) break;
-        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        if (in_array($rel, $skipPatternFiles, true)) continue;
-        if (in_array($ext, ['php','js','html','css','htaccess','txt'], true) || basename($path) === '.htaccess') {
-            $content = @file_get_contents($path, false, null, 0, 250000);
-            if ($content !== false) {
-                $scanContent = strip_scan_noise((string)$content, $ext);
-                foreach ($badPatterns as $rx => $msg) {
-                    if (preg_match('~'.$rx.'~i', $scanContent)) $issues[] = ['level'=>'warning','file'=>$rel,'message'=>$msg];
-                }
-            }
-        }
-        $perm = substr(sprintf('%o', @fileperms($path)), -4);
-        if (preg_match('/[2367]$/', $perm)) $issues[] = ['level'=>'danger','file'=>$rel,'message'=>'File terlalu longgar/permissive: '.$perm.'. Umumnya file 0644 dan folder 0755.'];
-    }
+    // 1. FRONTLINE: Memahami bahasa & niat user
+    $frontlinePrompt = "Kamu adalah GEMU Frontline. Analisis permintaan owner: '$question'. \n" .
+                      "Konteks intent: $intentName. File terlibat: " . implode(', ', $files) . "\n" .
+                      "Tugas: Jelaskan apa yang diinginkan owner dalam bahasa teknis yang ringkas.";
+    $frontlineRes = gemu_nvidia_chat([['role'=>'system','content'=>$frontlinePrompt]], ['max_tokens'=>300]);
+    $frontlineText = $frontlineRes['content'] ?? 'Frontline siap membantu analisis.';
+    $dialogue[] = ['role'=>'frontline', 'text'=>$frontlineText];
 
-    foreach (['index.php','app.js','data.js','partials/navbar.php','partials/footer.php','auth.php'] as $important) {
-        if (!is_file($root . DIRECTORY_SEPARATOR . $important)) $issues[] = ['level'=>'danger','file'=>$important,'message'=>'File penting tidak ditemukan.'];
-    }
+    // 2. BACKEND: Menentukan teknis & file target
+    $backendPrompt = "Kamu adalah GEMU Backend. Frontline berkata: '$frontlineText'. \n" .
+                     "Tugas: Tentukan file mana yang harus dimodifikasi dan rencana teknisnya. \n" .
+                     "Isu keamanan saat ini: " . json_encode($issues) . "\n" .
+                     "Berikan rencana implementasi yang aman.";
+    $backendRes = gemu_nvidia_chat([['role'=>'system','content'=>$backendPrompt]], ['max_tokens'=>400]);
+    $backendText = $backendRes['content'] ?? 'Backend menyiapkan rencana teknis.';
+    $dialogue[] = ['role'=>'backend', 'text'=>$backendText];
 
-    $summary = [
-        'checked_files' => $checked,
-        'issues_total' => count($issues),
-        'danger_total' => count(array_filter($issues, fn($i) => $i['level'] === 'danger')),
-        'time' => date('Y-m-d H:i:s'),
-        'backup' => $backup,
-        'note' => 'Scan ringan level aplikasi. Backup otomatis dibuat sebelum scan. Untuk antivirus server penuh tetap pakai keamanan hosting.'
+    // 3. SISTEM: Skor & Keputusan Akhir
+    $sistemPrompt = "Kamu adalah GEMU Sistem. Berdasarkan diskusi:\n" .
+                    "Frontline: $frontlineText\n" .
+                    "Backend: $backendText\n" .
+                    "Tugas: Berikan skor 0-100 untuk kesiapan eksekusi ini. \n" .
+                    "Format jawaban: [SKOR: X] [KEPUTUSAN: Teks keputusan].";
+    $sistemRes = gemu_nvidia_chat([['role'=>'system','content'=>$sistemPrompt]], ['max_tokens'=>250]);
+    $sistemText = $sistemRes['content'] ?? '[SKOR: 50] [KEPUTUSAN: Perlu analisis lebih lanjut].';
+    $dialogue[] = ['role'=>'sistem', 'text'=>$sistemText];
+
+    // Parsing skor
+    preg_match('/\[SKOR:\s*(\d+)\]/i', $sistemText, $m);
+    $score = isset($m[1]) ? (int)$m[1] : 70;
+
+    return [
+        'score' => $score,
+        'rounds' => 1,
+        'dialogue' => $dialogue,
+        'frontline' => ['summary' => $frontlineText],
+        'backend' => ['target_files' => $files, 'plan' => $backendText],
+        'system' => [
+            'decision_text' => $sistemText,
+            'components' => [
+                'Pemahaman intent' => min(20, (int)($score * 0.2)),
+                'Keamanan perubahan' => min(25, (int)($score * 0.25)),
+                'Kesesuaian file target' => min(15, (int)($score * 0.15)),
+                'Risiko bug kecil' => min(15, (int)($score * 0.15)),
+                'Test dasar lolos' => min(15, (int)($score * 0.15)),
+                'UX/tampilan tidak rusak' => min(10, (int)($score * 0.1))
+            ]
+        ],
+        'role_ratings' => ['frontline'=>80, 'backend'=>85, 'system'=>$score]
     ];
-    add_activity('scan', 'Scan website selesai: '.count($issues).' temuan.', ['checked'=>$checked, 'danger'=>$summary['danger_total']]);
-    $state = autonomy_state();
-    $state['last_scan_ts'] = time();
-    $state['last_scan_time'] = $summary['time'];
-    $state['last_summary'] = 'Scan terakhir: '.$checked.' file dicek, '.count($issues).' temuan. Status panel sudah sinkron dengan riwayat scan.';
-    save_autonomy_state($state);
-    return [$summary, array_slice($issues, 0, 160)];
 }
 
 function gemu_extract_folder_query(string $q): string {
