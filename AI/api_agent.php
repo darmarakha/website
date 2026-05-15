@@ -598,6 +598,7 @@ function smart_prompt_intent(string $question): array {
         'performance_mobile_audit' => ['/lemot|berat|speed|performa|performance|mobile|hp|responsive|overflow|layar/i', 0.78, ['performa','mobile','responsive','aksesibilitas']],
         'bugfix_analysis' => ['/bug|error|eror|tidak\s*muncul|tidak\s*jalan|rusak|blank|fatal|warning|fix|perbaiki|benarkan/i', 0.76, ['bugfix','analisis risiko','patch kecil']],
         'ai_owner_feature' => ['/ai|gemu|otak|memori|mandiri|smart\s*edit|draft|approve|log|upload/i', 0.82, ['GEMU AI','owner mode','safe automation']],
+        'autonomous_sandbox' => ['/sandbox|stress\s*test|autonomy|eksperimen|folder\s*test|mandiri\s*total/i', 0.98, ['autonomous sandbox','stress test','folder tests/gemu_autonomy','no-approval write']],
         'new_feature_scaffold' => ['/fitur|buatkan|tambahkan|module|modul|halaman\s*baru|page\s*baru|aplikasi/i', 0.74, ['fitur baru','halaman baru','struktur awal','aman diterapkan']],
     ];
     foreach ($rules as $name => $r) {
@@ -997,6 +998,10 @@ function gemu_agent_dialogue_request(string $question): array {
         $intent['needs_draft'] = false;
     }
     $files = candidate_files_for($question);
+    if (($intent['intent'] ?? '') === 'autonomous_sandbox') {
+        return gemu_run_sandbox_stress_test($question);
+    }
+    if (($intent['intent'] ?? '') === 'daily_activity_feature' && !in_array('aktivitas-harian.php', $files, true)) array_unshift($files, 'aktivitas-harian.php');
     if (is_agent_dialogue_prompt($question)) {
         foreach (['AI/api.php','AI/gemu.js','AI/index.php','AI/gemu.css','AI/cron.php','AI/guide-widget.js','AI/guide-widget.css'] as $must) {
             if (is_file(SITE_ROOT.'/'.$must) && !in_array($must, $files, true)) $files[] = $must;

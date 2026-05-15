@@ -1,4 +1,5 @@
 <?php
+include_once 'api_sandbox.php';
 function gemu_multi_agent_review(string $question, array $intent, array $files, array $issues, array $edits = []): array {
     $intentName = (string)($intent['intent'] ?? 'generic_improvement');
     $evidence = gemu_v19_file_evidence($question, $intent, $files);
@@ -946,5 +947,9 @@ if ($action === 'suggestions_digest') {
 if ($action === 'autonomous_cycle') {
     $reason = !empty($body['force']) ? 'manual_force' : 'manual';
     out(true, run_autonomous_cycle($reason));
+}
+if ($action === 'sandbox_stress_test') {
+    $q = safe_text($body['message'] ?? '', 500);
+    out(true, gemu_run_sandbox_stress_test($q));
 }
 
