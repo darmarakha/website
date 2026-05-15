@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { N5_CHOUKAI_MATERIALS, getRandomChoukai } from '@/lib/n5-data';
+import { buildN5DictionaryPrompt } from '@/lib/n5-dictionary';
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,15 +26,21 @@ export async function POST(req: NextRequest) {
     // Generate new material using AI
     if (action === 'generate' || !action) {
       const zai = await (await import('@/lib/zai')).getZAI();
+      const dictionaryContext = buildN5DictionaryPrompt(topic || 'choukai listening N5', 'choukai');
 
       const prompt = `Buatkan materi Choukai (Listening) bahasa Jepang JLPT N5. 
 Topik: ${topic || 'Acak (perkenalan, belanja, di restoran, atau menanyakan jalan)'}.
 
+${dictionaryContext}
+
 PENTING: 
-1. Dialog harus LUWES dan NATURAL (gunakan ekspresi seperti 'ano...', 'ee...', 'sou desu ne').
+1. Dialog harus LUWES dan NATURAL, tetapi tetap level N5. Gunakan ekspresi ringan seperti "ano...", "ee...", "sou desu ne" secukupnya.
 2. Gunakan format Kanji[hiragana] untuk SEMUA kanji pada bagian "text".
 3. Buat 2 tokoh pembicara yang JELAS dengan nama, peran, dan jenis kelamin yang berbeda.
 4. Pastikan speaker A dan B memiliki jenis kelamin yang JELAS (satu pria, satu wanita) untuk memudahkan pengguna membedakan suara.
+5. Dialog harus memakai kosakata dari kamus N5 di atas sebanyak mungkin agar stabil untuk siswa pemula.
+6. Quiz harus menguji kata kunci listening: waktu, tempat, harga, arah, jumlah, atau pilihan pembicara.
+7. Jangan memakai kanji tanpa furigana. Contoh benar: 私[わたし], 日本語[にほんご], 学校[がっこう].
 
 Format JSON:
 {
@@ -63,7 +70,7 @@ Hanya kembalikan JSON valid tanpa markdown.`;
         messages: [
           {
             role: 'assistant' as const,
-            content: 'Anda adalah pembuat materi pendengaran bahasa Jepang JLPT N5. Buat materi yang menarik, natural, dan sesuai level N5. Selalu kembalikan JSON yang valid. Pastikan setiap materi memiliki 2 tokoh dengan nama dan peran yang jelas.',
+            content: 'Anda adalah pembuat materi pendengaran bahasa Jepang JLPT N5. Pakai kamus N5 internal sebagai batas kosakata. Buat materi natural, jelas, dan valid untuk listening. Selalu kembalikan JSON yang valid.',
           },
           {
             role: 'user' as const,
@@ -79,7 +86,7 @@ Hanya kembalikan JSON valid tanpa markdown.`;
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         const fallback = getRandomChoukai();
-        return NextResponse.json({ material: fallback });
+        return NextResponse.json({ material: fallback, dictionaryContext });
       }
 
       try {
@@ -95,10 +102,10 @@ Hanya kembalikan JSON valid tanpa markdown.`;
           material.context = material.scenario;
         }
         material.id = `ai-${Date.now()}`;
-        return NextResponse.json({ material });
+        return NextResponse.json({ material, dictionaryContext });
       } catch {
         const fallback = getRandomChoukai();
-        return NextResponse.json({ material: fallback });
+        return NextResponse.json({ material: fallback, dictionaryContext });
       }
     }
 
