@@ -161,8 +161,9 @@ function resolve_safe_path(string $rel): array {
     $rel = trim(str_replace('\\', '/', $rel));
     $rel = ltrim($rel, '/');
     if ($rel === '' || strpos($rel, '..') !== false || preg_match('/(^|\/)\./', $rel)) out(false, ['message'=>'Path file tidak aman.'], 400);
-    $deny = ['auth.php','AI/api.php','AI/secret.php','AI/cron.php','AI/api-cron-lib.php','.htaccess'];
+    $deny = ['auth.php','AI/api.php','AI/secret.php','AI/cron.php','AI/api-cron-lib.php'];
     foreach ($deny as $d) if (strcasecmp($rel, $d) === 0) out(false, ['message'=>'File ini dilindungi dan tidak boleh diedit lewat GEMU.'], 403);
+    if (basename($rel) === '.htaccess') out(false, ['message'=>'File konfigurasi server (.htaccess) dilindungi.'], 403);
     if (strpos($rel, 'AI/backups/') === 0 || strpos($rel, 'AI/file-brain/') === 0) out(false, ['message'=>'Folder internal AI tidak boleh diedit lewat GEMU.'], 403);
     $allowedExt = ['php','js','css','html','json','txt','md'];
     $ext = strtolower(pathinfo($rel, PATHINFO_EXTENSION));
@@ -604,7 +605,7 @@ function smart_prompt_intent(string $question): array {
     foreach ($rules as $name => $r) {
         if (preg_match($r[0], $question)) { $intent = $name; $confidence = $r[1]; $keywords = $r[2]; break; }
     }
-    if (is_agent_dialogue_prompt($question)) { $intent = 'multi_agent_orchestration'; $confidence = 0.96; $keywords = ['GEMU Sistem','GEMU Frontline','GEMU Backend','diskusi agent','rating 0-100']; $needsDraft = false; }
+    if (is_agent_dialogue_prompt($question) && $intent !== 'autonomous_sandbox') { $intent = 'multi_agent_orchestration'; $confidence = 0.96; $keywords = ['GEMU Sistem','GEMU Frontline','GEMU Backend','diskusi agent','rating 0-100']; $needsDraft = false; }
     if ($intent === 'bugfix_analysis' && preg_match('/navbar|burger|menu/i', $question)) { $intent = 'navbar_fix'; $confidence = 0.97; $keywords = ['navbar','burger','menu tidak muncul']; }
     if ($intent === 'generic_improvement' && preg_match('/ubah|edit|tambahkan|buat|tolong/i', $question)) { $confidence = 0.70; $keywords = ['prompt bebas','analisis mandiri','draft aman']; }
 

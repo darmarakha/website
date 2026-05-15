@@ -19,11 +19,13 @@ function gemu_run_sandbox_stress_test(string $request): array {
     
     $files = [$targetDir . '/index.php', $targetDir . '/style.css'];
     
-    // 2. DISKUSI AGENT (Simulasi 3 Role Aktif)
+    // 2. DISKUSI AGENT (Panggil logika diskusi asli)
+    $discussionFiles = ['index.php', 'AI/api_sandbox.php'];
+    $discussionReview = gemu_multi_agent_discussion($request, $intent, $discussionFiles, [], [], 3);
     $discussion = [
-        'frontline' => 'Darma meminta stress test otonom. Saya arahkan fokus ke folder sandbox agar file utama aman.',
-        'backend' => 'Saya akan membangun UI Glassmorphism modern di folder tersebut. Menggunakan PHP + Vanilla CSS.',
-        'system' => 'Akses folder tests/ dilegalkan untuk penulisan langsung tanpa approve per-file khusus untuk sesi ini.'
+        'frontline' => $discussionReview['frontline']['summary'] ?? 'Darma meminta stress test otonom.',
+        'backend' => $discussionReview['backend']['summary'] ?? 'Membangun dashboard Glassmorphism.',
+        'system' => $discussionReview['system']['decision_text'] ?? 'Akses sandbox diizinkan.'
     ];
 
     // 3. GENERASI KONTEN (UI Experiment)
@@ -37,14 +39,16 @@ function gemu_run_sandbox_stress_test(string $request): array {
     @chmod($fullPath, 0644);
 
     $message = "Stress Test Otonom Berhasil! 🤖🛡️\n\n";
-    $message .= "3 Role GEMU (Frontline, Backend, Sistem) telah berdiskusi dan memutuskan:\n";
-    $message .= "- Folder: `{$targetDir}` telah diamankan.\n";
-    $message .= "- File Baru: `{$fileName}` telah dibangun secara mandiri.\n";
-    $message .= "- Teknologi: Glassmorphism, Responsive UI, & Clean Logic.\n\n";
-    $message .= "Silakan cek hasilnya di: https://gemuyokai.my.id/{$targetDir}/{$fileName}";
+    $message .= "Diskusi 3 Role (Skor: " . ($discussionReview['score'] ?? 0) . "/100):\n";
+    $message .= "- **Frontline**: " . $discussion['frontline'] . "\n";
+    $message .= "- **Backend**: " . $discussion['backend'] . "\n";
+    $message .= "- **Sistem**: " . $discussion['system'] . "\n\n";
+    $message .= "📌 Folder: `{$targetDir}`\n";
+    $message .= "📄 File: `{$fileName}`\n\n";
+    $message .= "Hasil Eksperimen UI: https://gemuyokai.my.id/{$targetDir}/{$fileName}";
 
-    add_activity('autonomy', 'GEMU menjalankan Stress Test Otonom di folder sandbox.', ['file' => $fileName]);
-    append_owner_chat('gemu', $message, ['source' => 'sandbox_stress_test', 'discussion' => $discussion]);
+    add_activity('autonomy', 'GEMU Stress Test Otonom selesai.', ['file' => $fileName, 'score' => $discussionReview['score'] ?? 0]);
+    append_owner_chat('gemu', $message, ['source' => 'sandbox_stress_test', 'discussion' => $discussion, 'score' => $discussionReview['score'] ?? 0]);
 
     return [
         'ok' => $ok,
