@@ -603,6 +603,21 @@ function gemu_is_self_intro_question(string $q): bool {
     return (bool)preg_match('/\b(kamu\s+siapa|siapa\s+kamu|siapa\s+dirimu|siapa\s+anda|siapa\s+gemu|gemu\s+itu\s+siapa|kamu\s+ini\s+siapa|kenalin\s+dirimu|perkenalkan\s+dirimu)\b/i', trim($q));
 }
 
+function gemu_handle_simple_math(string $q): ?string {
+    $q = trim($q);
+    // Support basic math like 2+2, 10 * 5, etc.
+    if (preg_match('/^(\d+)\s*([\+\-\*\/])\s*(\d+)\s*[?]?$/', $q, $m)) {
+        $a = (float)$m[1]; $op = $m[2]; $b = (float)$m[3];
+        $res = 0;
+        if ($op === '+') $res = $a + $b;
+        elseif ($op === '-') $res = $a - $b;
+        elseif ($op === '*') $res = $a * $b;
+        elseif ($op === '/') $res = ($b != 0) ? $a / $b : 'tak terhingga';
+        return "Hasil dari $a $op $b adalah $res. Ada lagi yang bisa saya bantu?";
+    }
+    return null;
+}
+
 function gemu_self_identity_message(string $mode = 'public'): string {
     if ($mode === 'owner') {
         return 'Aku GEMU AI, asisten owner Darma. Tugasku membaca konteks website, menyiapkan analisis, membuat draft edit aman, mengaudit storage, dan menunggu tombol ✓/× dari Darma sebelum mengubah website.';
@@ -616,8 +631,12 @@ function concise_local_reply(string $q, string $mode = 'public'): array {
     append_brain_event($mode === 'owner' ? 'owner' : 'public', $qClean, ['mode'=>$mode]);
 
     if ($qClean === '') {
-        return ['message'=>'Halo 👋 Aku GEMU. Tanyakan apa saja tentang website Darma, proyek, sertifikat, skill, atau isi website ini.'];
+        $msg = $mode === 'owner' ? 'Halo Darma 👋 Ada yang bisa saya bantu hari ini?' : 'Halo 👋 Aku GEMU. Tanyakan apa saja tentang website Darma, proyek, sertifikat, skill, atau isi website ini.';
+        return ['message'=>$msg];
     }
+
+    $math = gemu_handle_simple_math($qClean);
+    if ($math) return ['message'=>$math];
 
     if (gemu_is_greeting($qClean)) {
         $name = $mode === 'owner' ? 'Darma' : 'teman';
@@ -688,7 +707,11 @@ function concise_local_reply(string $q, string $mode = 'public'): array {
 Memori relevan singkat: ".implode(' | ', array_map(fn($m)=>$m['text'], $relevant));
     }
     log_failed_response($qClean, $router['tool'] ?? 'local_answer', 'fallback_generic_reply');
-    return ['message'=>safe_text('Aku paham, Darma. Ini bukan perintah edit. Aku akan cek konteks lokal dulu dan jawab seperlunya; internet hanya dipakai kalau Darma menulis jelas “cari di internet ...”.'.$hint, 520), 'router'=>$router, 'relevant_memory'=>$relevant];
+    $fallback = $mode === 'owner' 
+        ? 'Aku paham, Darma. Ini bukan perintah edit. Aku akan cek konteks lokal dulu dan jawab seperlunya; internet hanya dipakai kalau Darma menulis jelas “cari di internet ...”.'
+        : 'Saya mengerti. Sayangnya saya belum menemukan informasi spesifik tentang itu di website ini. Mungkin Anda ingin menanyakan tentang profil Darma, proyek, atau mencoba fitur “cari di internet ...”?';
+    
+    return ['message'=>safe_text($fallback.$hint, 520), 'router'=>$router, 'relevant_memory'=>$relevant];
 }
 
 function public_reply(string $q): array {

@@ -231,15 +231,19 @@ function local_reasoning_answer(string $q, string $mode = 'public'): array {
     if (preg_match('/file|storage|backup|disk|penyimpanan/i', $q) && $mode === 'owner') return storage_audit_reply($q);
     if (preg_match('/darma|proyek|sertifikat|skill|pengalaman|kontak|portfolio|website/i', $q)) {
         $reply = website_profile_answer($q, $mode);
-        if ($relevant) $reply['message'] .= '
-
-Memori relevan: '.implode(' | ', array_map(fn($m)=>$m['text'], array_slice($relevant,0,2)));
+        if ($relevant && $mode === 'owner') $reply['message'] .= "\n\nMemori relevan: ".implode(' | ', array_map(fn($m)=>$m['text'], array_slice($relevant,0,2)));
         return $reply;
     }
-    $msg = 'Menurut otak lokal GEMU, inti dari “'.$base.'” adalah tujuan, penyebab, dan dampaknya. ';
-    $msg .= 'Aku jawab dari konteks lokal dulu supaya pertanyaan biasa tidak langsung dilempar ke Wikipedia. ';
-    if ($relevant) $msg .= 'Memori yang nyambung: '.implode(' | ', array_map(fn($m)=>$m['text'], array_slice($relevant,0,2))).'. ';
-    $msg .= 'Kalau memang butuh sumber online, tulis “cari di internet '.$base.'”.';
+    
+    if ($mode === 'owner') {
+        $msg = 'Menurut otak lokal GEMU, inti dari “'.$base.'” adalah tujuan, penyebab, dan dampaknya. ';
+        $msg .= 'Aku jawab dari konteks lokal dulu supaya pertanyaan biasa tidak langsung dilempar ke Wikipedia. ';
+        if ($relevant) $msg .= 'Memori yang nyambung: '.implode(' | ', array_map(fn($m)=>$m['text'], array_slice($relevant,0,2))).'. ';
+    } else {
+        $msg = 'Berdasarkan informasi yang saya miliki, “'.$base.'” berkaitan dengan informasi yang ada di website ini. ';
+        $msg .= 'Namun, jika Anda mencari informasi umum atau berita terbaru yang tidak ada di profil Darma, ';
+    }
+    $msg .= 'Anda bisa mencoba menulis “cari di internet '.$base.'” untuk mendapatkan hasil dari pencarian web.';
     return ['message'=>safe_text($msg, 900), 'context'=>$ctx, 'relevant_memory'=>$relevant];
 }
 
