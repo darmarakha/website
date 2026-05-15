@@ -114,6 +114,7 @@ function dynamic_site_context(): array {
         $ctx['counts']['certificates'] = count($ctx['certificates']);
         $ctx['counts']['projects'] = count($ctx['projects']);
     }
+    $ctx['design_philosophy'] = 'Website ini menggunakan tema Premium Dark dengan efek Glassmorphism untuk menciptakan kesan futuristik, profesional, dan fokus pada konten visual. Warna gelap dipilih untuk mengurangi kelelahan mata (eye strain) dan menonjolkan elemen-elemen penting seperti badge skill dan kartu proyek.';
     if ($index !== '' && preg_match('/<title>(.*?)<\/title>/is', $index, $m)) $ctx['title'] = gemu_clean_js_text($m[1]);
     return $ctx;
 }
@@ -125,7 +126,9 @@ function website_profile_answer(string $q, string $mode = 'public'): array {
     if (gemu_is_self_intro_question($q)) {
         return ['message'=>gemu_self_identity_message($mode), 'context'=>$ctx];
     }
-    if (preg_match('/sertifikat|certificate/i', $q)) {
+    if (preg_match('/warna|gelap|tema|desain|tampilan|design|layout|glassmorphism|aesthetic/i', $q)) {
+        $msg = $ctx['design_philosophy'];
+    } elseif (preg_match('/sertifikat|certificate/i', $q)) {
         $names = $ctx['certificates'] ? implode(', ', array_slice($ctx['certificates'], 0, 5)) : 'sertifikat bahasa Inggris, Microsoft Excel, dan magang riset';
         $msg = 'Di website ini terdata sekitar '.$ctx['counts']['certificates'].' sertifikat. Yang terbaca: '.$names.'. Buka section Sertifikat untuk melihat gambar/PDF lengkapnya.';
     } elseif (preg_match('/proyek|project|portfolio|portofolio/i', $q)) {
@@ -238,9 +241,9 @@ function local_reasoning_answer(string $q, string $mode = 'public'): array {
     }
     
     if ($mode === 'owner') {
-        $msg = 'Menurut otak lokal GEMU, inti dari “'.$base.'” adalah tujuan, penyebab, dan dampaknya. ';
-        $msg .= 'Aku jawab dari konteks lokal dulu supaya pertanyaan biasa tidak langsung dilempar ke Wikipedia. ';
-        if ($relevant) $msg .= 'Memori yang nyambung: '.implode(' | ', array_map(fn($m)=>$m['text'], array_slice($relevant,0,2))).'. ';
+        $msg = 'Berdasarkan analisis internal saya, inti dari “'.$base.'” berkaitan dengan tujuan dan dampaknya. ';
+        $msg .= 'Saya memprioritaskan jawaban dari basis data lokal agar informasi tetap akurat dengan konteks website Anda. ';
+        if ($relevant) $msg .= 'Memori terkait yang ditemukan: '.implode(' | ', array_map(fn($m)=>$m['text'], array_slice($relevant,0,2))).'. ';
     } else {
         $msg = 'Berdasarkan informasi yang saya miliki, “'.$base.'” berkaitan dengan informasi yang ada di website ini. ';
         $msg .= 'Namun, jika Anda mencari informasi umum atau berita terbaru yang tidak ada di profil Darma, ';

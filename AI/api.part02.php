@@ -579,7 +579,7 @@ function learn_from_internet(string $q, string $mode = 'public'): array {
         }
         $answer = safe_text(implode(' ', $answerParts), 520);
         $message = $answer !== '' ? $answer : 'Aku menemukan beberapa rujukan, tapi isinya terlalu pendek untuk diringkas.';
-        $introText = $mode === 'owner' ? 'Intinya: aku menyimpan topik ini ke otak GEMU.' : 'Intinya: saya telah mencatat topik ini untuk dipelajari lebih lanjut.';
+        $introText = $mode === 'owner' ? 'Intinya: topik ini sudah saya pelajari dan simpan ke database internal.' : 'Intinya: saya telah mencatat topik ini untuk dipelajari lebih lanjut.';
         $message .= "\n\n" . $introText . " Pertanyaan yang saya gunakan sebagai referensi: " . implode(' • ', array_slice($why, 0, 2));
         append_brain_event('web', $qClean, ['why'=>$why, 'snippets'=>$snippets, 'mode'=>$mode]);
         add_activity('internet', 'GEMU belajar dari internet: '.$qClean, ['snippets'=>count($snippets), 'mode'=>$mode]);
@@ -588,7 +588,7 @@ function learn_from_internet(string $q, string $mode = 'public'): array {
 
     append_brain_event('web', $qClean, ['why'=>$why, 'snippets'=>[], 'mode'=>$mode, 'fallback'=>'google']);
     add_activity('internet', 'GEMU menyiapkan pencarian internet: '.$qClean, ['mode'=>$mode]);
-    $introText = $mode === 'owner' ? 'Topik ini tetap kusimpan ke otak GEMU.' : 'Topik ini telah saya catat sebagai referensi baru.';
+    $introText = $mode === 'owner' ? 'Topik ini sudah saya simpan untuk diproses lebih lanjut.' : 'Topik ini telah saya catat sebagai referensi baru.';
     return [
         'message' => 'Aku belum bisa mengambil ringkasan langsung dari server, jadi aku bukakan pencarian internetnya. ' . $introText . ' Referensi yang saya gunakan: '.implode(' • ', array_slice($why,0,2)),
         'url' => $googleUrl,
@@ -607,16 +607,36 @@ function gemu_is_self_intro_question(string $q): bool {
 
 function gemu_handle_simple_math(string $q): ?string {
     $q = trim($q);
-    // Support basic math like 2+2, 10 * 5, etc.
-    if (preg_match('/^(\d+)\s*([\+\-\*\/])\s*(\d+)\s*[?]?$/', $q, $m)) {
-        $a = (float)$m[1]; $op = $m[2]; $b = (float)$m[3];
-        $res = 0;
-        if ($op === '+') $res = $a + $b;
-        elseif ($op === '-') $res = $a - $b;
-        elseif ($op === '*') $res = $a * $b;
-        elseif ($op === '/') $res = ($b != 0) ? $a / $b : 'tak terhingga';
-        return "Hasil dari $a $op $b adalah $res. Ada lagi yang bisa saya bantu?";
-    }
+    // Remove common question prefixes in Indonesian/English
+    $q = preg_replace('/^(berapa|hitung|hasil\s+dari|what\s+is|calculate|solve)\s+/i', '', $q);
+    
+    // Remove trailing question mark and allow spaces/parentheses
+    $clean = preg_replace('/[?]$/', '', $q);
+    $clean = preg_replace('/\s+/', '', $clean);
+    
+    // Only allow digits, operators + - * / and parentheses
+    if (!preg_match('/^[0-9\+\-\*\/\(\)\.]+$/', $clean)) return null;
+    
+    // Very basic safety check for nested or malicious patterns
+    if (strpos($clean, 'eval') !== false || strpos($clean, '$_') !== false) return null;
+
+    try {
+        // Use a simple replacement and eval-like logic but with preg_replace safety
+        // Since we already filtered for numbers and basic operators, it's relatively safe.
+        // We'll use a calculator logic for simple chains
+        $res = null;
+        // Basic arithmetic evaluator for simple chains like (125*4)+500
+        // We use @ to suppress errors from malformed math
+        $val = @eval("return $clean;");
+        if ($val !== false && $val !== null) {
+            $res = $val;
+        }
+
+        if ($res !== null) {
+            return "Hasil perhitungan dari “{$q}” adalah $res. Ada lagi yang bisa saya hitung?";
+        }
+    } catch (Throwable $e) {}
+    
     return null;
 }
 
