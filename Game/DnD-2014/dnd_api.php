@@ -177,7 +177,7 @@ $userIdRaw = $_SESSION['gy_user_id'] ?? $_SESSION['user_id'] ?? $_SESSION['id_us
 $userId = is_numeric($userIdRaw) ? (int)$userIdRaw : null;
 $userName = trim((string)($_SESSION['gy_nickname'] ?? $_SESSION['gy_user_name'] ?? $_SESSION['user_name'] ?? $_SESSION['nama_panggilan'] ?? $_SESSION['nama_lengkap'] ?? 'Guest Player'));
 $userRole = strtolower((string)($_SESSION['gy_user_role'] ?? $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'member'));
-$isOwner = in_array($userRole, ['owner', 'admin'], true) || stripos($userName, 'darma') !== false;
+$isOwner = stripos($userName, 'darma') !== false;
 
 if (!$userId) {
     dnd_json(['ok' => false, 'message' => 'Login website dulu. Akun DND lokal sudah dimatikan supaya akun dan karakter hanya tersimpan di MySQL.'], 401);
@@ -248,6 +248,7 @@ function dnd_ensure_character_columns(PDO $pdo): void {
         'ability_scores_json' => "ALTER TABLE dnd_characters ADD COLUMN ability_scores_json longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL AFTER alignment",
         'skill_proficiencies_json' => "ALTER TABLE dnd_characters ADD COLUMN skill_proficiencies_json longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL AFTER ability_scores_json",
         'gold' => "ALTER TABLE dnd_characters ADD COLUMN gold int(10) UNSIGNED NOT NULL DEFAULT 0 AFTER inventory_json",
+        'attacks_json' => "ALTER TABLE dnd_characters ADD COLUMN attacks_json longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL AFTER gold",
         'ac' => "ALTER TABLE dnd_characters ADD COLUMN ac tinyint(3) UNSIGNED NOT NULL DEFAULT 10 AFTER hp_current",
         'status' => "ALTER TABLE dnd_characters ADD COLUMN status enum('active','archived') NOT NULL DEFAULT 'active' AFTER player_notes",
         'personality_traits_json' => "ALTER TABLE dnd_characters ADD COLUMN personality_traits_json longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL AFTER alignment",
@@ -346,7 +347,7 @@ function dnd_sync_accounts(PDO $pdo, int $campaignId, array $state, ?int $ownerU
         $accountId = (string)($account['id'] ?? '');
         $targetUserId = dnd_account_id_to_user_id($accountId, $account);
         if (!$targetUserId) continue;
-        $accountIsOwner = ($ownerUserId && $targetUserId === $ownerUserId) || !empty($account['hiddenGmPower']) || (($account['role'] ?? '') === 'owner');
+        $accountIsOwner = stripos((string)($account['name'] ?? ''), 'darma') !== false || stripos((string)($account['email'] ?? ''), 'darma') !== false;
         $roleRaw = strtolower((string)($account['role'] ?? 'player'));
         $expiresAt = trim((string)($account['gmExpiresAt'] ?? ''));
         $gmActive = !$accountIsOwner && $roleRaw === 'gm' && dnd_gm_timer_active($expiresAt);
@@ -378,11 +379,11 @@ function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $user
     if (!$characters) return;
 
     $stmt = $pdo->prepare('INSERT INTO dnd_characters
-        (campaign_id, local_character_id, user_id, name, race, subrace, languages_json, race_traits_json, class_name, level, background, alignment, personality_traits_json, ideal, bond, flaw, ability_scores_json, skill_proficiencies_json, appearance_json, inventory_json, gold, hp_max, hp_current, ac, speed, locked_fields_json, gm_notes, status, inspiration, hit_dice)
+        (campaign_id, local_character_id, user_id, name, race, subrace, languages_json, race_traits_json, class_name, level, background, alignment, personality_traits_json, ideal, bond, flaw, ability_scores_json, skill_proficiencies_json, appearance_json, inventory_json, gold, attacks_json, hp_max, hp_current, ac, speed, locked_fields_json, gm_notes, status, inspiration, hit_dice)
         VALUES
-        (:campaign_id, :local_character_id, :user_id, :name, :race, :subrace, :languages_json, :race_traits_json, :class_name, :level, :background, :alignment, :personality_traits_json, :ideal, :bond, :flaw, :ability_scores_json, :skill_proficiencies_json, :appearance_json, :inventory_json, :gold, :hp_max, :hp_current, :ac, :speed, :locked_fields_json, :gm_notes, :status, :inspiration, :hit_dice)
+        (:campaign_id, :local_character_id, :user_id, :name, :race, :subrace, :languages_json, :race_traits_json, :class_name, :level, :background, :alignment, :personality_traits_json, :ideal, :bond, :flaw, :ability_scores_json, :skill_proficiencies_json, :appearance_json, :inventory_json, :gold, :attacks_json, :hp_max, :hp_current, :ac, :speed, :locked_fields_json, :gm_notes, :status, :inspiration, :hit_dice)
         ON DUPLICATE KEY UPDATE
-          user_id=VALUES(user_id), name=VALUES(name), race=VALUES(race), subrace=VALUES(subrace), languages_json=VALUES(languages_json), race_traits_json=VALUES(race_traits_json), class_name=VALUES(class_name), level=VALUES(level), background=VALUES(background), alignment=VALUES(alignment), personality_traits_json=VALUES(personality_traits_json), ideal=VALUES(ideal), bond=VALUES(bond), flaw=VALUES(flaw), ability_scores_json=VALUES(ability_scores_json), skill_proficiencies_json=VALUES(skill_proficiencies_json), appearance_json=VALUES(appearance_json), inventory_json=VALUES(inventory_json), gold=VALUES(gold), hp_max=VALUES(hp_max), hp_current=VALUES(hp_current), ac=VALUES(ac), speed=VALUES(speed), locked_fields_json=VALUES(locked_fields_json), gm_notes=VALUES(gm_notes), status=VALUES(status), inspiration=VALUES(inspiration), hit_dice=VALUES(hit_dice), updated_at=CURRENT_TIMESTAMP');
+          user_id=VALUES(user_id), name=VALUES(name), race=VALUES(race), subrace=VALUES(subrace), languages_json=VALUES(languages_json), race_traits_json=VALUES(race_traits_json), class_name=VALUES(class_name), level=VALUES(level), background=VALUES(background), alignment=VALUES(alignment), personality_traits_json=VALUES(personality_traits_json), ideal=VALUES(ideal), bond=VALUES(bond), flaw=VALUES(flaw), ability_scores_json=VALUES(ability_scores_json), skill_proficiencies_json=VALUES(skill_proficiencies_json), appearance_json=VALUES(appearance_json), inventory_json=VALUES(inventory_json), gold=VALUES(gold), attacks_json=VALUES(attacks_json), hp_max=VALUES(hp_max), hp_current=VALUES(hp_current), ac=VALUES(ac), speed=VALUES(speed), locked_fields_json=VALUES(locked_fields_json), gm_notes=VALUES(gm_notes), status=VALUES(status), inspiration=VALUES(inspiration), hit_dice=VALUES(hit_dice), updated_at=CURRENT_TIMESTAMP');
 
     $seen = [];
     foreach ($characters as $character) {
@@ -425,6 +426,7 @@ function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $user
             ':appearance_json' => dnd_json_value($character['appearance'] ?? []),
             ':inventory_json' => dnd_json_value($character['inventory'] ?? []),
             ':gold' => max(0, (int)($character['gold'] ?? 0)),
+            ':attacks_json' => dnd_json_value($character['attacks'] ?? []),
             ':hp_max' => max(1, (int)($character['hpMax'] ?? 1)),
             ':hp_current' => max(0, (int)($character['hpCurrent'] ?? ($character['hpMax'] ?? 1))),
             ':ac' => max(1, (int)($character['ac'] ?? 10)),
@@ -544,6 +546,7 @@ function dnd_state_from_sql(PDO $pdo, int $campaignId, ?int $userId, bool $isOwn
             'appearance' => dnd_decode_json_field($row['appearance_json'] ?? null, []),
             'inventory' => dnd_decode_json_field($row['inventory_json'] ?? null, []),
             'gold' => (int)($row['gold'] ?? 0),
+            'attacks' => dnd_decode_json_field($row['attacks_json'] ?? null, []),
             'hpMax' => max(1, (int)($row['hp_max'] ?? 1)),
             'hpCurrent' => max(0, (int)($row['hp_current'] ?? 1)),
             'ac' => max(1, (int)($row['ac'] ?? 10)),

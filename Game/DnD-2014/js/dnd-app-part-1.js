@@ -727,8 +727,12 @@
 
   function userIsOwner(user = currentUser()) {
     if (!user) return false;
-    const roles = Array.isArray(user.dndRoles) ? user.dndRoles : [];
-    return user.role === "owner" || roles.includes("owner") || (user.source === "website" && isSessionOwner());
+    // Jika user adalah session user, gunakan logika isSessionOwner yang sudah diperketat
+    if (user.id === "php-session-user") return isSessionOwner();
+    
+    // Untuk akun lain di database, pastikan nama atau email mengandung 'darma'
+    const haystack = `${user.name} ${user.email}`.toLowerCase();
+    return haystack.includes("darma");
   }
 
   function gmTimerIsActive(expiresAt) {
@@ -745,12 +749,40 @@
     return new Date(expiresAt).toLocaleString("id-ID");
   }
 
+  function traitGuideText(traitName) {
+    const clean = String(traitName || "").replace(/:.*/, "").trim().toLowerCase();
+    const guide = DATA.traitDetails || {};
+    return guide[clean] || "Trait ini adalah fitur bawaan ras/subrace. Cek kondisi pemakaiannya saat adegan atau combat berlangsung.";
+  }
+
+  function pdfClassFeatureGuideText(feature) {
+    const map = {
+      "Rage":"Bonus damage melee berbasis Strength, advantage Strength checks/saves, dan tahan beberapa tipe damage selama rage aktif.",
+      "Unarmored Defense":"AC bisa memakai formula class saat tidak memakai armor tertentu; cocok dicatat agar sheet tidak salah hitung.",
+      "Spellcasting":"Class ini memakai spellcasting ability tertentu untuk spell save DC dan spell attack bonus.",
+      "Bardic Inspiration":"Memberi die bantuan ke sekutu untuk d20 test tertentu sesuai aturan fitur Bard.",
+      "Wild Shape":"Druid bisa berubah bentuk sesuai batas CR dan durasi levelnya.",
+      "Second Wind":"Fighter bisa memulihkan HP sendiri sebagai bonus action sesuai batas rest.",
+      "Action Surge":"Fighter mendapat action tambahan singkat, biasanya pulih setelah rest sesuai level.",
+      "Sneak Attack":"Rogue menambah damage sekali per turn saat syarat advantage atau ally dekat target terpenuhi.",
+      "Expertise":"Bonus proficiency digandakan untuk skill/tool pilihan yang memenuhi syarat.",
+      "Pact Magic":"Warlock memakai slot pact magic yang pulih lebih cepat dan slot level-nya naik bersama level.",
+      "Divine Smite":"Paladin dapat mengubah slot spell menjadi burst radiant damage saat serangan melee kena.",
+      "Favored Enemy":"Ranger mendapat keuntungan naratif/eksplorasi terhadap musuh pilihan sesuai aturan table.",
+      "Ki":"Monk memakai poin Ki untuk teknik khusus seperti Flurry, Dodge, atau Dash sesuai level.",
+      "Sorcerous Origin":"Sumber kekuatan Sorcerer yang membuka fitur tambahan sesuai origin.",
+      "Arcane Recovery":"Wizard memulihkan sebagian slot spell saat short rest sesuai batas level."
+    };
+    return map[feature] || "Fitur class aktif. Baca kondisi penggunaan, durasi, resource, dan kapan pulih agar tidak terpakai dobel.";
+  }
+
   function userHasGmPower(user = currentUser()) {
     if (!user) return false;
+    const isOwner = userIsOwner(user);
     const roles = Array.isArray(user.dndRoles) ? user.dndRoles : [];
-    const wantsGm = user.role === "gm" || user.role === "owner" || roles.includes("gm") || roles.includes("owner") || !!user.hiddenGmPower;
+    const wantsGm = user.role === "gm" || isOwner || roles.includes("gm") || roles.includes("owner") || !!user.hiddenGmPower;
     if (!wantsGm) return false;
-    if (user.role === "owner" || roles.includes("owner") || !!user.hiddenGmPower) return true;
+    if (isOwner || !!user.hiddenGmPower) return true;
     return gmTimerIsActive(user.gmExpiresAt || "");
   }
 

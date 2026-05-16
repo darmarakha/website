@@ -15,6 +15,7 @@
                   const bonus = Number(effectiveAbilityBonuses(draft)[a.id] || 0);
                   const finalValue = previewAbilityScore(baseValue, bonus);
                   const maxScore = canManualAbilityInput ? 30 : 20;
+                  const manualAttr = canManualAbilityInput ? "" : "readonly data-ability-locked='1'";
                   return `<div class="dnd-field ability-assign-field"><label>${esc(a.label)} <span>skor dasar</span></label><input name="ability-${a.id}" type="number" min="0" max="${maxScore}" inputmode="numeric" value="${esc(baseValue)}" ${manualAttr}>${renderAbilityValuePicker(a.id, canUseAbilityPicker)}<small class="ability-final-hint">${esc(abilityLiveDetailText(baseValue, bonus))}</small><small class="ability-purpose">${esc(abilityShortText(a.id))}</small></div>`;
                 }).join("")}
               </div>
@@ -158,26 +159,7 @@
     `;
   }
 
-  function pdfClassFeatureGuideText(feature) {
-    const map = {
-      "Rage":"Bonus damage melee berbasis Strength, advantage Strength checks/saves, dan tahan beberapa tipe damage selama rage aktif.",
-      "Unarmored Defense":"AC bisa memakai formula class saat tidak memakai armor tertentu; cocok dicatat agar sheet tidak salah hitung.",
-      "Spellcasting":"Class ini memakai spellcasting ability tertentu untuk spell save DC dan spell attack bonus.",
-      "Bardic Inspiration":"Memberi die bantuan ke sekutu untuk d20 test tertentu sesuai aturan fitur Bard.",
-      "Wild Shape":"Druid bisa berubah bentuk sesuai batas CR dan durasi levelnya.",
-      "Second Wind":"Fighter bisa memulihkan HP sendiri sebagai bonus action sesuai batas rest.",
-      "Action Surge":"Fighter mendapat action tambahan singkat, biasanya pulih setelah rest sesuai level.",
-      "Sneak Attack":"Rogue menambah damage sekali per turn saat syarat advantage atau ally dekat target terpenuhi.",
-      "Expertise":"Bonus proficiency digandakan untuk skill/tool pilihan yang memenuhi syarat.",
-      "Pact Magic":"Warlock memakai slot pact magic yang pulih lebih cepat dan slot level-nya naik bersama level.",
-      "Divine Smite":"Paladin dapat mengubah slot spell menjadi burst radiant damage saat serangan melee kena.",
-      "Favored Enemy":"Ranger mendapat keuntungan naratif/eksplorasi terhadap musuh pilihan sesuai aturan table.",
-      "Ki":"Monk memakai poin Ki untuk teknik khusus seperti Flurry, Dodge, atau Dash sesuai level.",
-      "Sorcerous Origin":"Sumber kekuatan Sorcerer yang membuka fitur tambahan sesuai origin.",
-      "Arcane Recovery":"Wizard memulihkan sebagian slot spell saat short rest sesuai batas level."
-    };
-    return map[feature] || "Fitur class aktif. Baca kondisi penggunaan, durasi, resource, dan kapan pulih agar tidak terpakai dobel.";
-  }
+
 
   function pdfSpellcastingAbilityId(klass) {
     const id = String(klass?.id || "").toLowerCase();

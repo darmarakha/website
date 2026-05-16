@@ -580,11 +580,7 @@
   }
 
 
-  function traitGuideText(traitName) {
-    const clean = String(traitName || "").replace(/:.*/, "").trim().toLowerCase();
-    const guide = DATA.traitDetails || {};
-    return guide[clean] || "Trait ini adalah fitur bawaan ras/subrace. Cek kondisi pemakaiannya saat adegan atau combat berlangsung.";
-  }
+
 
   function alignmentGuideText(alignmentName) {
     const guide = DATA.alignmentDetails || {};
