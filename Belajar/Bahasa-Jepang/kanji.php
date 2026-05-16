@@ -1,103 +1,51 @@
 <?php
-session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>isset($_SERVER['HTTPS']),'httponly'=>true,'samesite'=>'Lax']);
+// Wajib di baris pertama untuk mengambil sesi dari login utama
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'secure' => isset($_SERVER['HTTPS']),
+    'httponly' => true,
+    'samesite' => 'Lax',
+]);
 session_start();
 
-function gy_h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
-function gy_read_n5_kanji(){
-    $files = [__DIR__.'/N5/src/lib/n5-constants.ts', __DIR__.'/N5/src/constants.ts'];
-    foreach ($files as $file) {
-        if (!is_file($file)) continue;
-        $src = file_get_contents($file);
-        if (!preg_match('/export\s+const\s+KANJI\s*:\s*Kanji\[\]\s*=\s*\[(.*?)\];/s', $src, $m)) continue;
-        $raw = '['.$m[1].']';
-        $raw = preg_replace('!//.*!', '', $raw);
-        $raw = preg_replace('/([\{,]\s*)([A-Za-z_][A-Za-z0-9_]*)\s*:/', '$1"$2":', $raw);
-        $raw = preg_replace_callback("/'((?:\\\\.|[^'\\\\])*)'/", fn($x)=>json_encode(stripslashes($x[1]), JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES), $raw);
-        $raw = preg_replace('/,\s*([\}\]])/', '$1', $raw);
-        $data = json_decode($raw, true);
-        if (is_array($data) && count($data) > 0) return array_values($data);
-    }
-    return [
-      ['character'=>'一','meaning'=>'Satu','onyomi'=>'イチ','kunyomi'=>'ひと','strokes'=>1,'examples'=>[['word'=>'一月','reading'=>'ichigatsu','meaning'=>'Januari']]],
-      ['character'=>'日','meaning'=>'Hari / Matahari','onyomi'=>'ニチ','kunyomi'=>'ひ','strokes'=>4,'examples'=>[['word'=>'日本','reading'=>'nihon','meaning'=>'Jepang']]],
-      ['character'=>'人','meaning'=>'Orang','onyomi'=>'ジン / ニン','kunyomi'=>'ひと','strokes'=>2,'examples'=>[['word'=>'日本人','reading'=>'nihonjin','meaning'=>'orang Jepang']]]
-    ];
-}
-
-$kanjiData = gy_read_n5_kanji();
-$kanjiCount = count($kanjiData);
-$csrfToken = $_SESSION['csrf_kanji_n5'] ?? bin2hex(random_bytes(16));
-$_SESSION['csrf_kanji_n5'] = $csrfToken;
-
-if (($_GET['api'] ?? '') === 'kanji') {
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(['ok'=>true,'count'=>$kanjiCount,'items'=>$kanjiData], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+// Logika Logout opsional jika user menekan tombol logout dari halaman ini
+if (isset($_GET['logout'])) {
+    session_unset();
+    session_destroy();
+    header('Location: ../Index.php'); // Arahkan kembali ke halaman utama setelah logout
     exit;
 }
 
-if (($_GET['api'] ?? '') === 'progress' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    header('Content-Type: application/json; charset=utf-8');
-    if (!hash_equals($csrfToken, (string)($_POST['csrf'] ?? ''))) { http_response_code(403); echo json_encode(['ok'=>false,'message'=>'CSRF tidak valid.']); exit; }
-    $mastered = max(0, min($kanjiCount, (int)($_POST['mastered'] ?? 0)));
-    $score = $kanjiCount ? (int)round(($mastered / $kanjiCount) * 100) : 0;
-    if (empty($_SESSION['user_id'])) { echo json_encode(['ok'=>false,'score'=>$score,'message'=>'Progress lokal tersimpan. Login untuk simpan ke database.']); exit; }
+// =========================================================================
+// SISTEM KONEKSI SQL UNTUK MENYIMPAN PROGRESS
+// =========================================================================
+require_once __DIR__ . '/../../config.php';
+
+$user_id = 0;
+$prog_kanji = 0;
+
+if (!empty($_SESSION['user_name'])) {
+    $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 1;
+    
     try {
-        $cfg = __DIR__ . '/../../config.php';
-        if (is_file($cfg)) require_once $cfg;
-        if (function_exists('gemu_pdo')) {
-            $pdo = gemu_pdo();
-            $pdo->prepare('INSERT IGNORE INTO user_progress (user_id, hiragana_score, katakana_score, bunpou_score, kanji_score) VALUES (:uid,0,0,0,0)')->execute(['uid'=>(int)$_SESSION['user_id']]);
-            $pdo->prepare('UPDATE user_progress SET kanji_score = GREATEST(kanji_score, :score) WHERE user_id = :uid')->execute(['uid'=>(int)$_SESSION['user_id'], 'score'=>$score]);
-            echo json_encode(['ok'=>true,'score'=>$score,'message'=>'Progress Kanji berhasil disimpan.']); exit;
+        $pdo = gemu_pdo();
+        
+        $stmt = $pdo->prepare("SELECT kanji_score FROM user_progress WHERE user_id = :uid");
+        $stmt->execute(['uid' => $user_id]);
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($data) {
+            $prog_kanji = (int)$data['kanji_score']; // Skala 0-100
+        } else {
+            // Jika user baru login dan belum ada record di user_progress, buat otomatis nilainya 0
+            $stmtInsert = $pdo->prepare("INSERT IGNORE INTO user_progress (user_id, hiragana_score, katakana_score, bunpou_score, kanji_score) VALUES (:uid, 0, 0, 0, 0)");
+            $stmtInsert->execute(['uid' => $user_id]);
         }
-    } catch (Throwable $e) { error_log('Kanji progress error: '.$e->getMessage()); }
-    echo json_encode(['ok'=>false,'score'=>$score,'message'=>'Progress lokal jalan, database belum tersedia.']); exit;
+    } catch (PDOException $e) {
+        error_log("Gagal mengambil progress Kanji: " . $e->getMessage());
+    }
 }
 
-$kanjiJson = json_encode($kanjiData, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT);
-?>
-<!doctype html>
-<html lang="id">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kanji N5 | NihongoLab</title>
-<meta name="description" content="Belajar Kanji N5 dengan animasi stroke order, contoh kata, flashcard, dan progress.">
-<script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/lucide@latest"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css">
-<style>
-body{font-family:Inter,sans-serif;background:radial-gradient(circle at 18% 10%,rgba(244,114,182,.18),transparent 28%),radial-gradient(circle at 82% 18%,rgba(247,78,9,.16),transparent 30%),linear-gradient(135deg,#0a0a0a,#111,#160b12);color:#fff}.jp{font-family:'Noto Sans JP',sans-serif}.grid-bg{background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,#000,transparent)}.glass{background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.1);box-shadow:0 28px 90px rgba(0,0,0,.34)}.tile{transition:.25s}.tile:hover,.tile.active{transform:translateY(-5px);border-color:rgba(244,114,182,.58);background:rgba(255,255,255,.09);box-shadow:0 18px 45px rgba(244,114,182,.12)}.stroke{background:linear-gradient(rgba(244,114,182,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(244,114,182,.13) 1px,transparent 1px),radial-gradient(circle,rgba(255,255,255,.1),rgba(255,255,255,.035));background-size:32px 32px,32px 32px,100% 100%}.tab.active{background:linear-gradient(135deg,#ec4899,#f74e09);color:#fff}.toast{transform:translateY(18px);opacity:0;pointer-events:none;transition:.25s}.toast.show{transform:translateY(0);opacity:1}.pad{touch-action:none;cursor:crosshair}@media(max-width:640px){.hero-char{font-size:7rem!important}.hero-grid{grid-template-columns:1fr!important}}
-</style>
-</head>
-<body class="min-h-screen overflow-x-hidden">
-<div class="fixed inset-0 grid-bg pointer-events-none"></div>
-<nav class="fixed top-0 inset-x-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/10"><div class="max-w-7xl mx-auto px-5 lg:px-10 py-4 flex items-center justify-between gap-3"><a href="index.php" class="flex items-center gap-3"><span class="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-400 to-orange-500 flex items-center justify-center jp font-black">漢</span><span><b>Kanji N5</b><small class="block text-neutral-400 -mt-1">NihongoLab</small></span></a><div class="flex gap-2"><a href="index.php#materi" class="hidden sm:inline-flex px-4 py-2 rounded-xl border border-white/10 text-sm hover:bg-white/5">Materi</a><a href="index.php" class="px-4 py-2 rounded-xl border border-pink-400/25 text-sm text-pink-200 hover:bg-pink-400/10">Kembali</a><a href="/index.php" class="px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-orange-500 text-sm font-bold">Home</a></div></div></nav>
-<main class="relative z-10 max-w-7xl mx-auto px-5 lg:px-10 pt-32 pb-20">
-<section class="grid lg:grid-cols-12 gap-8 items-center mb-10"><div class="lg:col-span-7 space-y-7"><div class="inline-flex px-4 py-2 rounded-full bg-pink-400/10 border border-pink-400/20 text-pink-200 text-sm font-bold">JLPT N5 · <?php echo (int)$kanjiCount; ?> data dari folder N5</div><h1 class="text-5xl md:text-7xl lg:text-8xl font-black leading-[.92]">Kanji Dasar <span class="bg-gradient-to-r from-pink-300 to-orange-400 bg-clip-text text-transparent">dengan Animasi</span></h1><p class="text-lg md:text-xl text-neutral-400 max-w-2xl">Frontend dibuat menyatu dengan tema Bahasa Jepang utama. Backend membaca data Kanji langsung dari folder <code>N5/src</code>, lalu halaman ini menampilkan detail, contoh, flashcard, audio, latihan tulis, dan progress.</p><div class="flex flex-wrap gap-3"><button id="startBtn" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-orange-500 font-bold flex items-center gap-2"><i data-lucide="play" class="w-5 h-5"></i> Mulai</button><button id="randomBtn" class="px-6 py-3 rounded-2xl bg-white/10 border border-white/10 font-bold flex items-center gap-2"><i data-lucide="shuffle" class="w-5 h-5"></i> Acak</button></div></div><div class="lg:col-span-5"><div class="glass rounded-[2rem] p-6 overflow-hidden relative"><div class="absolute -right-10 -top-12 text-[12rem] jp font-black text-white/[.035]">漢字</div><div class="flex items-center justify-between mb-4"><div><p class="text-sm text-neutral-400">Kanji aktif</p><h2 id="heroMeaning" class="text-2xl font-black">-</h2></div><span id="heroTheme" class="px-3 py-1 rounded-full bg-pink-400/10 border border-pink-400/20 text-pink-200 text-xs font-bold">N5</span></div><div class="hero-grid grid grid-cols-[1fr_170px] gap-4"><div class="min-h-[250px] rounded-3xl bg-black/50 border border-white/10 flex items-center justify-center"><span id="heroChar" class="hero-char jp text-[10rem] font-black bg-gradient-to-b from-white to-pink-200 bg-clip-text text-transparent">漢</span></div><div class="stroke rounded-3xl border border-pink-400/20 p-3 min-h-[250px] flex items-center justify-center relative"><div id="loader" class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-3xl"><div class="w-7 h-7 border-2 border-white/20 border-t-pink-400 rounded-full animate-spin"></div></div><img id="strokeImg" class="max-w-full max-h-[220px] object-contain mix-blend-screen" alt="Animasi stroke order kanji"></div></div><div class="grid grid-cols-3 gap-3 mt-4"><div class="rounded-2xl bg-white/[.045] border border-white/10 p-3 text-center"><b id="strokes" class="text-xl text-pink-300">0</b><small class="block text-neutral-500">Goresan</small></div><div class="rounded-2xl bg-white/[.045] border border-white/10 p-3 text-center"><b id="learnedCount" class="text-xl text-orange-300">0</b><small class="block text-neutral-500">Hafal</small></div><div class="rounded-2xl bg-white/[.045] border border-white/10 p-3 text-center"><b id="score" class="text-xl text-emerald-300">0%</b><small class="block text-neutral-500">Progress</small></div></div></div></div></section>
-<section class="grid lg:grid-cols-12 gap-8"><aside class="lg:col-span-4"><div class="glass rounded-3xl p-5 sticky top-24"><div class="relative mb-4"><i data-lucide="search" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"></i><input id="q" type="search" placeholder="Cari kanji, arti, onyomi..." class="w-full pl-12 pr-4 py-3 rounded-2xl bg-black/50 border border-white/10 outline-none focus:border-pink-400/50 text-sm"></div><div id="filters" class="flex flex-wrap gap-2 mb-4"></div><div id="grid" class="grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-5 gap-2 max-h-[650px] overflow-y-auto pr-1"></div></div></aside><section class="lg:col-span-8 space-y-5"><div class="glass rounded-3xl p-5 md:p-7"><div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6"><div><p class="text-sm text-pink-300 font-bold">Detail Kanji</p><h2 id="title" class="text-3xl font-black">-</h2></div><div class="flex flex-wrap gap-2"><button class="tab active px-4 py-2 rounded-xl border border-white/10 text-sm font-bold" data-tab="detail">Detail</button><button class="tab px-4 py-2 rounded-xl border border-white/10 text-sm font-bold text-neutral-300" data-tab="flash">Flashcard</button><button class="tab px-4 py-2 rounded-xl border border-white/10 text-sm font-bold text-neutral-300" data-tab="write">Tulis</button></div></div><div id="detailPanel" class="space-y-5"><div class="grid md:grid-cols-2 gap-4"><div class="rounded-3xl bg-pink-500/10 border border-pink-400/15 p-5"><p class="text-xs font-black uppercase tracking-widest text-pink-300 mb-2">Onyomi</p><p id="on" class="jp text-xl font-bold"></p></div><div class="rounded-3xl bg-emerald-500/10 border border-emerald-400/15 p-5"><p class="text-xs font-black uppercase tracking-widest text-emerald-300 mb-2">Kunyomi</p><p id="kun" class="jp text-xl font-bold"></p></div></div><div class="rounded-3xl bg-white/[.04] border border-white/10 p-5"><div class="flex items-center justify-between mb-4"><h3 class="font-black flex items-center gap-2"><i data-lucide="book-open" class="w-5 h-5 text-pink-300"></i> Contoh Kata</h3><button id="speak" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm hover:bg-white/10 flex items-center gap-2"><i data-lucide="volume-2" class="w-4 h-4"></i> Audio</button></div><div id="examples" class="grid gap-3"></div></div><div class="flex flex-wrap gap-3"><button id="mark" class="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 font-black flex items-center gap-2"><i data-lucide="check-circle" class="w-5 h-5"></i> Tandai Hafal</button><button id="save" class="px-5 py-3 rounded-2xl bg-white/10 border border-white/10 font-black flex items-center gap-2"><i data-lucide="database" class="w-5 h-5"></i> Simpan Progress</button></div></div><div id="flashPanel" class="hidden"><button id="card" class="w-full min-h-[330px] rounded-[2rem] bg-gradient-to-br from-pink-500/15 to-orange-500/15 border border-pink-400/20 p-8 text-center hover:scale-[1.01] transition"><span id="front" class="block jp text-9xl font-black"></span><span id="hint" class="block mt-4 text-neutral-400">Klik kartu untuk melihat jawaban</span></button><div class="grid grid-cols-3 gap-3 mt-4"><button id="prev" class="bg-white/10 border border-white/10 rounded-2xl py-3 font-bold">←</button><button id="flip" class="bg-gradient-to-r from-pink-500 to-orange-500 rounded-2xl py-3 font-bold">Balik</button><button id="next" class="bg-white/10 border border-white/10 rounded-2xl py-3 font-bold">→</button></div></div><div id="writePanel" class="hidden space-y-4"><div class="grid md:grid-cols-[1fr_240px] gap-4"><div class="rounded-3xl border border-white/10 bg-white/[.035] p-4"><div class="flex items-center justify-between mb-3"><p class="text-sm text-neutral-400">Latihan tulis manual</p><button id="clear" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm">Hapus</button></div><canvas id="pad" width="720" height="420" class="pad w-full rounded-2xl bg-black/60 border border-white/10"></canvas></div><div class="rounded-3xl border border-white/10 bg-white/[.035] p-5 flex flex-col justify-between"><div><p class="text-xs font-black uppercase tracking-widest text-pink-300">Target</p><p id="target" class="jp text-8xl font-black text-center my-4">漢</p><p class="text-sm text-neutral-400 leading-relaxed">Ikuti animasi goresan, lalu tulis di area latihan.</p></div><button id="replay" class="mt-4 bg-gradient-to-r from-pink-500 to-orange-500 rounded-2xl py-3 font-bold">Ulang Animasi</button></div></div></div></div><div class="glass rounded-3xl p-5 md:p-7"><h3 class="text-xl font-black mb-2">Catatan</h3><p class="text-neutral-400 leading-relaxed">Baca kanji bersama contoh kata. Bacaan kanji bisa berubah sesuai kosakata, jadi fokus ke pola pemakaian juga, bukan bentuk saja.</p></div></section></section>
-</main><div id="toast" class="toast fixed bottom-5 left-1/2 -translate-x-1/2 z-[80] px-5 py-3 rounded-2xl bg-neutral-900 border border-white/10 shadow-2xl text-sm font-bold"></div>
-<script>
-const KANJI=<?php echo $kanjiJson ?: '[]'; ?>, CSRF='<?php echo gy_h($csrfToken); ?>', KEY='gemu_n5_kanji_mastered';
-let idx=0,srcIdx=0,sources=[],q='',theme='Semua',flipped=false,learned=new Set(JSON.parse(localStorage.getItem(KEY)||'[]'));
-const $=id=>document.getElementById(id), cats=['Semua','Angka','Waktu','Orang','Alam','Sekolah','Kata Kerja','Lainnya'];
-function category(k){const c=k.character,m=k.meaning||'';if('一二三四五六七八九十百千万円'.includes(c))return'Angka';if('日月火水木金土曜年時分今半午前後'.includes(c))return'Waktu';if('人男女子母父友私'.includes(c))return'Orang';if('山川田天気雨花白黒赤青大小中上下左右口目耳手足力犬猫魚鳥'.includes(c))return'Alam';if('本語学校先生'.includes(c))return'Sekolah';if('行来見聞食飲買書読話休会社駅車電門窓紙'.includes(c))return'Kata Kerja';return m.includes('Sekolah')?'Sekolah':'Lainnya'}
-function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>$('toast').classList.remove('show'),2200)}
-function getSources(ch){const h=ch.codePointAt(0).toString(16).padStart(4,'0').toLowerCase();return[`https://commons.wikimedia.org/wiki/Special:FilePath/${ch}-order.gif`,`https://commons.wikimedia.org/wiki/Special:FilePath/${ch}-stroke_order.gif`,`https://commons.wikimedia.org/wiki/Special:FilePath/Stroke_order_${ch}.gif`,`https://raw.githubusercontent.com/mistval/kanji_images/master/gifs/${h}.gif`,`https://raw.githubusercontent.com/jcsilva/anim-kanji/master/kanji-gifs/${h}.gif`]}
-function loadStroke(ch){sources=getSources(ch);srcIdx=0;$('loader').style.display='flex';$('strokeImg').src=sources[0]+'?t='+Date.now()}
-$('strokeImg').onload=()=>$('loader').style.display='none';$('strokeImg').onerror=()=>{if(++srcIdx<sources.length)$('strokeImg').src=sources[srcIdx]+'?t='+Date.now();else{$('loader').style.display='none';$('strokeImg').removeAttribute('src')}};
-function speak(t){if(!speechSynthesis)return toast('Audio tidak didukung browser.');speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(t);u.lang='ja-JP';u.rate=.82;speechSynthesis.speak(u)}
-function list(){return KANJI.filter(k=>{let hay=[k.character,k.meaning,k.onyomi,k.kunyomi,category(k),...(k.examples||[]).flatMap(e=>[e.word,e.reading,e.meaning])].join(' ').toLowerCase();return (theme==='Semua'||category(k)===theme)&&hay.includes(q.toLowerCase().trim())})}
-function renderFilters(){$('filters').innerHTML=cats.map(c=>`<button data-c="${c}" class="filter px-3 py-2 rounded-xl border text-xs font-bold ${c===theme?'bg-pink-500 border-pink-400 text-white':'bg-white/5 border-white/10 text-neutral-400 hover:text-white'}">${c}</button>`).join('');document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{theme=b.dataset.c;renderFilters();renderGrid()})}
-function renderGrid(){let a=list();$('grid').innerHTML=a.map(k=>{let i=KANJI.findIndex(x=>x.character===k.character);return`<button data-i="${i}" class="tile ${i===idx?'active':''} relative rounded-2xl border border-white/10 bg-white/[.04] p-3 text-center"><span class="jp text-3xl font-black">${k.character}</span>${learned.has(k.character)?'<span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-400 border-2 border-black"></span>':''}</button>`}).join('')||'<p class="col-span-full text-center text-neutral-500 py-8">Tidak ada data cocok.</p>';document.querySelectorAll('.tile').forEach(b=>b.onclick=()=>select(+b.dataset.i))}
-function examples(k){$('examples').innerHTML=(k.examples||[]).slice(0,5).map(e=>`<button class="ex w-full text-left rounded-2xl bg-white/[.045] border border-white/10 p-4 hover:bg-white/[.075]" data-s="${e.word}"><div class="flex items-center justify-between gap-3"><div><p class="jp text-xl font-black">${e.word}</p><p class="text-sm text-pink-200">${e.reading}</p></div><p class="text-sm text-neutral-400 text-right">${e.meaning}</p></div></button>`).join('');document.querySelectorAll('.ex').forEach(b=>b.onclick=()=>speak(b.dataset.s))}
-function stats(){let sc=KANJI.length?Math.round(learned.size/KANJI.length*100):0;$('learnedCount').textContent=learned.size;$('score').textContent=sc+'%'}
-function select(i){idx=Math.max(0,Math.min(KANJI.length-1,i));flipped=false;let k=KANJI[idx],cat=category(k);$('heroChar').textContent=k.character;$('heroMeaning').textContent=k.meaning;$('heroTheme').textContent=cat;$('strokes').textContent=k.strokes||'-';$('title').textContent=`${k.character} · ${k.meaning}`;$('on').textContent=k.onyomi||'-';$('kun').textContent=k.kunyomi||'-';$('front').textContent=k.character;$('front').className='block jp text-9xl font-black';$('hint').textContent='Klik kartu untuk melihat jawaban';$('target').textContent=k.character;examples(k);loadStroke(k.character);draw();renderGrid();stats();lucide.createIcons()}
-function flip(){let k=KANJI[idx];flipped=!flipped;$('front').textContent=flipped?k.meaning:k.character;$('front').className=flipped?'block text-4xl font-black text-white':'block jp text-9xl font-black';$('hint').textContent=flipped?`${k.onyomi||'-'} · ${k.kunyomi||'-'} · ${k.strokes||'-'} goresan`:'Klik kartu untuk melihat jawaban'}
-function draw(){let c=$('pad'),x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);x.strokeStyle='rgba(255,255,255,.08)';x.lineWidth=2;for(let i=60;i<c.width;i+=60){x.beginPath();x.moveTo(i,0);x.lineTo(i,c.height);x.stroke()}for(let y=60;y<c.height;y+=60){x.beginPath();x.moveTo(0,y);x.lineTo(c.width,y);x.stroke()}x.fillStyle='rgba(255,255,255,.06)';x.font='260px Noto Sans JP';x.textAlign='center';x.textBaseline='middle';x.fillText(KANJI[idx]?.character||'漢',c.width/2,c.height/2+10)}
-function pad(){let c=$('pad'),x=c.getContext('2d'),d=false,p=e=>{let r=c.getBoundingClientRect(),t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*(c.width/r.width),y:(t.clientY-r.top)*(c.height/r.height)}};let s=e=>{e.preventDefault();d=true;let a=p(e);x.beginPath();x.moveTo(a.x,a.y)},m=e=>{if(!d)return;e.preventDefault();let a=p(e);x.strokeStyle='#F9A8D4';x.lineWidth=10;x.lineCap='round';x.lineJoin='round';x.lineTo(a.x,a.y);x.stroke()};c.onmousedown=s;c.onmousemove=m;window.onmouseup=()=>d=false;c.addEventListener('touchstart',s,{passive:false});c.addEventListener('touchmove',m,{passive:false});c.ontouchend=()=>d=false}
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');['detail','flash','write'].forEach(n=>$(n+'Panel').classList.toggle('hidden',b.dataset.tab!==n));if(b.dataset.tab==='write')draw()});
-$('q').oninput=e=>{q=e.target.value;renderGrid()};$('startBtn').onclick=()=>select(0);$('randomBtn').onclick=()=>select(Math.floor(Math.random()*KANJI.length));$('speak').onclick=()=>speak(KANJI[idx].character);$('replay').onclick=()=>loadStroke(KANJI[idx].character);$('card').onclick=flip;$('flip').onclick=flip;$('prev').onclick=()=>select((idx-1+KANJI.length)%KANJI.length);$('next').onclick=()=>select((idx+1)%KANJI.length);$('clear').onclick=draw;$('mark').onclick=()=>{let ch=KANJI[idx].character;learned.has(ch)?learned.delete(ch):learned.add(ch);localStorage.setItem(KEY,JSON.stringify([...learned]));toast(learned.has(ch)?'Kanji ditandai hafal.':'Tanda hafal dihapus.');stats();renderGrid()};$('save').onclick=async()=>{try{let r=await fetch('kanji.php?api=progress',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({csrf:CSRF,mastered:String(learned.size)})});let j=await r.json();toast(j.message||'Progress diproses.')}catch(e){toast('Progress lokal tersimpan, server belum merespons.')}};
-renderFilters();renderGrid();pad();select(0);lucide.createIcons();
-</script>
-</body>
-</html>
+// Load view
+require __DIR__ . '/views/kanji.view.php';

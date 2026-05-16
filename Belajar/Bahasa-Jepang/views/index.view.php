@@ -490,7 +490,7 @@
           </a>
 
           <!-- Kanji -->
-          <div class="reveal category-card glass-card rounded-2xl p-5 flex items-center gap-5" style="transition-delay:400ms">
+          <a href="kanji.php" class="block reveal category-card glass-card rounded-2xl p-5 flex items-center gap-5" style="transition-delay:400ms">
             <div class="cat-icon w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/15 transition-all shrink-0">
               <span class="text-2xl font-jp font-semibold text-emerald-300">漢</span>
             </div>
@@ -507,7 +507,7 @@
             <div class="cat-arrow opacity-50 transition-all shrink-0">
               <i data-lucide="chevron-right" class="w-5 h-5 text-neutral-500"></i>
             </div>
-          </div>
+          </a>
         </div>
       </div>
     </div>
