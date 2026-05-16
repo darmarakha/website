@@ -109,6 +109,9 @@ export default function KaiwaStudio() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const ttsObjectUrlRef = useRef<string | null>(null);
+  const ttsRequestIdRef = useRef(0);
   const chatInitialized = useRef(false);
   const micAllowedRef = useRef(true);
 
@@ -186,45 +189,89 @@ export default function KaiwaStudio() {
   }, []);
 
   const stopSpeaking = useCallback(() => {
+    ttsRequestIdRef.current += 1;
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+
+    if (ttsObjectUrlRef.current) {
+      URL.revokeObjectURL(ttsObjectUrlRef.current);
+      ttsObjectUrlRef.current = null;
+    }
+
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
+
     utteranceRef.current = null;
     setAiSpeaking(false);
   }, []);
 
-  const speakText = useCallback((text: string) => {
+  const speakText = useCallback(async (text: string) => {
     const { jp } = parseKaiwaMessage(text);
     if (!jp) return;
 
     stopSpeaking();
 
-    const cleanJp = stripEmoji(jp.replace(/\[.*?\]/g, '').replace(/[*#]/g, '').trim());
+    const cleanJp = stripEmoji(jp.trim());
     if (!cleanJp) return;
 
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    const requestId = ttsRequestIdRef.current + 1;
+    ttsRequestIdRef.current = requestId;
 
-    const utterance = new SpeechSynthesisUtterance(cleanJp);
-    utterance.lang = 'ja-JP';
-    utterance.rate = mode === 'live' ? 1.1 : 0.9;
-    utterance.pitch = 1.0;
-
-    const voices = window.speechSynthesis.getVoices();
-    const jaVoice = voices.find(v => v.lang.includes('ja') && /Google|Microsoft/i.test(v.name))
-      || voices.find(v => v.lang === 'ja-JP')
-      || voices.find(v => v.lang.includes('ja'));
-    if (jaVoice) utterance.voice = jaVoice;
-
-    utterance.onstart = () => {
+    try {
       setAiSpeaking(true);
       setInput('');
       micAllowedRef.current = false;
-    };
-    utterance.onend = () => setAiSpeaking(false);
-    utterance.onerror = () => setAiSpeaking(false);
 
-    utteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: cleanJp,
+          mode,
+          speaker: 'kaiwa',
+          speed: mode === 'live' ? 0.82 : 0.72,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`TTS server error: ${res.status}`);
+      }
+
+      const blob = await res.blob();
+      if (ttsRequestIdRef.current !== requestId) return;
+
+      const url = URL.createObjectURL(blob);
+      ttsObjectUrlRef.current = url;
+
+      const audio = new Audio(url);
+      audioRef.current = audio;
+
+      const cleanUpAudio = () => {
+        if (ttsRequestIdRef.current === requestId) {
+          if (ttsObjectUrlRef.current) {
+            URL.revokeObjectURL(ttsObjectUrlRef.current);
+            ttsObjectUrlRef.current = null;
+          }
+          audioRef.current = null;
+          setAiSpeaking(false);
+        }
+      };
+
+      audio.onended = cleanUpAudio;
+      audio.onerror = cleanUpAudio;
+
+      await audio.play();
+    } catch (error) {
+      console.error('Kaiwa server TTS error:', error);
+      if (ttsRequestIdRef.current === requestId) {
+        setAiSpeaking(false);
+      }
+    }
   }, [mode, stopSpeaking]);
 
   // Save conversation to localStorage history
