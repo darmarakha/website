@@ -422,6 +422,7 @@
       "ability-roll-array": () => rollAbilityArray(trigger.dataset.mode || "4d6"),
       "delete-character": () => deleteCharacter(trigger.dataset.characterId || trigger.dataset.id),
       "new-character": newCharacterDraft,
+      "clone-character": cloneCharacterDraft,
       "download-pdf": openPdfChoiceModal,
       "pdf-close": closePdfChoiceModal,
       "pdf-download-selected": downloadSelectedCharacterPdf,
@@ -762,6 +763,26 @@
     state.characterPortraitDraftName = "";
     saveState();
     render();
+  }
+
+  function cloneCharacterDraft() {
+    const c = activeCharacter();
+    if (!c) return toast("Tidak ada karakter aktif untuk diclone.");
+    state.activeCharacterId = "__new_character__";
+    state.ui.tab = "character";
+    state.ui.characterStep = "race";
+    const clone = JSON.parse(JSON.stringify(c));
+    delete clone.id;
+    delete clone.localId;
+    clone.name = clone.name ? clone.name + " (Clone)" : "Clone Character";
+    state.ui.characterDraft = clone;
+    state.ui.abilityRollLog = null;
+    state.ui.abilityPickAssignments = {};
+    state.characterPortraitDraft = clone.portrait || "";
+    state.characterPortraitDraftName = clone.portraitName || "";
+    saveState();
+    render();
+    toast("Karakter berhasil diduplikat! Jangan lupa klik Simpan Karakter.");
   }
 
   function deleteCharacter(id) {

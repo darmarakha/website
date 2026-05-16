@@ -154,36 +154,36 @@ const toolBadges = ['Pandas','NumPy','Scikit-Learn','HTML/CSS/JS','SQL','Git','E
 
 const certsData = [
     {
-        coverSrc:'/edit/uploads/1777173742_CertificateLPIAEPTDarmapage0001.jpg',
-        imgSrc:'/edit/uploads/1777173742_CertificateLPIAEPTDarmapage0001.jpg', 
-        fullSrc:'/edit/uploads/1777173742_CertificateLPIAEPTDarmapage0001.jpg',
+        coverSrc:'edit/uploads/1777173742_CertificateLPIAEPTDarmapage0001.jpg',
+        imgSrc:'edit/uploads/1777173742_CertificateLPIAEPTDarmapage0001.jpg', 
+        fullSrc:'edit/uploads/1777173742_CertificateLPIAEPTDarmapage0001.jpg',
         pdfSrc:'',
         tagKey:'cert.tagLang', tagIcon:'languages',
         titleKey:'cert.t1', descKey:'cert.d1',
         featured: false, span: ''
     },
     {
-        coverSrc:'/edit/uploads/1777173973_DarmaAlifRakhaaCFTpage0001.jpg',
-        imgSrc:'/edit/uploads/1777173973_DarmaAlifRakhaaCFTpage0001.jpg', 
-        fullSrc:'/edit/uploads/1777173973_DarmaAlifRakhaaCFTpage0001.jpg',
+        coverSrc:'edit/uploads/1777173973_DarmaAlifRakhaaCFTpage0001.jpg',
+        imgSrc:'edit/uploads/1777173973_DarmaAlifRakhaaCFTpage0001.jpg', 
+        fullSrc:'edit/uploads/1777173973_DarmaAlifRakhaaCFTpage0001.jpg',
         pdfSrc:'',
         tagKey:'cert.tagTech', tagIcon:'table',
         titleKey:'cert.t2', descKey:'cert.d2',
         featured: false, span: ''
     },
     {
-        coverSrc:'/edit/uploads/1777174029_ENpage0001.jpg',
-        imgSrc:'/edit/uploads/1777174029_ENpage0001.jpg', 
-        fullSrc:'/edit/uploads/1777174029_ENpage0001.jpg',
+        coverSrc:'edit/uploads/1777174029_ENpage0001.jpg',
+        imgSrc:'edit/uploads/1777174029_ENpage0001.jpg', 
+        fullSrc:'edit/uploads/1777174029_ENpage0001.jpg',
         pdfSrc:'',
         tagKey:'cert.tagIntl', tagIcon:'award',
         titleKey:'cert.t3', descKey:'cert.d3',
         featured: true, span: 'sm:col-span-2 md:col-span-1'
     },
     {
-        coverSrc:'/edit/uploads/1777175013_sertifikattoefeldarmaalifrakhaapage0001.jpg',
-        imgSrc:'/edit/uploads/1777175013_sertifikattoefeldarmaalifrakhaapage0001.jpg', 
-        fullSrc:'/edit/uploads/1777175013_sertifikattoefeldarmaalifrakhaapage0001.jpg',
+        coverSrc:'edit/uploads/1777175013_sertifikattoefeldarmaalifrakhaapage0001.jpg',
+        imgSrc:'edit/uploads/1777175013_sertifikattoefeldarmaalifrakhaapage0001.jpg', 
+        fullSrc:'edit/uploads/1777175013_sertifikattoefeldarmaalifrakhaapage0001.jpg',
         pdfSrc:'',
         tagKey:'cert.tagLang', tagIcon:'languages',
         titleKey:'cert.t1', descKey:'cert.d1',

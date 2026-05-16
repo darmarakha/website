@@ -30,6 +30,7 @@ $gemu_asset_version = max(
     <meta http-equiv="Expires" content="0">
 
     <title>Darma Alif Rakhaa — Portfolio</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <script>window.__GEMU_BUILD_VERSION = '<?php echo (int) $gemu_asset_version; ?>';</script>
     <link rel="stylesheet" href="AI/guide-widget.css?v=<?php echo (int) $gemu_asset_version; ?>">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1036,19 +1037,19 @@ $gemu_asset_version = max(
                     <div id="auth-name-group" class="hidden">
                         <label class="block text-xs sm:text-sm font-medium text-navy-700 mb-1"
                             data-i18n="contact.nameLabel">Nama</label>
-                        <input type="text" id="auth-name"
+                        <input type="text" id="auth-name" autocomplete="name"
                             class="w-full px-4 py-2.5 rounded-xl border border-navy-200 bg-navy-50/50 text-navy-900 text-sm focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 transition-all">
                     </div>
                     <div>
                         <label class="block text-xs sm:text-sm font-medium text-navy-700 mb-1"
                             data-i18n="contact.emailInputLabel">Email</label>
-                        <input type="email" id="auth-email" required
+                        <input type="email" id="auth-email" required autocomplete="email"
                             class="w-full px-4 py-2.5 rounded-xl border border-navy-200 bg-navy-50/50 text-navy-900 text-sm focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 transition-all">
                     </div>
                     <div>
                         <label class="block text-xs sm:text-sm font-medium text-navy-700 mb-1"
                             data-i18n="auth.passLabel">Kata Sandi</label>
-                        <input type="password" id="auth-pass" required
+                        <input type="password" id="auth-pass" required autocomplete="current-password"
                             class="w-full px-4 py-2.5 rounded-xl border border-navy-200 bg-navy-50/50 text-navy-900 text-sm focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 transition-all">
                     </div>
 
@@ -1221,6 +1222,27 @@ $gemu_asset_version = max(
             }
         });
     </script>
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTopBtn" class="fixed bottom-6 right-6 w-12 h-12 bg-accent-500 text-white rounded-full flex items-center justify-center shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 hover:bg-accent-600 focus:outline-none" aria-label="Scroll to top">
+        <i data-lucide="arrow-up" class="w-6 h-6"></i>
+    </button>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const scrollBtn = document.getElementById('scrollToTopBtn');
+            if (scrollBtn) {
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 300) {
+                        scrollBtn.classList.remove('translate-y-20', 'opacity-0');
+                    } else {
+                        scrollBtn.classList.add('translate-y-20', 'opacity-0');
+                    }
+                });
+                scrollBtn.addEventListener('click', () => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            }
+            if (window.lucide) lucide.createIcons();
+        });
+    </script>
 </body>
-
 </html>

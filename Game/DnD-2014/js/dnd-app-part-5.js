@@ -940,6 +940,7 @@
           <p>Buat karakter berurutan: Ras → Kelas → Ability Score → Deskripsi → Equipment. Panel kanan menjelaskan efek pilihan aktif.</p>
         </div>
         <div class="dnd-actions">
+          ${c ? `<button class="dnd-btn" data-action="clone-character">Clone Karakter</button>` : ""}
           <button class="dnd-btn" data-action="new-character">Karakter baru</button>
           <button class="dnd-btn primary" data-action="download-pdf">Download PDF</button>
         </div>
