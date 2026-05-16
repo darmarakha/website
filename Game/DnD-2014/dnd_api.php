@@ -378,12 +378,15 @@ function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $user
     $characters = is_array($state['characters'] ?? null) ? $state['characters'] : [];
     if (!$characters) return;
 
-    $stmt = $pdo->prepare('INSERT INTO dnd_characters
+    $stmtCheck = $pdo->prepare('SELECT id FROM dnd_characters WHERE campaign_id = :campaign_id AND local_character_id = :local_character_id LIMIT 1');
+    $stmtInsert = $pdo->prepare('INSERT INTO dnd_characters
         (campaign_id, local_character_id, user_id, name, race, subrace, languages_json, race_traits_json, class_name, level, background, alignment, personality_traits_json, ideal, bond, flaw, ability_scores_json, skill_proficiencies_json, appearance_json, inventory_json, gold, attacks_json, hp_max, hp_current, ac, speed, locked_fields_json, gm_notes, status, inspiration, hit_dice)
         VALUES
-        (:campaign_id, :local_character_id, :user_id, :name, :race, :subrace, :languages_json, :race_traits_json, :class_name, :level, :background, :alignment, :personality_traits_json, :ideal, :bond, :flaw, :ability_scores_json, :skill_proficiencies_json, :appearance_json, :inventory_json, :gold, :attacks_json, :hp_max, :hp_current, :ac, :speed, :locked_fields_json, :gm_notes, :status, :inspiration, :hit_dice)
-        ON DUPLICATE KEY UPDATE
-          user_id=VALUES(user_id), name=VALUES(name), race=VALUES(race), subrace=VALUES(subrace), languages_json=VALUES(languages_json), race_traits_json=VALUES(race_traits_json), class_name=VALUES(class_name), level=VALUES(level), background=VALUES(background), alignment=VALUES(alignment), personality_traits_json=VALUES(personality_traits_json), ideal=VALUES(ideal), bond=VALUES(bond), flaw=VALUES(flaw), ability_scores_json=VALUES(ability_scores_json), skill_proficiencies_json=VALUES(skill_proficiencies_json), appearance_json=VALUES(appearance_json), inventory_json=VALUES(inventory_json), gold=VALUES(gold), attacks_json=VALUES(attacks_json), hp_max=VALUES(hp_max), hp_current=VALUES(hp_current), ac=VALUES(ac), speed=VALUES(speed), locked_fields_json=VALUES(locked_fields_json), gm_notes=VALUES(gm_notes), status=VALUES(status), inspiration=VALUES(inspiration), hit_dice=VALUES(hit_dice), updated_at=CURRENT_TIMESTAMP');
+        (:campaign_id, :local_character_id, :user_id, :name, :race, :subrace, :languages_json, :race_traits_json, :class_name, :level, :background, :alignment, :personality_traits_json, :ideal, :bond, :flaw, :ability_scores_json, :skill_proficiencies_json, :appearance_json, :inventory_json, :gold, :attacks_json, :hp_max, :hp_current, :ac, :speed, :locked_fields_json, :gm_notes, :status, :inspiration, :hit_dice)');
+    
+    $stmtUpdate = $pdo->prepare('UPDATE dnd_characters SET
+        user_id=:user_id, name=:name, race=:race, subrace=:subrace, languages_json=:languages_json, race_traits_json=:race_traits_json, class_name=:class_name, level=:level, background=:background, alignment=:alignment, personality_traits_json=:personality_traits_json, ideal=:ideal, bond=:bond, flaw=:flaw, ability_scores_json=:ability_scores_json, skill_proficiencies_json=:skill_proficiencies_json, appearance_json=:appearance_json, inventory_json=:inventory_json, gold=:gold, attacks_json=:attacks_json, hp_max=:hp_max, hp_current=:hp_current, ac=:ac, speed=:speed, locked_fields_json=:locked_fields_json, gm_notes=:gm_notes, status=:status, inspiration=:inspiration, hit_dice=:hit_dice, updated_at=CURRENT_TIMESTAMP
+        WHERE id=:id');
 
     $seen = [];
     foreach ($characters as $character) {
@@ -404,7 +407,8 @@ function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $user
         } else {
             $ownerId = $userId;
         }
-        $stmt->execute([
+
+        $params = [
             ':campaign_id' => $campaignId,
             ':local_character_id' => mb_substr($localId, 0, 80),
             ':user_id' => $ownerId,
@@ -436,7 +440,23 @@ function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $user
             ':status' => 'active',
             ':inspiration' => !empty($character['inspiration']) ? 1 : 0,
             ':hit_dice' => mb_substr((string)($character['hitDice'] ?? ''), 0, 20),
+        ];
+
+        $stmtCheck->execute([
+            ':campaign_id' => $campaignId,
+            ':local_character_id' => $params[':local_character_id']
         ]);
+        $existingId = $stmtCheck->fetchColumn();
+
+        if ($existingId) {
+            $updateParams = $params;
+            unset($updateParams[':campaign_id']);
+            unset($updateParams[':local_character_id']);
+            $updateParams[':id'] = $existingId;
+            $stmtUpdate->execute($updateParams);
+        } else {
+            $stmtInsert->execute($params);
+        }
     }
 
     if ($seen) {

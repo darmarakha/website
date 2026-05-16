@@ -303,7 +303,7 @@
     doc.text("DAMAGE/TYPE", margin + 210, atkY + 14);
     doc.setFont("helvetica", "normal"); doc.setFontSize(8);
     
-    const atkData = character.attacks || [];
+    const atkData = character._computedAttacks || character.attacks || [];
     for (let i = 0; i < 6; i++) {
       const rowY = atkY + 28 + (i * 12);
       const atk = atkData[i] || { name: "", bonus: "", damage: "" };
@@ -364,8 +364,16 @@
     doc.text("OTHER PROFICIENCIES & LANGUAGES", margin + (pageW - margin * 2)/2, profY + 85, { align: "center" });
 
     section("Equipment", 750);
-    const eqText = [`Gold: ${character.gold || 0} gp`, ...(character.inventory || [])].join("; ");
-    doc.text(doc.splitTextToSize(eqText || "-", pageW - margin * 2), margin, 768);
+    const eqItems = [`Gold: ${character.gold || 0} gp`, ...(character.inventory || [])];
+    let eqY = 766;
+    eqItems.slice(0, 6).forEach(item => {
+      const lines = doc.splitTextToSize("• " + item, pageW - margin * 2);
+      doc.text(lines, margin + 5, eqY);
+      eqY += 10 * lines.length;
+    });
+    if (eqItems.length > 6) {
+      doc.text("... (lihat detail inventory di halaman berikutnya)", margin + 5, eqY);
+    }
 
     addFooter();
 
@@ -382,7 +390,7 @@
       ...raceTraits.map((trait) => ["Race Trait - " + trait, traitGuideText(trait)]),
       ...(klass.features || []).map((feature) => ["Class Feature - " + feature, pdfClassFeatureGuideText(feature)]),
       ["Languages", languages || "Common"],
-      ["Starting Package", `${character.startingChoice?.name || "-"}; Gold ${Number(character.gold || 0)} gp; ${(character.inventory || []).join(", ") || "inventory belum ada"}`]
+      ["Starting Package", `${character.startingChoice?.name || "-"}\nGold: ${Number(character.gold || 0)} gp\n${(character.inventory || []).map(i => "• " + i).join("\n") || "inventory belum ada"}`]
     ];
     featureRows.forEach(([title, text]) => {
       if (detailY > pageH - 86) { addFooter(); detailY = nextDetailPage("Features & Traits Detail"); }

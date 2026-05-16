@@ -127,19 +127,65 @@
       <div class="dnd-check-grid">
         ${DATA.skills.map((s) => `<div class="compact-row"><span><strong>${s.label}</strong><small>${abilityLabel(s.ability)}</small></span><span class="dnd-pill ${c.skills.includes(s.id) ? "good" : ""}">${signed(skillBonus(c, s.id))}</span></div>`).join("")}
       </div>
-      <div class="dnd-card is-soft attacks-box" style="padding: 1rem; border: 2px solid #ccc; border-radius: 8px; background: #fff;">
+      <div class="dnd-card is-soft attacks-box" style="padding: 1rem; border: 2px solid var(--dnd-border, #ccc); border-radius: 8px;">
         <div style="display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 8px; text-align: center;">
-          <div style="font-size: 0.75rem; font-weight: bold; color: #555;">NAME</div>
-          <div style="font-size: 0.75rem; font-weight: bold; color: #555;">ATK</div>
-          <div style="font-size: 0.75rem; font-weight: bold; color: #555;">DAMAGE/TYPE</div>
-          ${(c.attacks || []).map(atk => `
-            <div style="background: #e8ebea; padding: 6px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; box-shadow: 1px 1px 2px rgba(0,0,0,0.1); color: #222;">${esc(atk.name)}</div>
-            <div style="background: #e8ebea; padding: 6px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; box-shadow: 1px 1px 2px rgba(0,0,0,0.1); color: #222;">${esc(atk.bonus)}</div>
-            <div style="background: #e8ebea; padding: 6px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; box-shadow: 1px 1px 2px rgba(0,0,0,0.1); color: #222;">${esc(atk.damage)}</div>
+          <div style="font-size: 0.75rem; font-weight: bold; opacity: 0.8;">NAME</div>
+          <div style="font-size: 0.75rem; font-weight: bold; opacity: 0.8;">ATK</div>
+          <div style="font-size: 0.75rem; font-weight: bold; opacity: 0.8;">DAMAGE/TYPE</div>
+          ${(function() {
+            const DND_WEAPONS = {
+              "dagger": { dice: "1d4", type: "piercing", finesse: true, thrown: true, category: "simple" },
+              "longsword": { dice: "1d8", type: "slashing", versatile: "1d10", category: "martial" },
+              "shortsword": { dice: "1d6", type: "piercing", finesse: true, category: "martial" },
+              "rapier": { dice: "1d8", type: "piercing", finesse: true, category: "martial" },
+              "shortbow": { dice: "1d6", type: "piercing", ranged: true, category: "simple" },
+              "longbow": { dice: "1d8", type: "piercing", ranged: true, category: "martial" },
+              "hand crossbow": { dice: "1d6", type: "piercing", ranged: true, category: "martial" },
+              "light crossbow": { dice: "1d8", type: "piercing", ranged: true, category: "simple" },
+              "heavy crossbow": { dice: "1d10", type: "piercing", ranged: true, category: "martial" },
+              "mace": { dice: "1d6", type: "bludgeoning", category: "simple" },
+              "warhammer": { dice: "1d8", type: "bludgeoning", versatile: "1d10", category: "martial" },
+              "greatsword": { dice: "2d6", type: "slashing", category: "martial" },
+              "greataxe": { dice: "1d12", type: "slashing", category: "martial" },
+              "handaxe": { dice: "1d6", type: "slashing", light: true, thrown: true, category: "simple" },
+              "javelin": { dice: "1d6", type: "piercing", thrown: true, category: "simple" },
+              "spear": { dice: "1d6", type: "piercing", thrown: true, versatile: "1d8", category: "simple" },
+              "quarterstaff": { dice: "1d6", type: "bludgeoning", versatile: "1d8", category: "simple" },
+              "scimitar": { dice: "1d6", type: "slashing", finesse: true, light: true, category: "martial" }
+            };
+            const attacks = [...(c.attacks || [])];
+            const existingNames = new Set(attacks.map(a => a.name.toLowerCase()));
+            const prof = proficiencyBonus(c.level);
+            const strMod = mod(c.abilities.str);
+            const dexMod = mod(c.abilities.dex);
+            const wStr = (klass.weapons || "").toLowerCase();
+            const isProficient = (cat, name) => wStr.includes("all weapons") || wStr.includes("martial weapons") || (wStr.includes("simple weapons") && cat === "simple") || wStr.includes(cat) || wStr.includes(name);
+            
+            (c.inventory || []).forEach(item => {
+              const name = item.replace(/x\d+$/, "").trim().toLowerCase();
+              const wpn = DND_WEAPONS[name];
+              if (wpn && !existingNames.has(name)) {
+                let useDex = wpn.ranged || (wpn.finesse && dexMod > strMod);
+                let statMod = useDex ? dexMod : strMod;
+                let atkBonus = statMod + (isProficient(wpn.category, name) ? prof : 0);
+                attacks.push({
+                  name: name.charAt(0).toUpperCase() + name.slice(1),
+                  bonus: signed(atkBonus),
+                  damage: wpn.dice + (statMod !== 0 ? signed(statMod) : "") + " " + wpn.type
+                });
+                existingNames.add(name);
+              }
+            });
+            c._computedAttacks = attacks; // Simpan sementara untuk dipakai di PDF generator nantinya jika perlu, atau PDF generator panggil ulang logika ini.
+            return attacks;
+          })().map(atk => `
+            <div style="background: rgba(255,255,255,0.08); padding: 6px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; box-shadow: 1px 1px 2px rgba(0,0,0,0.2);">${esc(atk.name)}</div>
+            <div style="background: rgba(255,255,255,0.08); padding: 6px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; box-shadow: 1px 1px 2px rgba(0,0,0,0.2);">${esc(atk.bonus)}</div>
+            <div style="background: rgba(255,255,255,0.08); padding: 6px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; box-shadow: 1px 1px 2px rgba(0,0,0,0.2);">${esc(atk.damage)}</div>
           `).join("")}
-          ${!(c.attacks || []).length ? `<div style="grid-column: span 3; font-size: 0.85rem; color: #888; padding: 10px;">Belum ada serangan diinput.</div>` : ""}
+          ${!(c._computedAttacks || c.attacks || []).length ? `<div style="grid-column: span 3; font-size: 0.85rem; opacity: 0.6; padding: 10px;">Belum ada serangan diinput atau terdeteksi.</div>` : ""}
         </div>
-        <div style="text-align: center; margin-top: 12px; font-weight: bold; font-size: 0.85rem; letter-spacing: 1px;">ATTACKS & SPELLCASTING</div>
+        <div style="text-align: center; margin-top: 12px; font-weight: bold; font-size: 0.85rem; letter-spacing: 1px; color: var(--dnd-highlight, #e6c27a);">ATTACKS & SPELLCASTING</div>
       </div>
       <div class="dnd-grid" style="margin-top:1rem">
         <div class="span-6 dnd-card is-soft">
@@ -156,12 +202,12 @@
             <p class="dnd-muted" style="margin-top:0.5rem; font-weight:bold">Starting: ${esc(c.startingChoice?.name || "Belum dipilih")} | Gold: ${esc(c.gold || 0)} gp</p>
           </div>
         </div>
-        <div class="span-12" style="border: 2px solid #333; border-radius: 8px; padding: 12px; background: #fff; box-shadow: 2px 2px 5px rgba(0,0,0,0.05);">
-          <div style="border-bottom: 1px solid #aaa; padding: 6px 0; font-size: 0.85rem; color: #222;"><strong>TOOL:</strong> ${esc((c.inventory || []).filter(i => /tool|kit|set/i.test(i)).join(", ") || "-")}</div>
-          <div style="border-bottom: 1px solid #aaa; padding: 6px 0; font-size: 0.85rem; color: #222;"><strong>LANGUAGE:</strong> ${esc(languages || "Common")}</div>
-          <div style="border-bottom: 1px solid #aaa; padding: 6px 0; font-size: 0.85rem; color: #222;"><strong>ARMOR:</strong> ${esc(klass.armor || "None")}</div>
-          <div style="padding: 6px 0; font-size: 0.85rem; color: #222;"><strong>WEAPON:</strong> ${esc(klass.weapons || "Simple weapons")}</div>
-          <div style="text-align: center; margin-top: 12px; font-weight: bold; font-size: 0.85rem; letter-spacing: 1px;">OTHER PROFICIENCIES & LANGUAGES</div>
+        <div class="span-12" style="border: 2px solid var(--dnd-border, #555); border-radius: 8px; padding: 12px; box-shadow: 2px 2px 5px rgba(0,0,0,0.2);">
+          <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem;"><strong>TOOL:</strong> ${esc((c.inventory || []).filter(i => /tool|kit|set/i.test(i)).join(", ") || "-")}</div>
+          <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem;"><strong>LANGUAGE:</strong> ${esc(languages || "Common")}</div>
+          <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem;"><strong>ARMOR:</strong> ${esc(klass.armor || "None")}</div>
+          <div style="padding: 6px 0; font-size: 0.85rem;"><strong>WEAPON:</strong> ${esc(klass.weapons || "Simple weapons")}</div>
+          <div style="text-align: center; margin-top: 12px; font-weight: bold; font-size: 0.85rem; letter-spacing: 1px; color: var(--dnd-highlight, #e6c27a);">OTHER PROFICIENCIES & LANGUAGES</div>
         </div>
         <div class="span-12 dnd-card is-soft"><h3>Personality & Story</h3><p class="dnd-muted"><strong>Traits:</strong> ${esc((c.personalityTraits || []).filter(Boolean).join(" | ") || "Belum diisi")}</p><p class="dnd-muted"><strong>Ideal:</strong> ${esc(c.ideal || "Belum diisi")}</p><p class="dnd-muted"><strong>Bond:</strong> ${esc(c.bond || "Belum diisi")}</p><p class="dnd-muted"><strong>Flaw:</strong> ${esc(c.flaw || "Belum diisi")}</p></div>
         <div class="span-12 dnd-card is-soft"><h3>Appearance</h3><p class="dnd-muted">${esc([c.appearance?.hair, c.appearance?.eyes, c.appearance?.skin, c.appearance?.style, c.appearance?.notes].filter(Boolean).join("; ") || "Belum diisi")}</p></div>
