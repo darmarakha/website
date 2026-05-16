@@ -363,15 +363,18 @@
     doc.setFont("helvetica", "bold"); doc.setFontSize(7);
     doc.text("OTHER PROFICIENCIES & LANGUAGES", margin + (pageW - margin * 2)/2, profY + 85, { align: "center" });
 
-    section("Equipment", 750);
+    section("Equipment", 740);
+    doc.setFont("helvetica", "normal"); 
+    doc.setFontSize(8);
     const eqItems = [`Gold: ${character.gold || 0} gp`, ...(character.inventory || [])];
-    let eqY = 766;
-    eqItems.slice(0, 6).forEach(item => {
+    let eqY = 756;
+    eqItems.slice(0, 5).forEach(item => {
       const lines = doc.splitTextToSize("• " + item, pageW - margin * 2);
       doc.text(lines, margin + 5, eqY);
       eqY += 10 * lines.length;
     });
-    if (eqItems.length > 6) {
+    if (eqItems.length > 5) {
+      doc.setFont("helvetica", "italic");
       doc.text("... (lihat detail inventory di halaman berikutnya)", margin + 5, eqY);
     }
 
