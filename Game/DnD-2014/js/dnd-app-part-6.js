@@ -137,8 +137,20 @@
         </table>
       </div>
       <div class="dnd-grid" style="margin-top:1rem">
-        <div class="span-6 dnd-card is-soft"><h3>Traits & Features</h3><p class="dnd-muted">${esc(effectiveRaceTraits(c).join(", "))}</p><p class="dnd-muted">${esc(klass.features.join(", "))}</p></div>
-        <div class="span-6 dnd-card is-soft"><h3>Inventory</h3><p class="dnd-muted">${esc((c.inventory || []).join(", ") || "Kosong")}</p><p class="dnd-muted">Starting: ${esc(c.startingChoice?.name || "Belum dipilih")} | Gold: ${esc(c.gold || 0)} gp</p></div>
+        <div class="span-6 dnd-card is-soft">
+          <h3>Traits & Features</h3>
+          <div class="traits-container" style="font-size:0.8rem; margin-top:0.5rem">
+            ${effectiveRaceTraits(c).map(t => `<div class="trait-item"><strong>${esc(t)}:</strong> <span class="dnd-muted">${esc(traitGuideText(t))}</span></div>`).join("")}
+            ${klass.features.map(f => `<div class="trait-item"><strong>${esc(f)}:</strong> <span class="dnd-muted">${esc(pdfClassFeatureGuideText(f))}</span></div>`).join("")}
+          </div>
+        </div>
+        <div class="span-6 dnd-card is-soft">
+          <h3>Inventory</h3>
+          <div class="inventory-container" style="font-size:0.8rem; margin-top:0.5rem">
+            <p class="dnd-muted">${esc((c.inventory || []).join(", ") || "Kosong")}</p>
+            <p class="dnd-muted" style="margin-top:0.5rem; font-weight:bold">Starting: ${esc(c.startingChoice?.name || "Belum dipilih")} | Gold: ${esc(c.gold || 0)} gp</p>
+          </div>
+        </div>
         <div class="span-12 dnd-card is-soft"><h3>Languages</h3><p class="dnd-muted">${esc(languages || "Common")}</p></div>
         <div class="span-12 dnd-card is-soft"><h3>Personality & Story</h3><p class="dnd-muted"><strong>Traits:</strong> ${esc((c.personalityTraits || []).filter(Boolean).join(" | ") || "Belum diisi")}</p><p class="dnd-muted"><strong>Ideal:</strong> ${esc(c.ideal || "Belum diisi")}</p><p class="dnd-muted"><strong>Bond:</strong> ${esc(c.bond || "Belum diisi")}</p><p class="dnd-muted"><strong>Flaw:</strong> ${esc(c.flaw || "Belum diisi")}</p></div>
         <div class="span-12 dnd-card is-soft"><h3>Appearance</h3><p class="dnd-muted">${esc([c.appearance?.hair, c.appearance?.eyes, c.appearance?.skin, c.appearance?.style, c.appearance?.notes].filter(Boolean).join("; ") || "Belum diisi")}</p></div>
