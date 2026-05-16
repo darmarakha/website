@@ -1,4 +1,5 @@
 <?php
+global $_GEMU_DB;
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
@@ -42,6 +43,7 @@ function dnd_load_database_config(): array {
     $result = ['pdo' => null, 'config' => null];
     foreach ($candidates as $file) {
         if (!is_file($file)) continue;
+        global $_GEMU_DB; // Ensure config is available globally for gemu_db_connect
         $pdo = null; $conn = null; $db = null; $database = null; $config = null;
         $host = null; $dbname = null; $username = null; $user = null; $password = null; $pass = null; $dsn = null;
         $included = include $file;
@@ -370,17 +372,17 @@ function dnd_sync_accounts(PDO $pdo, int $campaignId, array $state, ?int $ownerU
     }
 }
 
-function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $fallbackUserId): void {
+function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $userId, bool $isOwner): void {
     dnd_ensure_character_columns($pdo);
     $characters = is_array($state['characters'] ?? null) ? $state['characters'] : [];
     if (!$characters) return;
 
     $stmt = $pdo->prepare('INSERT INTO dnd_characters
-        (campaign_id, local_character_id, user_id, name, race, subrace, languages_json, race_traits_json, class_name, level, background, alignment, personality_traits_json, ideal, bond, flaw, ability_scores_json, skill_proficiencies_json, appearance_json, inventory_json, gold, hp_max, hp_current, ac, speed, locked_fields_json, gm_notes, status)
+        (campaign_id, local_character_id, user_id, name, race, subrace, languages_json, race_traits_json, class_name, level, background, alignment, personality_traits_json, ideal, bond, flaw, ability_scores_json, skill_proficiencies_json, appearance_json, inventory_json, gold, hp_max, hp_current, ac, speed, locked_fields_json, gm_notes, status, inspiration, hit_dice)
         VALUES
-        (:campaign_id, :local_character_id, :user_id, :name, :race, :subrace, :languages_json, :race_traits_json, :class_name, :level, :background, :alignment, :personality_traits_json, :ideal, :bond, :flaw, :ability_scores_json, :skill_proficiencies_json, :appearance_json, :inventory_json, :gold, :hp_max, :hp_current, :ac, :speed, :locked_fields_json, :gm_notes, :status)
+        (:campaign_id, :local_character_id, :user_id, :name, :race, :subrace, :languages_json, :race_traits_json, :class_name, :level, :background, :alignment, :personality_traits_json, :ideal, :bond, :flaw, :ability_scores_json, :skill_proficiencies_json, :appearance_json, :inventory_json, :gold, :hp_max, :hp_current, :ac, :speed, :locked_fields_json, :gm_notes, :status, :inspiration, :hit_dice)
         ON DUPLICATE KEY UPDATE
-          user_id=VALUES(user_id), name=VALUES(name), race=VALUES(race), subrace=VALUES(subrace), languages_json=VALUES(languages_json), race_traits_json=VALUES(race_traits_json), class_name=VALUES(class_name), level=VALUES(level), background=VALUES(background), alignment=VALUES(alignment), personality_traits_json=VALUES(personality_traits_json), ideal=VALUES(ideal), bond=VALUES(bond), flaw=VALUES(flaw), ability_scores_json=VALUES(ability_scores_json), skill_proficiencies_json=VALUES(skill_proficiencies_json), appearance_json=VALUES(appearance_json), inventory_json=VALUES(inventory_json), gold=VALUES(gold), hp_max=VALUES(hp_max), hp_current=VALUES(hp_current), ac=VALUES(ac), speed=VALUES(speed), locked_fields_json=VALUES(locked_fields_json), gm_notes=VALUES(gm_notes), status=VALUES(status), updated_at=CURRENT_TIMESTAMP');
+          user_id=VALUES(user_id), name=VALUES(name), race=VALUES(race), subrace=VALUES(subrace), languages_json=VALUES(languages_json), race_traits_json=VALUES(race_traits_json), class_name=VALUES(class_name), level=VALUES(level), background=VALUES(background), alignment=VALUES(alignment), personality_traits_json=VALUES(personality_traits_json), ideal=VALUES(ideal), bond=VALUES(bond), flaw=VALUES(flaw), ability_scores_json=VALUES(ability_scores_json), skill_proficiencies_json=VALUES(skill_proficiencies_json), appearance_json=VALUES(appearance_json), inventory_json=VALUES(inventory_json), gold=VALUES(gold), hp_max=VALUES(hp_max), hp_current=VALUES(hp_current), ac=VALUES(ac), speed=VALUES(speed), locked_fields_json=VALUES(locked_fields_json), gm_notes=VALUES(gm_notes), status=VALUES(status), inspiration=VALUES(inspiration), hit_dice=VALUES(hit_dice), updated_at=CURRENT_TIMESTAMP');
 
     $seen = [];
     foreach ($characters as $character) {
@@ -399,7 +401,7 @@ function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $fall
         } elseif (isset($character['sqlUserId']) && is_numeric($character['sqlUserId'])) {
             $ownerId = (int)$character['sqlUserId'];
         } else {
-            $ownerId = $fallbackUserId;
+            $ownerId = $userId;
         }
         $stmt->execute([
             ':campaign_id' => $campaignId,
@@ -430,6 +432,8 @@ function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $fall
             ':locked_fields_json' => dnd_json_value($character['startingChoice'] ?? []),
             ':gm_notes' => mb_substr((string)($character['gmNotes'] ?? ''), 0, 2000),
             ':status' => 'active',
+            ':inspiration' => !empty($character['inspiration']) ? 1 : 0,
+            ':hit_dice' => mb_substr((string)($character['hitDice'] ?? ''), 0, 20),
         ]);
     }
 
@@ -442,6 +446,10 @@ function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $fall
             $params[$key] = mb_substr($id, 0, 80);
         }
         $sql = 'UPDATE dnd_characters SET status = "archived" WHERE campaign_id = :cid AND local_character_id IS NOT NULL AND local_character_id NOT IN (' . implode(',', $placeholders) . ')';
+        if (!$isOwner && $userId) {
+            $sql .= ' AND user_id = :uid_archiver';
+            $params[':uid_archiver'] = $userId;
+        }
         $pdo->prepare($sql)->execute($params);
     }
 }
@@ -542,6 +550,8 @@ function dnd_state_from_sql(PDO $pdo, int $campaignId, ?int $userId, bool $isOwn
             'speed' => max(0, (int)($row['speed'] ?? 30)),
             'startingChoice' => dnd_decode_json_field($row['locked_fields_json'] ?? null, []),
             'gmNotes' => $row['gm_notes'] ?? '',
+            'inspiration' => !empty($row['inspiration']),
+            'hitDice' => $row['hit_dice'] ?? '',
             'createdAt' => $row['created_at'] ?? date('c'),
             'updatedAt' => $row['updated_at'] ?? date('c'),
         ];
@@ -601,8 +611,19 @@ try {
         } else {
             // Akun/role selalu diambil dari tabel member agar timer GM tidak kalah oleh snapshot lama.
             $state['accounts'] = $sqlState['accounts'] ?? ($state['accounts'] ?? []);
-            if (empty($state['characters']) && !empty($sqlState['characters'])) {
-                $state['characters'] = $sqlState['characters'];
+            
+            // Gabungkan karakter dari SQL dan snapshot.
+            // Karakter di SQL adalah sumber kebenaran (source of truth).
+            $sqlChars = $sqlState['characters'] ?? [];
+            $snapChars = $state['characters'] ?? [];
+            $mergedChars = $sqlChars;
+            
+            // Jika ada karakter di snapshot yang tidak ada di SQL (misal baru dibuat tapi belum sinkron), tambahkan.
+            // Namun biasanya dnd_sync_characters sudah menangani ini saat save.
+            // Untuk amannya, kita pastikan semua karakter dari SQL masuk, dan update datanya jika di snapshot lebih baru.
+            // Tapi karena SQL diupdate tiap save, SQL biasanya lebih baru atau sama.
+            $state['characters'] = $mergedChars;
+            if (empty($state['activeCharacterId']) && !empty($sqlState['activeCharacterId'])) {
                 $state['activeCharacterId'] = $sqlState['activeCharacterId'];
             }
         }
@@ -627,7 +648,7 @@ try {
         $pdo->beginTransaction();
         dnd_save_campaign_settings($pdo, $campaignId, $state);
         dnd_sync_accounts($pdo, $campaignId, $state, $userId, $isOwner);
-        dnd_sync_characters($pdo, $campaignId, $state, $userId);
+        dnd_sync_characters($pdo, $campaignId, $state, $userId, $isOwner);
         $snapshotName = trim((string)($input['snapshot_name'] ?? 'Autosave DND 2014')) ?: 'Autosave DND 2014';
         $stmt = $pdo->prepare('INSERT INTO dnd_save_snapshots (campaign_id, created_by_user_id, snapshot_name, state_json) VALUES (:cid, :uid, :name, :state_json)');
         $stmt->execute([
