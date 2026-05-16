@@ -100,5 +100,77 @@ $gemu_signup_url = '../../index.php';
     <script src="dnd-expansion.js?v=<?php echo (int)$gemu_asset_version; ?>" defer></script>
     <script src="dnd-map-ai.js?v=<?php echo (int)$gemu_asset_version; ?>" defer></script>
     <script src="dnd-app.php?v=<?php echo (int)$gemu_asset_version; ?>" defer></script>
+    <audio id="dnd-bg-music" loop preload="none">
+        <source src="assets/bgm.mp3" type="audio/mpeg">
+    </audio>
+
+    <button id="dnd-music-toggle" class="floating-music-btn" title="Play/Pause Fantasy Music">
+        🔇
+    </button>
+
+    <style>
+    .floating-music-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        border: 2px solid var(--dnd-highlight, #e6c27a);
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 9999;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+        transition: all 0.3s ease;
+        user-select: none;
+    }
+    .floating-music-btn:hover {
+        background: rgba(20, 20, 20, 0.95);
+        transform: scale(1.1);
+    }
+    .floating-music-btn.playing {
+        animation: dnd-pulse-border 2s infinite;
+        border-color: #fce8a4;
+    }
+    @keyframes dnd-pulse-border {
+        0% { box-shadow: 0 0 0 0 rgba(230, 194, 122, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(230, 194, 122, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(230, 194, 122, 0); }
+    }
+    </style>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const musicBtn = document.getElementById("dnd-music-toggle");
+        const audioEl = document.getElementById("dnd-bg-music");
+        let isPlaying = false;
+
+        if (musicBtn && audioEl) {
+            musicBtn.addEventListener("click", () => {
+                if (isPlaying) {
+                    audioEl.pause();
+                    musicBtn.classList.remove("playing");
+                    musicBtn.textContent = "🔇";
+                    isPlaying = false;
+                } else {
+                    audioEl.volume = 0.4;
+                    audioEl.play().then(() => {
+                        musicBtn.classList.add("playing");
+                        musicBtn.textContent = "🎵";
+                        isPlaying = true;
+                    }).catch(err => {
+                        console.error("Gagal memutar musik:", err);
+                        alert("Gagal memutar musik!\n\nSilakan pastikan Anda telah meletakkan file MP3 musik ke dalam folder:\n'Game/DnD-2014/assets/bgm.mp3'");
+                    });
+                }
+            });
+        }
+    });
+    </script>
 </body>
 </html>
