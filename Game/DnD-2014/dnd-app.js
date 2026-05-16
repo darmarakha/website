@@ -122,6 +122,7 @@
       languageChoices: [],
       className: "",
       level: 1,
+      inspiration: false,
       background: "",
       alignment: "",
       personalityTraits: ["", ""],
@@ -1229,7 +1230,8 @@
       "gm-send-narration": sendGmNarration,
       "grant-reward": openRewardModal,
       "reward-close": closeRewardModal,
-      "submit-reward": applyReward
+      "submit-reward": applyReward,
+      "toggle-inspiration": toggleInspiration
     };
     if (!actions[action]) return;
     try {
@@ -1448,6 +1450,18 @@
     state.characterPortraitDraftName = "";
     saveState();
     render();
+  }
+
+  function toggleInspiration() {
+    const trigger = state.ui.lastTrigger;
+    if (!trigger) return;
+    const charId = trigger.dataset.characterId;
+    const character = state.characters.find(c => c.id === charId);
+    if (!character) return;
+    character.inspiration = !character.inspiration;
+    saveState(true);
+    render();
+    toast(character.inspiration ? "Inspiration diberikan!" : "Inspiration digunakan.");
   }
 
   function deleteCharacter(id) {
@@ -1766,15 +1780,14 @@
       stealth: "Stealth ",
       survival: "Survival"
     };
-    const features = [
-      `Race Traits: ${raceTraits.join(", ")}`,
-      `Class Features: ${klass.features.join(", ")}`,
-      `Starting Package: ${character.startingChoice?.name || "Belum dipilih"}`
-    ].join("\n");
-    const equipment = [
-      ...(character.inventory || []),
-      character.gold ? `${character.gold} gp` : ""
-    ].filter(Boolean).join(", ");
+    const features = [...effectiveRaceTraits(character), ...klass.features].map(t => {
+      const detail = DATA.traitDetails[t.toLowerCase()] || "";
+      return `${t}${detail ? ": " + detail : ""}`;
+    }).join("\n");
+    const equipment = (character.inventory || []).map(item => {
+      const contents = getPackContents(item);
+      return `${item}${contents ? " (Isi: " + contents + ")" : ""}`;
+    }).join(", ");
     const profLang = [
       `Armor: ${klass.armor}`,
       `Gears: ${klass.weapons}`,
@@ -1796,6 +1809,7 @@
     setText("Bonds", character.bond || "", 6.5);
     setText("Flaws", character.flaw || "", 6.5);
     setText("XP", Number(character.xp || 0));
+    setText("Inspiration", character.inspiration ? "X" : "");
     setText("ProfBonus", `+${prof}`);
     setText("AC", character.ac);
     setText("Initiative", signed(mod(character.abilities.dex)));
@@ -1810,7 +1824,7 @@
     setText("Features and Traits", features, 5.5);
     setText("Feat+Traits", features, 5.5);
     setText("ProficienciesLang", profLang, 5.5);
-    setText("AttacksSpellcasting", attacks.length ? attacks.map((item) => `${item}: ${signed(prof)} + ability`).join("\n") : "", 6);
+    setText("AttacksSpellcasting", attacks.length ? attacks.map((item) => `${item}: ${calculateAttackBonus(character, item)}`).join("\n") : "", 6);
     setText("Eyes", character.appearance?.eyes || "");
     setText("Skin", character.appearance?.skin || "");
     setText("Hair", character.appearance?.hair || "");
@@ -1915,13 +1929,15 @@
       box(x, statY, statW, 58, a.label, `${val}  (${signed(mod(val))})`);
     });
 
-    section("Combat", 160);
-    box(margin, 174, 70, 42, "HP", `${character.hpCurrent}/${character.hpMax}`);
-    box(margin + 80, 174, 70, 42, "AC", character.ac);
-    box(margin + 160, 174, 70, 42, "Speed", `${character.speed} ft`);
-    box(margin + 240, 174, 90, 42, "Prof Bonus", `+${prof}`);
-    box(margin + 340, 174, 90, 42, "Initiative", signed(mod(character.abilities.dex)));
-    box(margin + 440, 174, 84, 42, "Passive Wis", 10 + skillBonus(character, "perception"));
+    section("Combat & Core", 160);
+    box(margin, 174, 55, 42, "HP", `${character.hpCurrent}/${character.hpMax}`);
+    box(margin + 60, 174, 55, 42, "AC", character.ac);
+    box(margin + 120, 174, 55, 42, "Speed", `${character.speed} ft`);
+    box(margin + 180, 174, 55, 42, "Prof", `+${prof}`);
+    box(margin + 240, 174, 65, 42, "Hit Dice", `${character.level}d${klass.hitDie}`);
+    box(margin + 310, 174, 65, 42, "Inspiration", character.inspiration ? "YES [x]" : "NO [ ]");
+    box(margin + 380, 174, 70, 42, "Initiative", signed(mod(character.abilities.dex)));
+    box(margin + 455, 174, 70, 42, "Passive Wis", 10 + skillBonus(character, "perception"));
 
     section("Skills & Saving Throws", 240);
     let y = 258;
@@ -1939,39 +1955,50 @@
       doc.text(`${klass.saves.includes(a.id) ? "[x]" : "[ ]"} ${a.label} Save ${signed(save)}`, margin + 400, 258 + i * 15);
     });
 
-    section("Story", 410);
-    box(margin, 424, 255, 44, "Personality Trait 1", character.personalityTraits?.[0] || "");
-    box(margin + 270, 424, 255, 44, "Personality Trait 2", character.personalityTraits?.[1] || "");
-    box(margin, 476, 165, 44, "Ideal", character.ideal || "");
-    box(margin + 180, 476, 165, 44, "Bond", character.bond || "");
-    box(margin + 360, 476, 165, 44, "Flaw", character.flaw || "");
+    section("Attacks & Spellcasting", 410);
+    const attacks = (character.inventory || [])
+      .filter(item => /sword|dagger|mace|axe|hammer|staff|spear|bow|crossbow|dart|sling/i.test(item))
+      .map(item => `${item}: ${calculateAttackBonus(character, item)} to hit`).join(", ");
+    box(margin, 424, 525, 44, "Weapon Attacks", attacks || "None");
 
-    section("Features, Traits, Languages", 548);
-    const featuresText = [
-      `Race Traits: ${raceTraits.join(", ") || "-"}`,
-      `Class Features: ${(klass.features || []).join(", ") || "-"}`,
-      `Languages: ${languages || "Common"}`,
-      `Starting Package: ${character.startingChoice?.name || "-"}`
-    ].join("\n");
+    section("Story", 480);
+    box(margin, 494, 255, 44, "Personality Trait 1", character.personalityTraits?.[0] || "");
+    box(margin + 270, 494, 255, 44, "Personality Trait 2", character.personalityTraits?.[1] || "");
+    box(margin, 546, 165, 44, "Ideal", character.ideal || "");
+    box(margin + 180, 546, 165, 44, "Bond", character.bond || "");
+    box(margin + 360, 546, 165, 44, "Flaw", character.flaw || "");
+
+    section("Features, Traits, Languages", 610);
+    const traitText = [...effectiveRaceTraits(character), ...klass.features].map(t => {
+      const detail = DATA.traitDetails[t.toLowerCase()] || "";
+      return `${t}${detail ? ": " + detail : ""}`;
+    }).join("\n");
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.text(doc.splitTextToSize(featuresText, pageW - margin * 2), margin, 565);
+    doc.setFontSize(7);
+    const featuresText = `Languages: ${languages || "Common"}\n${traitText}`;
+    doc.text(doc.splitTextToSize(featuresText, pageW - margin * 2), margin, 627);
 
-    section("Equipment", 650);
-    const eqText = [`Gold: ${character.gold || 0} gp`, ...(character.inventory || [])].join("; ");
-    doc.text(doc.splitTextToSize(eqText || "-", pageW - margin * 2), margin, 668);
+    section("Equipment", 740);
+    const eqLines = (character.inventory || []).map(item => {
+      const contents = getPackContents(item);
+      return `- ${item}${contents ? " (Isi: " + contents + ")" : ""}`;
+    });
+    const eqText = [`Gold: ${character.gold || 0} gp`, ...eqLines].join("\n");
+    doc.setFontSize(7);
+    doc.text(doc.splitTextToSize(eqText || "-", pageW - margin * 2), margin, 755);
 
-    section("Manual Offline Notes", 730);
-    for (let i = 0; i < 4; i++) line(margin, 748 + i * 18, pageW - margin, 748 + i * 18);
     addFooter();
 
     doc.addPage();
-    section("Printable Manual Area", 42);
+    section("Appearance & Backstory", 42);
     box(margin, 58, 255, 70, "Backstory / Catatan Karakter", character.appearance?.notes || "");
     box(margin + 270, 58, 255, 70, "Appearance", `Hair: ${character.appearance?.hair || "-"}; Eyes: ${character.appearance?.eyes || "-"}; Skin: ${character.appearance?.skin || "-"}; Style: ${character.appearance?.style || "-"}`);
-    section("Inventory Tambahan", 160);
-    for (let i = 0; i < 14; i++) line(margin, 182 + i * 22, pageW - margin, 182 + i * 22);
-    section("Spell / Ability / Attack Notes", 510);
+    
+    section("Inventory Detail", 160);
+    doc.setFontSize(8);
+    doc.text(doc.splitTextToSize(eqText, pageW - margin * 2), margin, 180);
+
+    section("Manual Offline Notes", 510);
     for (let i = 0; i < 10; i++) line(margin, 532 + i * 22, pageW - margin, 532 + i * 22);
     addFooter();
 
@@ -4195,43 +4222,150 @@
     `;
   }
 
+  function getPackContents(packName) {
+    const packs = {
+      "Dungeoneer's Pack": "backpack, crowbar, hammer, 10 pitons, 10 torches, tinderbox, 10 days of rations, waterskin, 50ft hempen rope",
+      "Explorer's Pack": "backpack, bedroll, mess kit, tinderbox, 10 torches, 10 days of rations, waterskin, 50ft hempen rope",
+      "Burglar's Pack": "backpack, 1000 ball bearings, 10ft string, bell, 5 candles, crowbar, hammer, 10 pitons, hooded lantern, 2 flasks of oil, 5 days of rations, tinderbox, waterskin, 50ft hempen rope",
+      "Scholar's Pack": "backpack, book of lore, bottle of ink, ink pen, 10 sheets of parchment, bag of sand, small knife",
+      "Diplomat's Pack": "chest, 2 map cases, fine clothes, bottle of ink, ink pen, lamp, 2 flasks of oil, 5 sheets of parchment, vial of perfume, sealing wax, soap",
+      "Entertainer's Pack": "backpack, bedroll, 2 costumes, 5 candles, 5 days of rations, waterskin, disguise kit",
+      "Priest's Pack": "backpack, blanket, 10 candles, tinderbox, alms box, 2 blocks of incense, censer, vestments, 2 days of rations, waterskin"
+    };
+    return packs[packName] || null;
+  }
+
+  function calculateAttackBonus(c, item) {
+    const prof = proficiencyBonus(c.level);
+    const isMelee = /sword|dagger|mace|axe|hammer|staff|spear/i.test(item);
+    const isFinesse = /dagger|rapier|shortsword/i.test(item);
+    const isRanged = /bow|crossbow|dart|sling/i.test(item);
+    
+    let bonus = 0;
+    if (isMelee) {
+      const strMod = mod(c.abilities.str);
+      const dexMod = mod(c.abilities.dex);
+      bonus = isFinesse ? Math.max(strMod, dexMod) : strMod;
+    } else if (isRanged) {
+      bonus = mod(c.abilities.dex);
+    }
+    
+    // Assume proficient with weapons in starting equipment
+    return signed(bonus + prof);
+  }
+
   function renderCharacterSheet(c) {
     const race = raceById(c.race);
     const klass = classById(c.className);
     const prof = proficiencyBonus(c.level);
     const languages = languageNames(c.languages || normalizeLanguageSelection(c.race, c.subrace, c.languageChoices || []).all);
+    const hitDice = `${c.level}d${klass.hitDie}`;
+    
+    const traitList = [...effectiveRaceTraits(c), ...klass.features].map(t => {
+      const detail = DATA.traitDetails[t.toLowerCase()] || "";
+      return `<div class="trait-item"><strong>${esc(t)}</strong>${detail ? `<p class="dnd-small-muted">${esc(detail)}</p>` : ""}</div>`;
+    }).join("");
+
+    const inventoryList = (c.inventory || []).map(item => {
+      const contents = getPackContents(item);
+      return `<div class="inventory-item"><strong>${esc(item)}</strong>${contents ? `<p class="dnd-small-muted">Isi: ${esc(contents)}</p>` : ""}</div>`;
+    }).join("") || "Kosong";
+
+    const attacks = (c.inventory || [])
+      .filter(item => /sword|dagger|mace|axe|hammer|staff|spear|bow|crossbow|dart|sling/i.test(item))
+      .map(item => `<div class="compact-row"><span><strong>${esc(item)}</strong></span><span class="dnd-pill">${calculateAttackBonus(c, item)} to hit</span></div>`)
+      .join("") || "<p class='dnd-muted'>Belum ada senjata di inventory.</p>";
+
     return `
       <div class="sheet-header">
         <div class="avatar-medallion">${esc(initials(c.name))}</div>
         <div>
-          <h2>${esc(c.name)}</h2>
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <h2>${esc(c.name)}</h2>
+            <div class="inspiration-box ${c.inspiration ? "active" : ""}" data-action="toggle-inspiration" data-character-id="${c.id}">
+              <span class="inspiration-star">★</span> <span>INSPIRATION</span>
+            </div>
+          </div>
           <p class="dnd-muted">${esc(effectiveRaceName(c))} ${esc(klass.name)} level ${esc(c.level)} | ${esc(DATA.backgrounds.find(b => b.id === c.background)?.name || c.background)} | ${esc(c.alignment)}</p>
           <div class="dnd-pill-row" style="margin-top:.65rem">
             <span class="dnd-pill good">HP ${esc(c.hpCurrent)}/${esc(c.hpMax)}</span>
+            <span class="dnd-pill info">Hit Dice: ${esc(hitDice)}</span>
             <span class="dnd-pill">AC ${esc(c.ac)}</span>
             <span class="dnd-pill">Speed ${esc(c.speed)}</span>
             <span class="dnd-pill">Prof +${prof}</span>
-            <span class="dnd-pill">Bahasa: ${esc(languages || "Common")}</span>
-            <span class="dnd-pill ${c.startingChoice ? "good" : "warn"}">Start: ${esc(c.startingChoice?.name || "belum dipilih")}</span>
             <span class="dnd-pill">${esc(c.gold || 0)} gp</span>
             ${c.requestedLevel ? `<span class="dnd-pill warn">Pending GM approve: level ${esc(c.requestedLevel)}</span>` : ""}
           </div>
         </div>
       </div>
-      <h3 style="margin:1rem 0 .55rem">Abilities</h3>
-      <div class="stat-grid">
-        ${DATA.abilities.map((a) => `<div class="stat-box"><small>${a.label.slice(0, 3)}</small><strong>${esc(c.abilities[a.id])}</strong><span>${signed(mod(c.abilities[a.id]))}</span></div>`).join("")}
-      </div>
-      <h3 style="margin:1rem 0 .55rem">Skills</h3>
-      <div class="dnd-check-grid">
-        ${DATA.skills.map((s) => `<div class="compact-row"><span><strong>${s.label}</strong><small>${abilityLabel(s.ability)}</small></span><span class="dnd-pill ${c.skills.includes(s.id) ? "good" : ""}">${signed(skillBonus(c, s.id))}</span></div>`).join("")}
-      </div>
+
       <div class="dnd-grid" style="margin-top:1rem">
-        <div class="span-6 dnd-card is-soft"><h3>Traits & Features</h3><p class="dnd-muted">${esc(effectiveRaceTraits(c).join(", "))}</p><p class="dnd-muted">${esc(klass.features.join(", "))}</p></div>
-        <div class="span-6 dnd-card is-soft"><h3>Inventory</h3><p class="dnd-muted">${esc((c.inventory || []).join(", ") || "Kosong")}</p><p class="dnd-muted">Starting: ${esc(c.startingChoice?.name || "Belum dipilih")} | Gold: ${esc(c.gold || 0)} gp</p></div>
-        <div class="span-12 dnd-card is-soft"><h3>Languages</h3><p class="dnd-muted">${esc(languages || "Common")}</p></div>
-        <div class="span-12 dnd-card is-soft"><h3>Personality & Story</h3><p class="dnd-muted"><strong>Traits:</strong> ${esc((c.personalityTraits || []).filter(Boolean).join(" | ") || "Belum diisi")}</p><p class="dnd-muted"><strong>Ideal:</strong> ${esc(c.ideal || "Belum diisi")}</p><p class="dnd-muted"><strong>Bond:</strong> ${esc(c.bond || "Belum diisi")}</p><p class="dnd-muted"><strong>Flaw:</strong> ${esc(c.flaw || "Belum diisi")}</p></div>
-        <div class="span-12 dnd-card is-soft"><h3>Appearance</h3><p class="dnd-muted">${esc([c.appearance?.hair, c.appearance?.eyes, c.appearance?.skin, c.appearance?.style, c.appearance?.notes].filter(Boolean).join("; ") || "Belum diisi")}</p></div>
+        <div class="span-4">
+          <h3 style="margin-bottom:.55rem">Abilities</h3>
+          <div class="stat-grid">
+            ${DATA.abilities.map((a) => `<div class="stat-box"><small>${a.label.slice(0, 3)}</small><strong>${esc(c.abilities[a.id])}</strong><span>${signed(mod(c.abilities[a.id]))}</span></div>`).join("")}
+          </div>
+          
+          <h3 style="margin:1.5rem 0 .55rem">Saving Throws</h3>
+          <div class="dnd-check-grid">
+            ${DATA.abilities.map(a => {
+              const isProf = klass.saves.includes(a.id);
+              const bonus = mod(c.abilities[a.id]) + (isProf ? prof : 0);
+              return `<div class="compact-row"><span><strong>${a.label}</strong></span><span class="dnd-pill ${isProf ? "good" : ""}">${signed(bonus)}</span></div>`;
+            }).join("")}
+          </div>
+        </div>
+
+        <div class="span-4">
+          <h3 style="margin-bottom:.55rem">Skills</h3>
+          <div class="dnd-check-grid">
+            ${DATA.skills.map((s) => `<div class="compact-row"><span><strong>${s.label}</strong><small>${abilityLabel(s.ability)}</small></span><span class="dnd-pill ${c.skills.includes(s.id) ? "good" : ""}">${signed(skillBonus(c, s.id))}</span></div>`).join("")}
+          </div>
+        </div>
+
+        <div class="span-4">
+          <h3 style="margin-bottom:.55rem">Attacks & Spellcasting</h3>
+          <div class="dnd-card is-soft" style="margin-bottom:1rem">
+            ${attacks}
+          </div>
+          ${klass.features.includes("Spellcasting") || klass.features.includes("Pact Magic") ? `
+            <div class="dnd-card is-soft">
+              <h4>Spellcasting</h4>
+              <p class="dnd-small-muted">Ability: ${esc(klass.primary)}</p>
+              <p class="dnd-small-muted">Save DC: ${8 + prof + mod(c.abilities[klass.primary.toLowerCase().slice(0,3)])}</p>
+              <p class="dnd-small-muted">Attack Bonus: ${signed(prof + mod(c.abilities[klass.primary.toLowerCase().slice(0,3)]))}</p>
+            </div>
+          ` : ""}
+        </div>
+      </div>
+
+      <div class="dnd-grid" style="margin-top:1.5rem">
+        <div class="span-6 dnd-card is-soft">
+          <h3>Traits & Features</h3>
+          <div class="traits-container">${traitList}</div>
+        </div>
+        <div class="span-6 dnd-card is-soft">
+          <h3>Inventory & Equipment</h3>
+          <div class="inventory-container">${inventoryList}</div>
+          <p class="dnd-muted" style="margin-top:.5rem">Starting: ${esc(c.startingChoice?.name || "Belum dipilih")} | Gold: ${esc(c.gold || 0)} gp</p>
+        </div>
+        <div class="span-6 dnd-card is-soft">
+          <h3>Other Proficiencies & Languages</h3>
+          <p class="dnd-muted"><strong>Armor:</strong> ${esc(klass.armor)}</p>
+          <p class="dnd-muted"><strong>Weapons:</strong> ${esc(klass.weapons)}</p>
+          <p class="dnd-muted"><strong>Languages:</strong> ${esc(languages || "Common")}</p>
+        </div>
+        <div class="span-6 dnd-card is-soft">
+          <h3>Personality & Story</h3>
+          <p class="dnd-muted"><strong>Traits:</strong> ${esc((c.personalityTraits || []).filter(Boolean).join(" | ") || "Belum diisi")}</p>
+          <p class="dnd-muted"><strong>Ideal:</strong> ${esc(c.ideal || "Belum diisi")}</p>
+          <p class="dnd-muted"><strong>Bond:</strong> ${esc(c.bond || "Belum diisi")}</p>
+          <p class="dnd-muted"><strong>Flaw:</strong> ${esc(c.flaw || "Belum diisi")}</p>
+        </div>
+        <div class="span-12 dnd-card is-soft">
+          <h3>Appearance</h3>
+          <p class="dnd-muted">${esc([c.appearance?.hair, c.appearance?.eyes, c.appearance?.skin, c.appearance?.style, c.appearance?.notes].filter(Boolean).join("; ") || "Belum diisi")}</p>
+        </div>
       </div>
     `;
   }
