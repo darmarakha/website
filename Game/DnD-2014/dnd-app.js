@@ -1780,8 +1780,26 @@
       stealth: "Stealth ",
       survival: "Survival"
     };
+    const featureData = {
+      "rage": "Masuk ke kondisi marah untuk mendapat resistance damage fisik dan bonus attack damage.",
+      "unarmored defense": "Mendapat bonus AC dari bonus ability tambahan saat tidak memakai armor.",
+      "spellcasting": "Bisa merapal mantra sesuai level dan slot mantra yang tersedia.",
+      "pact magic": "Sihir unik Warlock yang slotnya kembali penuh setelah short rest.",
+      "bardic inspiration": "Memberi bonus d6/d8 ke teman untuk membantu attack, check, atau save.",
+      "divine sense": "Mendeteksi kehadiran celestial, fiend, atau undead di sekitar.",
+      "lay on hands": "Menyembuhkan HP target dengan poin energi suci.",
+      "sneak attack": "Memberi bonus damage jika menyerang target yang terdistraksi.",
+      "cunning action": "Bisa Dash, Disengage, atau Hide sebagai bonus action.",
+      "second wind": "Memulihkan HP sendiri sebagai bonus action.",
+      "action surge": "Mendapat satu action tambahan dalam satu giliran.",
+      "martial arts": "Bisa menyerang tanpa senjata dengan damage lebih besar dan bonus action attack.",
+      "ki": "Memakai energi internal untuk fitur khusus Monk.",
+      "natural explorer": "Mendapat bonus navigasi dan survival di medan tertentu.",
+      "favored enemy": "Mendapat bonus track dan info tentang tipe musuh tertentu."
+    };
     const features = [...effectiveRaceTraits(character), ...klass.features].map(t => {
-      const detail = DATA.traitDetails[t.toLowerCase()] || "";
+      const lowT = t.toLowerCase();
+      const detail = featureData[lowT] || DATA.traitDetails[lowT] || "";
       return `${t}${detail ? ": " + detail : ""}`;
     }).join("\n");
     const equipment = (character.inventory || []).map(item => {
@@ -1969,8 +1987,26 @@
     box(margin + 360, 546, 165, 44, "Flaw", character.flaw || "");
 
     section("Features, Traits, Languages", 610);
+    const featureData = {
+      "rage": "Masuk ke kondisi marah untuk mendapat resistance damage fisik dan bonus attack damage.",
+      "unarmored defense": "Mendapat bonus AC dari bonus ability tambahan saat tidak memakai armor.",
+      "spellcasting": "Bisa merapal mantra sesuai level dan slot mantra yang tersedia.",
+      "pact magic": "Sihir unik Warlock yang slotnya kembali penuh setelah short rest.",
+      "bardic inspiration": "Memberi bonus d6/d8 ke teman untuk membantu attack, check, atau save.",
+      "divine sense": "Mendeteksi kehadiran celestial, fiend, atau undead di sekitar.",
+      "lay on hands": "Menyembuhkan HP target dengan poin energi suci.",
+      "sneak attack": "Memberi bonus damage jika menyerang target yang terdistraksi.",
+      "cunning action": "Bisa Dash, Disengage, atau Hide sebagai bonus action.",
+      "second wind": "Memulihkan HP sendiri sebagai bonus action.",
+      "action surge": "Mendapat satu action tambahan dalam satu giliran.",
+      "martial arts": "Bisa menyerang tanpa senjata dengan damage lebih besar dan bonus action attack.",
+      "ki": "Memakai energi internal untuk fitur khusus Monk.",
+      "natural explorer": "Mendapat bonus navigasi dan survival di medan tertentu.",
+      "favored enemy": "Mendapat bonus track dan info tentang tipe musuh tertentu."
+    };
     const traitText = [...effectiveRaceTraits(character), ...klass.features].map(t => {
-      const detail = DATA.traitDetails[t.toLowerCase()] || "";
+      const lowT = t.toLowerCase();
+      const detail = featureData[lowT] || DATA.traitDetails[lowT] || "";
       return `${t}${detail ? ": " + detail : ""}`;
     }).join("\n");
     doc.setFont("helvetica", "normal");
@@ -4261,8 +4297,27 @@
     const languages = languageNames(c.languages || normalizeLanguageSelection(c.race, c.subrace, c.languageChoices || []).all);
     const hitDice = `${c.level}d${klass.hitDie}`;
     
+    const featureData = {
+      "rage": "Masuk ke kondisi marah untuk mendapat resistance damage fisik dan bonus attack damage.",
+      "unarmored defense": "Mendapat bonus AC dari bonus ability tambahan saat tidak memakai armor.",
+      "spellcasting": "Bisa merapal mantra sesuai level dan slot mantra yang tersedia.",
+      "pact magic": "Sihir unik Warlock yang slotnya kembali penuh setelah short rest.",
+      "bardic inspiration": "Memberi bonus d6/d8 ke teman untuk membantu attack, check, atau save.",
+      "divine sense": "Mendeteksi kehadiran celestial, fiend, atau undead di sekitar.",
+      "lay on hands": "Menyembuhkan HP target dengan poin energi suci.",
+      "sneak attack": "Memberi bonus damage jika menyerang target yang terdistraksi.",
+      "cunning action": "Bisa Dash, Disengage, atau Hide sebagai bonus action.",
+      "second wind": "Memulihkan HP sendiri sebagai bonus action.",
+      "action surge": "Mendapat satu action tambahan dalam satu giliran.",
+      "martial arts": "Bisa menyerang tanpa senjata dengan damage lebih besar dan bonus action attack.",
+      "ki": "Memakai energi internal untuk fitur khusus Monk.",
+      "natural explorer": "Mendapat bonus navigasi dan survival di medan tertentu.",
+      "favored enemy": "Mendapat bonus track dan info tentang tipe musuh tertentu."
+    };
+
     const traitList = [...effectiveRaceTraits(c), ...klass.features].map(t => {
-      const detail = DATA.traitDetails[t.toLowerCase()] || "";
+      const lowT = t.toLowerCase();
+      const detail = featureData[lowT] || DATA.traitDetails[lowT] || "";
       return `<div class="trait-item"><strong>${esc(t)}</strong>${detail ? `<p class="dnd-small-muted">${esc(detail)}</p>` : ""}</div>`;
     }).join("");
 
