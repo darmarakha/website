@@ -285,25 +285,37 @@
     box(margin + 378, 174, 70, 42, "Inspiration", character.inspiration ? "YES" : "NO");
     box(margin + 456, 174, 68, 42, "Hit Dice", `${character.hitDiceRemaining}/d${klass.hitDie}`);
 
+    const drawPillText = (text, x, y, w, h) => {
+      doc.setFillColor(235, 235, 235);
+      doc.roundedRect(x, y - h + 3, w, h, 3, 3, 'F');
+      doc.text(String(text), x + 4, y);
+    };
+
     section("Attacks & Spellcasting", 230);
     const atkY = 244;
-    doc.setDrawColor(80, 80, 80);
-    doc.roundedRect(margin, atkY, pageW - margin * 2, 80, 4, 4);
-    doc.setFont("helvetica", "bold"); doc.setFontSize(7);
-    doc.text("NAME", margin + 10, atkY + 12);
-    doc.text("ATK BONUS", margin + 140, atkY + 12);
-    doc.text("DAMAGE/TYPE", margin + 240, atkY + 12);
+    doc.setDrawColor(40, 40, 40);
+    doc.setLineWidth(1.2);
+    doc.roundedRect(margin, atkY, pageW - margin * 2, 105, 4, 4);
+    doc.setLineWidth(1);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(8);
+    doc.text("NAME", margin + 10, atkY + 14);
+    doc.text("ATK", margin + 150, atkY + 14);
+    doc.text("DAMAGE/TYPE", margin + 210, atkY + 14);
     doc.setFont("helvetica", "normal"); doc.setFontSize(8);
-    (character.attacks || []).slice(0, 4).forEach((atk, i) => {
+    
+    const atkData = character.attacks || [];
+    for (let i = 0; i < 6; i++) {
       const rowY = atkY + 28 + (i * 12);
-      doc.text(String(atk.name), margin + 10, rowY);
-      doc.text(String(atk.bonus), margin + 140, rowY);
-      doc.text(String(atk.damage), margin + 240, rowY);
-    });
-    if (!(character.attacks || []).length) doc.text("Belum ada serangan diinput.", margin + 10, atkY + 28);
+      const atk = atkData[i] || { name: "", bonus: "", damage: "" };
+      drawPillText(atk.name, margin + 10, rowY, 130, 10);
+      drawPillText(atk.bonus, margin + 150, rowY, 50, 10);
+      drawPillText(atk.damage, margin + 210, rowY, 130, 10);
+    }
+    doc.setFont("helvetica", "bold"); doc.setFontSize(7);
+    doc.text("ATTACKS & SPELLCASTING", margin + (pageW - margin * 2)/2, atkY + 98, { align: "center" });
 
-    section("Skills & Saving Throws", 340);
-    let y = 358;
+    section("Skills & Saving Throws", 360);
+    let y = 378;
     DATA.skills.forEach((skill, i) => {
       const col = i < 9 ? margin : margin + 260;
       const rowY = i < 9 ? y + i * 15 : y + (i - 9) * 15;
@@ -315,26 +327,41 @@
     doc.setFont("helvetica", "normal");
     DATA.abilities.forEach((a, i) => {
       const save = mod(character.abilities[a.id]) + (klass.saves.includes(a.id) ? prof : 0);
-      doc.text(`${klass.saves.includes(a.id) ? "[x]" : "[ ]"} ${a.label} Save ${signed(save)}`, margin + 400, 358 + i * 15);
+      doc.text(`${klass.saves.includes(a.id) ? "[x]" : "[ ]"} ${a.label} Save ${signed(save)}`, margin + 400, 378 + i * 15);
     });
 
-    section("Story", 510);
-    box(margin, 524, 255, 44, "Personality Trait 1", character.personalityTraits?.[0] || "");
-    box(margin + 270, 524, 255, 44, "Personality Trait 2", character.personalityTraits?.[1] || "");
-    box(margin, 576, 165, 44, "Ideal", character.ideal || "");
-    box(margin + 180, 576, 165, 44, "Bond", character.bond || "");
-    box(margin + 360, 576, 165, 44, "Flaw", character.flaw || "");
+    section("Story", 525);
+    box(margin, 539, 255, 44, "Personality Trait 1", character.personalityTraits?.[0] || "");
+    box(margin + 270, 539, 255, 44, "Personality Trait 2", character.personalityTraits?.[1] || "");
+    box(margin, 591, 165, 44, "Ideal", character.ideal || "");
+    box(margin + 180, 591, 165, 44, "Bond", character.bond || "");
+    box(margin + 360, 591, 165, 44, "Flaw", character.flaw || "");
 
-    section("Features, Traits, Languages", 648);
-    const featuresText = [
-      `Race Traits: ${raceTraits.join(", ") || "-"}`,
-      `Class Features: ${(klass.features || []).join(", ") || "-"}`,
-      `Languages: ${languages || "Common"}`,
-      `Starting Package: ${character.startingChoice?.name || "-"}`
-    ].join("\n");
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.text(doc.splitTextToSize(featuresText, pageW - margin * 2), margin, 665);
+    const profY = 648;
+    doc.setDrawColor(40, 40, 40);
+    doc.setLineWidth(1.2);
+    doc.roundedRect(margin, profY, pageW - margin * 2, 90, 4, 4);
+    doc.setLineWidth(1);
+    
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8);
+    const toolTxt = "TOOL: " + ((character.inventory || []).filter(i => /tool|kit|set/i.test(i)).join(", ") || "None");
+    const langTxt = "LANGUAGE: " + (languages || "Common");
+    const armTxt = "ARMOR: " + (klass.armor || "None");
+    const wepTxt = "WEAPON: " + (klass.weapons || "Simple weapons");
+    
+    doc.text(doc.splitTextToSize(toolTxt, pageW - margin*2 - 20), margin + 10, profY + 16);
+    line(margin + 5, profY + 22, pageW - margin - 5, profY + 22);
+    
+    doc.text(doc.splitTextToSize(langTxt, pageW - margin*2 - 20), margin + 10, profY + 36);
+    line(margin + 5, profY + 42, pageW - margin - 5, profY + 42);
+    
+    doc.text(doc.splitTextToSize(armTxt, pageW - margin*2 - 20), margin + 10, profY + 56);
+    line(margin + 5, profY + 62, pageW - margin - 5, profY + 62);
+    
+    doc.text(doc.splitTextToSize(wepTxt, pageW - margin*2 - 20), margin + 10, profY + 76);
+    
+    doc.setFont("helvetica", "bold"); doc.setFontSize(7);
+    doc.text("OTHER PROFICIENCIES & LANGUAGES", margin + (pageW - margin * 2)/2, profY + 85, { align: "center" });
 
     section("Equipment", 750);
     const eqText = [`Gold: ${character.gold || 0} gp`, ...(character.inventory || [])].join("; ");

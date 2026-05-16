@@ -127,15 +127,19 @@
       <div class="dnd-check-grid">
         ${DATA.skills.map((s) => `<div class="compact-row"><span><strong>${s.label}</strong><small>${abilityLabel(s.ability)}</small></span><span class="dnd-pill ${c.skills.includes(s.id) ? "good" : ""}">${signed(skillBonus(c, s.id))}</span></div>`).join("")}
       </div>
-      <h3 style="margin:1rem 0 .55rem">Attacks & Spellcasting</h3>
-      <div class="dnd-card is-soft attacks-box">
-        <table class="attacks-table">
-          <thead><tr><th>Name</th><th>Atk Bonus</th><th>Damage/Type</th></tr></thead>
-          <tbody>
-            ${(c.attacks || []).map(atk => `<tr><td>${esc(atk.name)}</td><td>${esc(atk.bonus)}</td><td>${esc(atk.damage)}</td></tr>`).join("")}
-            ${!(c.attacks || []).length ? "<tr><td colspan='3' class='dnd-muted'>Belum ada serangan diinput.</td></tr>" : ""}
-          </tbody>
-        </table>
+      <div class="dnd-card is-soft attacks-box" style="padding: 1rem; border: 2px solid #ccc; border-radius: 8px; background: #fff;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 8px; text-align: center;">
+          <div style="font-size: 0.75rem; font-weight: bold; color: #555;">NAME</div>
+          <div style="font-size: 0.75rem; font-weight: bold; color: #555;">ATK</div>
+          <div style="font-size: 0.75rem; font-weight: bold; color: #555;">DAMAGE/TYPE</div>
+          ${(c.attacks || []).map(atk => `
+            <div style="background: #e8ebea; padding: 6px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; box-shadow: 1px 1px 2px rgba(0,0,0,0.1); color: #222;">${esc(atk.name)}</div>
+            <div style="background: #e8ebea; padding: 6px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; box-shadow: 1px 1px 2px rgba(0,0,0,0.1); color: #222;">${esc(atk.bonus)}</div>
+            <div style="background: #e8ebea; padding: 6px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; box-shadow: 1px 1px 2px rgba(0,0,0,0.1); color: #222;">${esc(atk.damage)}</div>
+          `).join("")}
+          ${!(c.attacks || []).length ? `<div style="grid-column: span 3; font-size: 0.85rem; color: #888; padding: 10px;">Belum ada serangan diinput.</div>` : ""}
+        </div>
+        <div style="text-align: center; margin-top: 12px; font-weight: bold; font-size: 0.85rem; letter-spacing: 1px;">ATTACKS & SPELLCASTING</div>
       </div>
       <div class="dnd-grid" style="margin-top:1rem">
         <div class="span-6 dnd-card is-soft">
@@ -152,7 +156,13 @@
             <p class="dnd-muted" style="margin-top:0.5rem; font-weight:bold">Starting: ${esc(c.startingChoice?.name || "Belum dipilih")} | Gold: ${esc(c.gold || 0)} gp</p>
           </div>
         </div>
-        <div class="span-12 dnd-card is-soft"><h3>Languages</h3><p class="dnd-muted">${esc(languages || "Common")}</p></div>
+        <div class="span-12" style="border: 2px solid #333; border-radius: 8px; padding: 12px; background: #fff; box-shadow: 2px 2px 5px rgba(0,0,0,0.05);">
+          <div style="border-bottom: 1px solid #aaa; padding: 6px 0; font-size: 0.85rem; color: #222;"><strong>TOOL:</strong> ${esc((c.inventory || []).filter(i => /tool|kit|set/i.test(i)).join(", ") || "-")}</div>
+          <div style="border-bottom: 1px solid #aaa; padding: 6px 0; font-size: 0.85rem; color: #222;"><strong>LANGUAGE:</strong> ${esc(languages || "Common")}</div>
+          <div style="border-bottom: 1px solid #aaa; padding: 6px 0; font-size: 0.85rem; color: #222;"><strong>ARMOR:</strong> ${esc(klass.armor || "None")}</div>
+          <div style="padding: 6px 0; font-size: 0.85rem; color: #222;"><strong>WEAPON:</strong> ${esc(klass.weapons || "Simple weapons")}</div>
+          <div style="text-align: center; margin-top: 12px; font-weight: bold; font-size: 0.85rem; letter-spacing: 1px;">OTHER PROFICIENCIES & LANGUAGES</div>
+        </div>
         <div class="span-12 dnd-card is-soft"><h3>Personality & Story</h3><p class="dnd-muted"><strong>Traits:</strong> ${esc((c.personalityTraits || []).filter(Boolean).join(" | ") || "Belum diisi")}</p><p class="dnd-muted"><strong>Ideal:</strong> ${esc(c.ideal || "Belum diisi")}</p><p class="dnd-muted"><strong>Bond:</strong> ${esc(c.bond || "Belum diisi")}</p><p class="dnd-muted"><strong>Flaw:</strong> ${esc(c.flaw || "Belum diisi")}</p></div>
         <div class="span-12 dnd-card is-soft"><h3>Appearance</h3><p class="dnd-muted">${esc([c.appearance?.hair, c.appearance?.eyes, c.appearance?.skin, c.appearance?.style, c.appearance?.notes].filter(Boolean).join("; ") || "Belum diisi")}</p></div>
       </div>
