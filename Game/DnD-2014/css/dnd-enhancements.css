@@ -71,3 +71,39 @@
     background: #ddd;
     border-radius: 2px;
 }
+
+.active-inspiration {
+    background: #fff9e6 !important;
+    border-color: #ffd700 !important;
+    color: #b8860b !important;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+    font-weight: bold;
+}
+
+.attacks-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.attacks-table th {
+    text-align: left;
+    padding: 0.5rem;
+    border-bottom: 2px solid #ddd;
+    color: #666;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+
+.attacks-table td {
+    padding: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.attacks-table tr:last-child td {
+    border-bottom: none;
+}
+
+.attacks-table tr:hover {
+    background: rgba(0,0,0,0.02);
+}

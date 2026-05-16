@@ -276,15 +276,34 @@
     });
 
     section("Combat", 160);
-    box(margin, 174, 70, 42, "HP", `${character.hpCurrent}/${character.hpMax}`);
-    box(margin + 80, 174, 70, 42, "AC", character.ac);
-    box(margin + 160, 174, 70, 42, "Speed", `${character.speed} ft`);
-    box(margin + 240, 174, 90, 42, "Prof Bonus", `+${prof}`);
-    box(margin + 340, 174, 90, 42, "Initiative", signed(mod(character.abilities.dex)));
-    box(margin + 440, 174, 84, 42, "Passive Wis", 10 + skillBonus(character, "perception"));
+    box(margin, 174, 50, 42, "HP", `${character.hpCurrent}/${character.hpMax}`);
+    box(margin + 58, 174, 50, 42, "AC", character.ac);
+    box(margin + 116, 174, 50, 42, "Speed", `${character.speed} ft`);
+    box(margin + 174, 174, 60, 42, "Prof", `+${prof}`);
+    box(margin + 242, 174, 60, 42, "Init", signed(mod(character.abilities.dex)));
+    box(margin + 310, 174, 60, 42, "Pass Wis", 10 + skillBonus(character, "perception"));
+    box(margin + 378, 174, 70, 42, "Inspiration", character.inspiration ? "YES" : "NO");
+    box(margin + 456, 174, 68, 42, "Hit Dice", `${character.hitDiceRemaining}/d${klass.hitDie}`);
 
-    section("Skills & Saving Throws", 240);
-    let y = 258;
+    section("Attacks & Spellcasting", 230);
+    const atkY = 244;
+    doc.setDrawColor(80, 80, 80);
+    doc.roundedRect(margin, atkY, pageW - margin * 2, 80, 4, 4);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(7);
+    doc.text("NAME", margin + 10, atkY + 12);
+    doc.text("ATK BONUS", margin + 140, atkY + 12);
+    doc.text("DAMAGE/TYPE", margin + 240, atkY + 12);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8);
+    (character.attacks || []).slice(0, 4).forEach((atk, i) => {
+      const rowY = atkY + 28 + (i * 12);
+      doc.text(String(atk.name), margin + 10, rowY);
+      doc.text(String(atk.bonus), margin + 140, rowY);
+      doc.text(String(atk.damage), margin + 240, rowY);
+    });
+    if (!(character.attacks || []).length) doc.text("Belum ada serangan diinput.", margin + 10, atkY + 28);
+
+    section("Skills & Saving Throws", 340);
+    let y = 358;
     DATA.skills.forEach((skill, i) => {
       const col = i < 9 ? margin : margin + 260;
       const rowY = i < 9 ? y + i * 15 : y + (i - 9) * 15;
@@ -296,17 +315,17 @@
     doc.setFont("helvetica", "normal");
     DATA.abilities.forEach((a, i) => {
       const save = mod(character.abilities[a.id]) + (klass.saves.includes(a.id) ? prof : 0);
-      doc.text(`${klass.saves.includes(a.id) ? "[x]" : "[ ]"} ${a.label} Save ${signed(save)}`, margin + 400, 258 + i * 15);
+      doc.text(`${klass.saves.includes(a.id) ? "[x]" : "[ ]"} ${a.label} Save ${signed(save)}`, margin + 400, 358 + i * 15);
     });
 
-    section("Story", 410);
-    box(margin, 424, 255, 44, "Personality Trait 1", character.personalityTraits?.[0] || "");
-    box(margin + 270, 424, 255, 44, "Personality Trait 2", character.personalityTraits?.[1] || "");
-    box(margin, 476, 165, 44, "Ideal", character.ideal || "");
-    box(margin + 180, 476, 165, 44, "Bond", character.bond || "");
-    box(margin + 360, 476, 165, 44, "Flaw", character.flaw || "");
+    section("Story", 510);
+    box(margin, 524, 255, 44, "Personality Trait 1", character.personalityTraits?.[0] || "");
+    box(margin + 270, 524, 255, 44, "Personality Trait 2", character.personalityTraits?.[1] || "");
+    box(margin, 576, 165, 44, "Ideal", character.ideal || "");
+    box(margin + 180, 576, 165, 44, "Bond", character.bond || "");
+    box(margin + 360, 576, 165, 44, "Flaw", character.flaw || "");
 
-    section("Features, Traits, Languages", 548);
+    section("Features, Traits, Languages", 648);
     const featuresText = [
       `Race Traits: ${raceTraits.join(", ") || "-"}`,
       `Class Features: ${(klass.features || []).join(", ") || "-"}`,
@@ -315,14 +334,12 @@
     ].join("\n");
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text(doc.splitTextToSize(featuresText, pageW - margin * 2), margin, 565);
+    doc.text(doc.splitTextToSize(featuresText, pageW - margin * 2), margin, 665);
 
-    section("Equipment", 650);
+    section("Equipment", 750);
     const eqText = [`Gold: ${character.gold || 0} gp`, ...(character.inventory || [])].join("; ");
-    doc.text(doc.splitTextToSize(eqText || "-", pageW - margin * 2), margin, 668);
+    doc.text(doc.splitTextToSize(eqText || "-", pageW - margin * 2), margin, 768);
 
-    section("Manual Offline Notes", 730);
-    for (let i = 0; i < 4; i++) line(margin, 748 + i * 18, pageW - margin, 748 + i * 18);
     addFooter();
 
     const writePair = (title, text, x, yPos, width) => {

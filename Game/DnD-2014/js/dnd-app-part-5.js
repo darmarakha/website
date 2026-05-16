@@ -427,6 +427,24 @@
     draft.abilityBonuses = effectiveAbilityBonuses(draft);
     draft.abilities = finalAbilityScores(draft.baseAbilities, draft);
     draft.skills = collectSkillSelectionsFromForm(form, draft);
+    draft.inspiration = Number(form.inspiration?.value || draft.inspiration || 0);
+    draft.hitDiceRemaining = Number(form.hitDiceRemaining?.value || draft.hitDiceRemaining || 1);
+    
+    // Parse attacks
+    const attacks = [];
+    const attackRows = qsa(".attack-row", form);
+    attackRows.forEach(row => {
+      const name = row.querySelector("[name='attack-name']")?.value.trim();
+      if (name) {
+        attacks.push({
+          name,
+          bonus: row.querySelector("[name='attack-bonus']")?.value || "+0",
+          damage: row.querySelector("[name='attack-damage']")?.value || "1d4"
+        });
+      }
+    });
+    draft.attacks = attacks.length ? attacks : (draft.attacks || []);
+
     draft.appearance = {
       hair: form.hair?.value || "",
       eyes: form.eyes?.value || "",

@@ -295,7 +295,30 @@
 
   function describeItemForUi(name) {
     const lookup = normalizedItemLookupName(name);
-    const meta = itemByName(name) || itemByName(lookup) || { type: "Item", abilityRequirement: "Tidak ada syarat khusus", abilityUse: "Tidak mengubah ability score", affects: "Dicatat di inventory karakter", skillSupport: "Tidak memberi skill bawaan" };
+    let meta = itemByName(name) || itemByName(lookup);
+    
+    // Penjelasan detail isi pack standar DnD 2014
+    const packDetails = {
+      "dungeoneer's pack": "Backpack, crowbar, hammer, 10 pitons, 10 torches, tinderbox, 10 days rations, waterskin, 50ft hempen rope.",
+      "explorer's pack": "Backpack, bedroll, mess kit, tinderbox, 10 torches, 10 days rations, waterskin, 50ft hempen rope.",
+      "priest's pack": "Backpack, blanket, 10 candles, tinderbox, alms box, 2 blocks of incense, censer, vestments, 2 days rations, waterskin.",
+      "scholar's pack": "Backpack, book of lore, ink pen, 10 sheets of parchment, little bag of sand, small knife.",
+      "burglar's pack": "Backpack, bag of 1000 ball bearings, 10ft string, bell, 5 candles, crowbar, hammer, 10 pitons, hooded lantern, 2 flasks of oil, 5 days rations, tinderbox, waterskin, 50ft hempen rope.",
+      "diplomat's pack": "Chest, 2 cases for maps/scrolls, fine clothes, ink bottle, ink pen, lamp, 2 flasks of oil, 5 sheets of paper, vial of perfume, sealing wax, soap.",
+      "entertainer's pack": "Backpack, bedroll, 2 costumes, 5 candles, 5 days rations, waterskin, disguise kit."
+    };
+    
+    const packKey = lookup.toLowerCase();
+    if (packDetails[packKey]) {
+      meta = { 
+        ...(meta || {}), 
+        notes: (meta?.notes ? meta.notes + " " : "") + "Isi: " + packDetails[packKey] 
+      };
+    }
+
+    if (!meta) {
+      meta = { type: "Item", abilityRequirement: "Tidak ada syarat khusus", abilityUse: "Tidak mengubah ability score", affects: "Dicatat di inventory karakter", skillSupport: "Tidak memberi skill bawaan" };
+    }
     return { name, meta };
   }
 

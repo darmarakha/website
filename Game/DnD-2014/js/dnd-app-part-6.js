@@ -14,7 +14,6 @@
                   const baseValue = abilityScoreValue(draft.baseAbilities, a.id, abilityScoreValue(draft.abilities, a.id, 0));
                   const bonus = Number(effectiveAbilityBonuses(draft)[a.id] || 0);
                   const finalValue = previewAbilityScore(baseValue, bonus);
-                  const manualAttr = canManualAbilityInput ? "" : "readonly data-ability-locked='1'";
                   const maxScore = canManualAbilityInput ? 30 : 20;
                   return `<div class="dnd-field ability-assign-field"><label>${esc(a.label)} <span>skor dasar</span></label><input name="ability-${a.id}" type="number" min="0" max="${maxScore}" inputmode="numeric" value="${esc(baseValue)}" ${manualAttr}>${renderAbilityValuePicker(a.id, canUseAbilityPicker)}<small class="ability-final-hint">${esc(abilityLiveDetailText(baseValue, bonus))}</small><small class="ability-purpose">${esc(abilityShortText(a.id))}</small></div>`;
                 }).join("")}
@@ -25,6 +24,8 @@
               <div class="dnd-form-grid">
                 <div class="dnd-field"><label>Background</label><select name="background"><option value="" ${!draft.background ? "selected" : ""}>None — pilih background</option>${DATA.backgrounds.map((b) => `<option value="${b.id}" ${draft.background === b.id ? "selected" : ""}>${esc(b.name)}</option>`).join("")}</select></div>
                 <div class="dnd-field"><label>Alignment</label><select name="alignment"><option value="" ${!draft.alignment ? "selected" : ""}>None — pilih alignment</option>${DATA.alignments.map((a) => `<option value="${a}" ${draft.alignment === a ? "selected" : ""}>${a}</option>`).join("")}</select></div>
+                <div class="dnd-field"><label>Inspiration</label><select name="inspiration"><option value="0" ${!draft.inspiration ? "selected" : ""}>No</option><option value="1" ${draft.inspiration ? "selected" : ""}>Yes</option></select></div>
+                <div class="dnd-field"><label>Hit Dice Sisa</label><input type="number" name="hitDiceRemaining" value="${esc(draft.hitDiceRemaining || 1)}" min="0" max="${esc(draft.level || 1)}"></div>
                 <div class="dnd-field span-12 character-photo-field">
                   <label>Foto karakter <span class="dnd-small-muted">JPG/PNG/JPEG · player max 5 MB · owner bebas sesuai limit server</span></label>
                   <div class="character-photo-row">
@@ -57,6 +58,20 @@
               <h3 style="margin:1rem 0 .35rem">Skill Proficiency</h3>
               <p class="dnd-muted skill-proficiency-note">Pilih skill yang benar-benar dikuasai karakter. Saat dipilih, skill memakai ability modifier + Proficiency Bonus level karakter, dan bonus proficiency hanya dihitung satu kali.</p>
               ${renderClassSkillGrid(draft, canEditStats)}
+
+              <h3 style="margin:1rem 0 .6rem">Attacks & Spellcasting</h3>
+              <p class="dnd-muted">Tambahkan senjata atau spell serangan utama karakter di sini.</p>
+              <div id="attacks-input-list">
+                ${(draft.attacks || []).map((atk, index) => `
+                  <div class="attack-row dnd-form-grid" style="margin-bottom: 0.5rem; background: rgba(0,0,0,0.05); padding: 0.5rem; border-radius: 4px;">
+                    <div class="dnd-field"><label>Name</label><input name="attack-name" value="${esc(atk.name)}" placeholder="Longsword"></div>
+                    <div class="dnd-field"><label>Atk Bonus</label><input name="attack-bonus" value="${esc(atk.bonus)}" placeholder="+5"></div>
+                    <div class="dnd-field"><label>Damage/Type</label><input name="attack-damage" value="${esc(atk.damage)}" placeholder="1d8+3 slashing"></div>
+                    <button type="button" class="dnd-btn danger" onclick="this.parentElement.remove()" style="align-self: end; margin-bottom: 0.5rem;">Hapus</button>
+                  </div>
+                `).join("")}
+              </div>
+              <button type="button" class="dnd-btn" onclick="const div = document.createElement('div'); div.className='attack-row dnd-form-grid'; div.style='margin-bottom: 0.5rem; background: rgba(0,0,0,0.05); padding: 0.5rem; border-radius: 4px;'; div.innerHTML = '<div class=\'dnd-field\'><label>Name</label><input name=\'attack-name\' placeholder=\'Longsword\'></div><div class=\'dnd-field\'><label>Atk Bonus</label><input name=\'attack-bonus\' placeholder=\'+5\'></div><div class=\'dnd-field\'><label>Damage/Type</label><input name=\'attack-damage\' placeholder=\'1d8+3 slashing\'></div><button type=\'button\' class=\'dnd-btn danger\' onclick=\'this.parentElement.remove()\' style=\'align-self: end; margin-bottom: 0.5rem;\'>Hapus</button>'; document.getElementById('attacks-input-list').appendChild(div);">+ Tambah Serangan</button>
             `)}
 
             ${renderCharacterStepPanel("equipment", activeStep, "Pilih Perlengkapan", "Pilih starting package untuk menentukan barang awal, gold awal, dan ringkasan equipment karakter.", `
@@ -89,8 +104,10 @@
         <div>
           <h2>${esc(c.name)}</h2>
           <p class="dnd-muted">${esc(effectiveRaceName(c))} ${esc(klass.name)} level ${esc(c.level)} | ${esc(DATA.backgrounds.find(b => b.id === c.background)?.name || c.background)} | ${esc(c.alignment)}</p>
-          <div class="dnd-pill-row" style="margin-top:.65rem">
+      <div class="dnd-pill-row" style="margin-top:.65rem">
             <span class="dnd-pill good">HP ${esc(c.hpCurrent)}/${esc(c.hpMax)}</span>
+            <span class="dnd-pill ${c.inspiration ? "active-inspiration" : ""}">Inspiration: ${c.inspiration ? "YES" : "NO"}</span>
+            <span class="dnd-pill">Hit Dice: ${esc(c.hitDiceRemaining)}/d${esc(klass.hitDie)}</span>
             <span class="dnd-pill">AC ${esc(c.ac)}</span>
             <span class="dnd-pill">Speed ${esc(c.speed)}</span>
             <span class="dnd-pill">Prof +${prof}</span>
@@ -108,6 +125,16 @@
       <h3 style="margin:1rem 0 .55rem">Skills</h3>
       <div class="dnd-check-grid">
         ${DATA.skills.map((s) => `<div class="compact-row"><span><strong>${s.label}</strong><small>${abilityLabel(s.ability)}</small></span><span class="dnd-pill ${c.skills.includes(s.id) ? "good" : ""}">${signed(skillBonus(c, s.id))}</span></div>`).join("")}
+      </div>
+      <h3 style="margin:1rem 0 .55rem">Attacks & Spellcasting</h3>
+      <div class="dnd-card is-soft attacks-box">
+        <table class="attacks-table">
+          <thead><tr><th>Name</th><th>Atk Bonus</th><th>Damage/Type</th></tr></thead>
+          <tbody>
+            ${(c.attacks || []).map(atk => `<tr><td>${esc(atk.name)}</td><td>${esc(atk.bonus)}</td><td>${esc(atk.damage)}</td></tr>`).join("")}
+            ${!(c.attacks || []).length ? "<tr><td colspan='3' class='dnd-muted'>Belum ada serangan diinput.</td></tr>" : ""}
+          </tbody>
+        </table>
       </div>
       <div class="dnd-grid" style="margin-top:1rem">
         <div class="span-6 dnd-card is-soft"><h3>Traits & Features</h3><p class="dnd-muted">${esc(effectiveRaceTraits(c).join(", "))}</p><p class="dnd-muted">${esc(klass.features.join(", "))}</p></div>

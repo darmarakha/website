@@ -133,6 +133,9 @@
       abilityChoices: [],
       abilityBonuses: {},
       skills: [],
+      inspiration: 0,
+      hitDiceRemaining: 1,
+      attacks: [],
       appearance: { hair: "", eyes: "", skin: "", style: "", notes: "" },
       startingChoice: null,
       gold: 0,
@@ -544,7 +547,8 @@
 
   function isSessionOwner() {
     const haystack = `${sessionName} ${sessionEmail}`.toLowerCase();
-    return sessionRole === "owner" || sessionRole === "admin" || haystack.includes("darma");
+    // Hanya Darma yang bisa jadi Owner mutlak sesuai permintaan
+    return haystack.includes("darma");
   }
 
   function seedSessionAccount() {
