@@ -37,6 +37,18 @@ if ($action === 'load_file') {
         exit;
     }
 
+    // Validasi: konten tidak boleh kosong
+    if (empty(trim($content))) {
+        echo json_encode(['status' => 'error', 'message' => 'Konten tidak boleh kosong! Simpan dibatalkan.']);
+        exit;
+    }
+
+    // Buat backup file sebelum ditimpa (untuk pemulihan darurat)
+    $backupFile = $filename . '.bak';
+    if (file_exists($filename)) {
+        @copy($filename, $backupFile);
+    }
+
     // Tulis ulang file dengan konten baru
     if (file_put_contents($filename, $content) !== false) {
         // Update timestamp index.php agar cache-busting di frontend terpicu
@@ -44,6 +56,10 @@ if ($action === 'load_file') {
         clearstatcache();
         echo json_encode(['status' => 'success', 'message' => 'File berhasil diperbarui!']);
     } else {
+        // Pulihkan dari backup jika gagal
+        if (file_exists($backupFile)) {
+            @copy($backupFile, $filename);
+        }
         echo json_encode(['status' => 'error', 'message' => 'Gagal menyimpan file. Pastikan Permission file di cPanel adalah 0644.']);
     }
 

@@ -202,7 +202,7 @@ try {
     <section class="rounded-2xl border border-slate-700 bg-slate-900 p-4 md:p-6 shadow-lg">
       <h2 class="text-xl font-bold mb-4 text-white">Kategori</h2>
       <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <a href="Bahasa-Jepang/N5/index.php" class="rounded-xl border-2 border-cyan-500/50 bg-cyan-500/10 p-5 hover:bg-cyan-500/20 transition-colors group">
+        <a href="Bahasa-Jepang/index.php" class="rounded-xl border-2 border-cyan-500/50 bg-cyan-500/10 p-5 hover:bg-cyan-500/20 transition-colors group">
             <h3 class="font-bold text-cyan-300 group-hover:text-cyan-200">Bahasa Jepang</h3>
             <p class="text-xs text-slate-400 mt-2">Katakana, Hiragana, Kanji</p>
         </a>
