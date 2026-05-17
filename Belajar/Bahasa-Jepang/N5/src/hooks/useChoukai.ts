@@ -48,60 +48,42 @@ export function useChoukai() {
 
   const generateMaterial = async (topic?: string) => {
     setIsLoading(true);
-    setMaterial(null); // Reset material to avoid showing old one
     try {
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        throw new Error('GEMINI_API_KEY is missing in environment');
-      }
-
-      const ai = new GoogleGenAI({ apiKey });
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       
       const prompt = `Buatkan materi Choukai (Listening) bahasa Jepang JLPT N5. 
-Topik: ${topic || 'Acak (perkenalan, belanja, di restoran, atau menanyakan jalan)'}.
-Skenario harus SANGAT MENARIK dan memberikan gambaran visual yang kuat.
-
-PENTING: 
-1. Gunakan banyak emoji (🌸, 🍱, 🚂, 🏮, dsb) di setiap bagian: judul, skenario, dan ID terjemahan.
-2. Dialog harus LUWES dan NATURAL (gunakan ekspresi seperti 'ano...', 'ee...', 'sou desu ne').
-3. Gunakan format Kanji[hiragana] untuk SEMUA kanji pada bagian "text".
-
-Format JSON:
+Topik: ${topic || 'Acak (seperti perkenalan, di restoran, belanja, menanyakan jalan, atau ngobrol dengan teman)'}.
+Buatlah dialognya LUWES, NATURAL, asik, jangan kaku seperti robot, seperti percakapan sungguhan di kehidupan sehari-hari (boleh sedikit ada unsur kasual jika sesuai konteks, atau desu/masu yang natural).
+Buat dalam format JSON persis seperti ini:
 {
-  "title": "Judul (tambah emoji)",
-  "scenario": "Deskripsi situasi (tambah emoji)",
-  "emoji": "Emoji utama skenario", 
+  "title": "Judul Skenario",
+  "scenario": "Deskripsi singkat situasi untuk pengguna. (Misal: Kamu sedang mengobrol dengan teman di kafe)",
+  "emoji": "☕", // 1 emoji besar atau emoticon yang sangat merepresentasikan dan cocok dengan situasinya
   "dialogue": [
-    { "speaker": "A", "text": "私[わたし]は... (Kanji[hiragana] format)", "ro": "Romaji", "id": "Arti (tambah emoji)" }
+    { "speaker": "A", "text": "...", "ro": "...", "id": "..." },
+    { "speaker": "B", "text": "...", "ro": "...", "id": "..." }
   ],
   "quiz": {
-    "question": "Pertanyaan pemahaman",
+    "question": "Pertanyaan pemahaman dalam bahasa Indonesia berdasarkan dialog",
     "options": ["Opsi A", "Opsi B", "Opsi C", "Opsi D"],
-    "answer": 0, 
-    "explanation": "Penjelasan kenapa benar (tambah emoji)"
+    "answer": 0, // indeks jawaban benar (0-3)
+    "explanation": "Penjelasan singkat mengapa jawaban tsb benar, dan beri sedikit info tambahan."
   }
 }
-Hanya kembalikan JSON.`;
+Pastikan HANYA mengembalikan JSON valid, tanpa teks markdown atau blok kode lainnya. Dialognya sekitar 5-7 baris.
+Pastikan juga untuk menyertakan furigana untuk kanji pada bagian "text" dengan format Kanji[hiragana] seperti 食べる -> 食[た]べる agar pengguna bisa mendengarkannya dengan benar dan parse nya sukses.`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
-        contents: [{ role: "user", parts: [{ text: prompt }] }]
+        model: "gemini-2.5-flash",
+        contents: prompt,
       });
-      const rawText = response.text;
-      
-      // Robust JSON extraction
-      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("No JSON found in response");
-      
-      const cleanJson = jsonMatch[0].trim();
-      const data = JSON.parse(cleanJson) as ChoukaiMaterial;
-      
-      if (!data.dialogue || !data.quiz) throw new Error("Incomplete material data");
-      
+
+      let responseText = response.text || '';
+      responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+      const data = JSON.parse(responseText) as ChoukaiMaterial;
       setMaterial(data);
     } catch (error) {
       console.error('Gemini generate choukai error:', error);
-      // Fallback or empty state handled by material being null
     } finally {
       setIsLoading(false);
     }
