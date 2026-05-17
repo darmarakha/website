@@ -7,23 +7,87 @@ session_set_cookie_params([
     'samesite' => 'Lax',
 ]);
 session_start();
-?>
-<!doctype html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Belajar Bahasa Inggris</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen">
-  <main class="max-w-3xl mx-auto px-4 py-10">
-    <div class="flex items-center justify-between gap-3">
-      <h1 class="text-3xl font-black">🇬🇧 Bahasa Inggris</h1>
-      <a href="../Index.php" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10">Back</a>
-    </div>
-    <p class="mt-4 text-slate-400">Placeholder modul. Kamu bisa isi materi Grammar & Vocabulary di sini.</p>
-  </main>
-</body>
-</html>
 
+if (isset($_GET['logout'])) {
+    session_unset();
+    session_destroy();
+    header('Location: ../Index.php');
+    die();
+}
+
+require_once __DIR__ . '/../../config.php';
+
+$ai_total_progress = 0;
+$prog_materi = 0;
+$prog_latihan = 0;
+$prog_dialog = 0;
+$prog_listening = 0;
+$ai_feedback_msg = "Please log in first to save and track your learning progress.";
+$ai_classification = "Unranked";
+
+if (!empty($_SESSION['user_name'])) {
+    $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 1;
+
+    try {
+        $pdo = gemu_pdo();
+
+        $stmt = $pdo->prepare("SELECT materi_score, latihan_score, dialog_score, listening_score FROM user_progress_en WHERE user_id = :uid");
+        $stmt->execute(['uid' => $user_id]);
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($data) {
+            $prog_materi = (int)$data['materi_score'];
+            $prog_latihan = (int)$data['latihan_score'];
+            $prog_dialog   = (int)$data['dialog_score'];
+            $prog_listening    = (int)$data['listening_score'];
+        } else {
+            $stmtInsert = $pdo->prepare("INSERT IGNORE INTO user_progress_en (user_id, materi_score, latihan_score, dialog_score, listening_score) VALUES (:uid, 0, 0, 0, 0)");
+            $stmtInsert->execute(['uid' => $user_id]);
+        }
+
+    } catch (PDOException $e) {
+        error_log("Failed to fetch English progress: " . $e->getMessage());
+    }
+
+    $fondasi_kuat = ($prog_materi >= 70 && $prog_latihan >= 60);
+
+    if ($prog_materi === 0 && $prog_latihan === 0 && $prog_dialog === 0 && $prog_listening === 0) {
+        $ai_total_progress = 0;
+        $ai_classification = "Novice (New User)";
+        $ai_feedback_msg = "Welcome to your English journey! Start with the basic materials and exercises.";
+    } else {
+        if (!$fondasi_kuat) {
+            $w_mat = 0.50; $w_lat = 0.30; $w_dia = 0.10; $w_lis = 0.10;
+            $ai_classification = "Cluster A: Grammar & Vocabulary Focus";
+        } else if ($prog_listening < 60) {
+            $w_mat = 0.10; $w_lat = 0.10; $w_dia = 0.20; $w_lis = 0.60;
+            $ai_classification = "Cluster B: Listening Comprehension Focus";
+        } else {
+            $w_mat = 0.10; $w_lat = 0.10; $w_dia = 0.50; $w_lis = 0.30;
+            $ai_classification = "Cluster C: Advanced Conversation Focus";
+        }
+
+        $raw_score = ($prog_materi * $w_mat) + ($prog_latihan * $w_lat) + ($prog_dialog * $w_dia) + ($prog_listening * $w_lis);
+
+        $ai_penalty = 0;
+        if ($prog_dialog > 30 && $prog_materi < 40) {
+            $ai_penalty = 15;
+        }
+
+        $ai_total_progress = round(max(0, $raw_score - $ai_penalty));
+
+        if ($ai_penalty > 0) {
+            $ai_feedback_msg = "⚠️ AI Anomaly Detected: You are trying advanced dialogs without mastering basic materials. Score adjusted.";
+        } elseif ($ai_total_progress < 30) {
+            $ai_feedback_msg = "AI Insight ($ai_classification): Focus on building your vocabulary and grammar foundations.";
+        } elseif ($ai_total_progress < 60) {
+            $ai_feedback_msg = "AI Insight ($ai_classification): Great progress! Now try to improve your listening skills.";
+        } elseif ($ai_total_progress < 85) {
+            $ai_feedback_msg = "AI Insight ($ai_classification): You are quite competent! Focus on real-life dialogues with the AI.";
+        } else {
+            $ai_feedback_msg = "🎯 AI Prediction: Excellent proficiency level! You're ready for advanced English communication.";
+        }
+    }
+}
+
+require __DIR__ . '/views/index.view.php';
