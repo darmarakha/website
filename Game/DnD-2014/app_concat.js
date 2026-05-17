@@ -1959,9 +1959,58 @@
     doc.setFontSize(8);
     doc.text(doc.splitTextToSize(featuresText, pageW - margin * 2), margin, 565);
 
-    section("Equipment", 650);
-    const eqText = [`Gold: ${character.gold || 0} gp`, ...(character.inventory || [])].join("; ");
-    doc.text(doc.splitTextToSize(eqText || "-", pageW - margin * 2), margin, 668);
+    const profY = 645;
+    doc.setDrawColor(40, 40, 40);
+    doc.setLineWidth(1.2);
+    
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8);
+    const toolTxt = "TOOL: " + ((character.inventory || []).filter(i => /tool|kit|set/i.test(i)).join(", ") || "None");
+    const langTxt = "LANGUAGE: " + (languages || "Common");
+    const armTxt = "ARMOR: " + (klass.armor || "None");
+    const wepTxt = "WEAPON: " + (klass.weapons || "Simple weapons");
+    
+    const toolLines = doc.splitTextToSize(toolTxt, pageW - margin*2 - 20);
+    const langLines = doc.splitTextToSize(langTxt, pageW - margin*2 - 20);
+    const armLines = doc.splitTextToSize(armTxt, pageW - margin*2 - 20);
+    const wepLines = doc.splitTextToSize(wepTxt, pageW - margin*2 - 20);
+    
+    let currentY = profY + 12;
+    doc.text(toolLines, margin + 10, currentY);
+    currentY += toolLines.length * 10;
+    line(margin + 5, currentY - 4, pageW - margin - 5, currentY - 4);
+    
+    currentY += 10;
+    doc.text(langLines, margin + 10, currentY);
+    currentY += langLines.length * 10;
+    line(margin + 5, currentY - 4, pageW - margin - 5, currentY - 4);
+    
+    currentY += 10;
+    doc.text(armLines, margin + 10, currentY);
+    currentY += armLines.length * 10;
+    line(margin + 5, currentY - 4, pageW - margin - 5, currentY - 4);
+    
+    currentY += 10;
+    doc.text(wepLines, margin + 10, currentY);
+    currentY += wepLines.length * 10;
+    
+    const boxHeight = currentY - profY + 8;
+    doc.roundedRect(margin, profY, pageW - margin * 2, boxHeight, 4, 4);
+    doc.setLineWidth(1);
+    
+    doc.setFont("helvetica", "bold"); doc.setFontSize(7);
+    doc.text("OTHER PROFICIENCIES & LANGUAGES", margin + (pageW - margin * 2)/2, profY + boxHeight - 6, { align: "center" });
+
+    const equipY = profY + boxHeight + 15;
+    section("Equipment", equipY);
+    doc.setFont("helvetica", "normal"); 
+    doc.setFontSize(8);
+    const eqItems = [`Gold: ${character.gold || 0} gp`, ...(character.inventory || [])];
+    let eqY = equipY + 16;
+    eqItems.slice(0, 5).forEach(item => {
+      const lines = doc.splitTextToSize("• " + item, pageW - margin * 2);
+      doc.text(lines, margin + 5, eqY);
+      eqY += 10 * lines.length;
+    });
 
     section("Manual Offline Notes", 730);
     for (let i = 0; i < 4; i++) line(margin, 748 + i * 18, pageW - margin, 748 + i * 18);

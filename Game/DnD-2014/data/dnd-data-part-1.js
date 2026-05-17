@@ -324,7 +324,7 @@ window.DND2014_DATA = {
       armor: "Light", 
       weapons: "Simple, hand crossbow, longsword, rapier, shortsword", 
       tools: "Thieves' Tools",
-      expertiseCount: 4,
+      expertiseCount: 2,
       features: ["Expertise", "Sneak Attack", "Thieves' Cant", "Cunning Action"],
       description: "Ahli menyelinap, membuka kunci, dan memberikan serangan mematikan dari kegelapan.",
       role: "Skill Expert / Burst DPS"

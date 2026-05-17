@@ -340,11 +340,9 @@
     box(margin + 180, 591, 165, 44, "Bond", character.bond || "");
     box(margin + 360, 591, 165, 44, "Flaw", character.flaw || "");
 
-    const profY = 648;
+    const profY = 645;
     doc.setDrawColor(40, 40, 40);
     doc.setLineWidth(1.2);
-    doc.roundedRect(margin, profY, pageW - margin * 2, 90, 4, 4);
-    doc.setLineWidth(1);
     
     doc.setFont("helvetica", "normal"); doc.setFontSize(8);
     const toolTxt = "TOOL: " + ((character.inventory || []).filter(i => /tool|kit|set/i.test(i)).join(", ") || "None");
@@ -352,25 +350,43 @@
     const armTxt = "ARMOR: " + (klass.armor || "None");
     const wepTxt = "WEAPON: " + (klass.weapons || "Simple weapons");
     
-    doc.text(doc.splitTextToSize(toolTxt, pageW - margin*2 - 20), margin + 10, profY + 16);
-    line(margin + 5, profY + 22, pageW - margin - 5, profY + 22);
+    const toolLines = doc.splitTextToSize(toolTxt, pageW - margin*2 - 20);
+    const langLines = doc.splitTextToSize(langTxt, pageW - margin*2 - 20);
+    const armLines = doc.splitTextToSize(armTxt, pageW - margin*2 - 20);
+    const wepLines = doc.splitTextToSize(wepTxt, pageW - margin*2 - 20);
     
-    doc.text(doc.splitTextToSize(langTxt, pageW - margin*2 - 20), margin + 10, profY + 36);
-    line(margin + 5, profY + 42, pageW - margin - 5, profY + 42);
+    let currentY = profY + 12;
+    doc.text(toolLines, margin + 10, currentY);
+    currentY += toolLines.length * 10;
+    line(margin + 5, currentY - 4, pageW - margin - 5, currentY - 4);
     
-    doc.text(doc.splitTextToSize(armTxt, pageW - margin*2 - 20), margin + 10, profY + 56);
-    line(margin + 5, profY + 62, pageW - margin - 5, profY + 62);
+    currentY += 10;
+    doc.text(langLines, margin + 10, currentY);
+    currentY += langLines.length * 10;
+    line(margin + 5, currentY - 4, pageW - margin - 5, currentY - 4);
     
-    doc.text(doc.splitTextToSize(wepTxt, pageW - margin*2 - 20), margin + 10, profY + 76);
+    currentY += 10;
+    doc.text(armLines, margin + 10, currentY);
+    currentY += armLines.length * 10;
+    line(margin + 5, currentY - 4, pageW - margin - 5, currentY - 4);
+    
+    currentY += 10;
+    doc.text(wepLines, margin + 10, currentY);
+    currentY += wepLines.length * 10;
+    
+    const boxHeight = currentY - profY + 8;
+    doc.roundedRect(margin, profY, pageW - margin * 2, boxHeight, 4, 4);
+    doc.setLineWidth(1);
     
     doc.setFont("helvetica", "bold"); doc.setFontSize(7);
-    doc.text("OTHER PROFICIENCIES & LANGUAGES", margin + (pageW - margin * 2)/2, profY + 85, { align: "center" });
+    doc.text("OTHER PROFICIENCIES & LANGUAGES", margin + (pageW - margin * 2)/2, profY + boxHeight - 6, { align: "center" });
 
-    section("Equipment", 740);
+    const equipY = profY + boxHeight + 15;
+    section("Equipment", equipY);
     doc.setFont("helvetica", "normal"); 
     doc.setFontSize(8);
     const eqItems = [`Gold: ${character.gold || 0} gp`, ...(character.inventory || [])];
-    let eqY = 756;
+    let eqY = equipY + 16;
     eqItems.slice(0, 5).forEach(item => {
       const lines = doc.splitTextToSize("• " + item, pageW - margin * 2);
       doc.text(lines, margin + 5, eqY);
