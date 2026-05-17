@@ -129,8 +129,8 @@
           <p class="dnd-muted">${esc(effectiveRaceName(c))} ${esc(klass.name)} level ${esc(c.level)} | ${esc(DATA.backgrounds.find(b => b.id === c.background)?.name || c.background)} | ${esc(c.alignment)}</p>
       <div class="dnd-pill-row" style="margin-top:.65rem">
             <span class="dnd-pill good">HP ${esc(c.hpCurrent)}/${esc(c.hpMax)}</span>
-            <span class="dnd-pill ${c.inspiration ? "active-inspiration" : ""}">Inspiration: ${c.inspiration ? "YES" : "NO"}</span>
-            <span class="dnd-pill">Hit Dice: ${esc(c.hitDiceRemaining)}/d${esc(klass.hitDie)}</span>
+            <span class="dnd-pill ${c.inspiration ? "active-inspiration" : ""}" style="cursor:pointer" onclick="toggleInspiration('${c.id}')" title="Klik untuk toggle">Inspiration: ${c.inspiration ? "YES" : "NO"}</span>
+            <span class="dnd-pill" style="cursor:pointer" onclick="rollExpression('1d${klass.hitDie}', 'Hit Dice', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik untuk roll Hit Dice">Hit Dice: ${esc(c.hitDiceRemaining)}/d${esc(klass.hitDie)}</span>
             <span class="dnd-pill">AC ${esc(c.ac)}</span>
             <span class="dnd-pill">Speed ${esc(c.speed)}</span>
             <span class="dnd-pill">Prof +${prof}</span>
@@ -147,7 +147,7 @@
       </div>
       <h3 style="margin:1rem 0 .55rem">Skills</h3>
       <div class="dnd-check-grid">
-        ${DATA.skills.map((s) => `<div class="compact-row"><span><strong>${s.label}</strong><small>${abilityLabel(s.ability)}</small></span><span class="dnd-pill ${c.skills.includes(s.id) ? "good" : ""}">${signed(skillBonus(c, s.id))}</span></div>`).join("")}
+        ${DATA.skills.map((s) => `<div class="compact-row" style="cursor:pointer" onclick="rollExpression('${signed(skillBonus(c, s.id))}', '${s.label} Check', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik untuk roll skill"><span><strong>${s.label}</strong><small>${abilityLabel(s.ability)}</small></span><span class="dnd-pill ${c.skills.includes(s.id) ? "good" : ""}">${signed(skillBonus(c, s.id))}</span></div>`).join("")}
       </div>
       <div class="dnd-card is-soft attacks-box" style="padding: 1rem; border: 2px solid var(--dnd-border, #ccc); border-radius: 8px;">
         <div style="display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 8px; text-align: center;">
@@ -225,7 +225,7 @@
           </div>
         </div>
         <div class="span-12" style="border: 2px solid var(--dnd-border, #555); border-radius: 8px; padding: 12px; box-shadow: 2px 2px 5px rgba(0,0,0,0.2);">
-          <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem;"><strong>TOOL:</strong> ${esc((c.inventory || []).filter(i => /tool|kit|set/i.test(i)).join(", ") || "-")}</div>
+          <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem; cursor: pointer;" onclick="rollExpression('+${prof}', 'Tool Check', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik untuk Tool check"><strong>TOOL:</strong> ${esc((c.inventory || []).filter(i => /tool|kit|set/i.test(i)).join(", ") || "-")}</div>
           <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem;"><strong>LANGUAGE:</strong> ${esc(languages || "Common")}</div>
           <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem;"><strong>ARMOR PROFICIENCIES:</strong> ${esc(klass.armor || "None")}</div>
           <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem;"><strong>WEAPON PROFICIENCIES:</strong> ${esc(klass.weapons || "Simple weapons")}</div>

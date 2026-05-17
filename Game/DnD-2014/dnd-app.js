@@ -2209,6 +2209,58 @@
     animateDice(total, skill.label);
   }
 
+  function rollExpression(expression, label, charName) {
+    if (!canTakeGameAction("roll dice")) return;
+    const str = String(expression || "").replace(/\s+/g, "").toLowerCase();
+    let diceCount = 1;
+    let diceSides = 20;
+    let modifier = 0;
+    let match;
+    
+    if (/^[+-]\d+$/.test(str)) {
+      modifier = parseInt(str, 10);
+    } else if ((match = str.match(/^(\d*)d(\d+)([+-]\d+)?$/))) {
+      diceCount = parseInt(match[1] || 1, 10);
+      diceSides = parseInt(match[2], 10);
+      modifier = match[3] ? parseInt(match[3], 10) : 0;
+    } else {
+      toast("Format dadu tidak valid: " + expression);
+      return;
+    }
+    
+    let total = 0;
+    let rolls = [];
+    for (let i = 0; i < diceCount; i++) {
+      const r = Math.floor(Math.random() * diceSides) + 1;
+      rolls.push(r);
+      total += r;
+    }
+    total += modifier;
+    
+    state.ui.diceResult = total;
+    state.ui.diceLabel = label;
+    state.ui.diceDetail = `${diceCount}d${diceSides}${modifier ? signed(modifier) : ""} [${rolls.join(", ")}]`;
+    state.rollLog.unshift({
+      id: uid("roll"),
+      label: label,
+      total,
+      detail: `${diceCount}d${diceSides}${modifier ? signed(modifier) : ""} = ${total} (${charName || "Karakter"})`,
+      user: currentUser()?.name || "Guest",
+      createdAt: nowIso()
+    });
+    state.rollLog = state.rollLog.slice(0, 80);
+    saveState();
+    animateDice(total, label);
+  }
+
+  function toggleInspiration(charId) {
+    const c = state.characters.find(x => x.id === charId);
+    if (!c) return;
+    c.inspiration = c.inspiration ? 0 : 1;
+    saveState();
+    render();
+  }
+
   function skillBonus(character, skillId) {
     const skill = skillById(skillId);
     if (!skill) return 0;
@@ -4237,7 +4289,7 @@
               ${renderDatalist("story-ideals-options", bgTemplate.ideals)}
               ${renderDatalist("story-bonds-options", bgTemplate.bonds)}
               ${renderDatalist("story-flaws-options", bgTemplate.flaws)}
-              <h3 style="margin:1rem 0 .6rem">Appearance</h3>
+              <h3 style="margin:1rem 0 .35rem">Appearance</h3>
               <div class="dnd-form-grid">
                 <div class="dnd-field"><label>Rambut</label><input name="hair" value="${esc(draft.appearance?.hair || "")}" placeholder="Hitam, pendek..."></div>
                 <div class="dnd-field"><label>Mata</label><input name="eyes" value="${esc(draft.appearance?.eyes || "")}" placeholder="Coklat, tajam..."></div>
@@ -4337,10 +4389,16 @@
       return `<div class="inventory-item"><strong>${esc(item)}</strong>${contents ? `<p class="dnd-small-muted">Isi: ${esc(contents)}</p>` : ""}</div>`;
     }).join("") || "Kosong";
 
-    const attacks = (c.inventory || [])
+    const attacks = (c._computedAttacks || (c.inventory || [])
       .filter(item => /sword|dagger|mace|axe|hammer|staff|spear|bow|crossbow|dart|sling/i.test(item))
-      .map(item => `<div class="compact-row"><span><strong>${esc(item)}</strong></span><span class="dnd-pill">${calculateAttackBonus(c, item)} to hit</span></div>`)
-      .join("") || "<p class='dnd-muted'>Belum ada senjata di inventory.</p>";
+      .map(item => ({ name: item, bonus: calculateAttackBonus(c, item), damage: "1d8+2" })))
+      .map(atk => `
+              <div style="display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 8px; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div style="font-size: 0.85rem; font-weight: 600;">${esc(atk.name)}</div>
+                <div style="font-size: 0.85rem; font-weight: bold; cursor: pointer; color: var(--dnd-highlight);" onclick="rollExpression('${esc(atk.bonus)}', '${esc(atk.name).replace(/'/g, "\\'")} Attack', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik roll attack">${esc(atk.bonus)}</div>
+                <div style="font-size: 0.85rem; cursor: pointer; color: var(--dnd-highlight);" onclick="rollExpression('${esc(atk.damage)}', '${esc(atk.name).replace(/'/g, "\\'")} Damage', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik roll damage">${esc(atk.damage)}</div>
+              </div>
+            `).join("") || "<p class='dnd-muted'>Belum ada senjata di inventory.</p>";
 
     return `
       <div class="sheet-header">
@@ -4355,7 +4413,8 @@
           <p class="dnd-muted">${esc(effectiveRaceName(c))} ${esc(klass.name)} level ${esc(c.level)} | ${esc(DATA.backgrounds.find(b => b.id === c.background)?.name || c.background)} | ${esc(c.alignment)}</p>
           <div class="dnd-pill-row" style="margin-top:.65rem">
             <span class="dnd-pill good">HP ${esc(c.hpCurrent)}/${esc(c.hpMax)}</span>
-            <span class="dnd-pill info">Hit Dice: ${esc(hitDice)}</span>
+            <span class="dnd-pill ${c.inspiration ? "active-inspiration" : ""}" style="cursor:pointer" onclick="toggleInspiration('${c.id}')" title="Klik untuk toggle">Inspiration: ${c.inspiration ? "YES" : "NO"}</span>
+            <span class="dnd-pill" style="cursor:pointer" onclick="rollExpression('1d${klass.hitDie}', 'Hit Dice', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik untuk roll Hit Dice">Hit Dice: ${esc(c.hitDiceRemaining || c.level)}/d${esc(klass.hitDie)}</span>
             <span class="dnd-pill">AC ${esc(c.ac)}</span>
             <span class="dnd-pill">Speed ${esc(c.speed)}</span>
             <span class="dnd-pill">Prof +${prof}</span>
@@ -4369,7 +4428,7 @@
         <div class="span-4">
           <h3 style="margin-bottom:.55rem">Abilities</h3>
           <div class="stat-grid">
-            ${DATA.abilities.map((a) => `<div class="stat-box"><small>${a.label.slice(0, 3)}</small><strong>${esc(c.abilities[a.id])}</strong><span>${signed(mod(c.abilities[a.id]))}</span></div>`).join("")}
+            ${DATA.abilities.map((a) => `<div class="stat-box" style="cursor:pointer" onclick="rollExpression('1d20${signed(mod(c.abilities[a.id]))}', '${a.label} Check', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik roll ability check"><small>${a.label.slice(0, 3)}</small><strong>${esc(c.abilities[a.id])}</strong><span>${signed(mod(c.abilities[a.id]))}</span></div>`).join("")}
           </div>
           
           <h3 style="margin:1.5rem 0 .55rem">Saving Throws</h3>
@@ -4377,7 +4436,7 @@
             ${DATA.abilities.map(a => {
               const isProf = klass.saves.includes(a.id);
               const bonus = mod(c.abilities[a.id]) + (isProf ? prof : 0);
-              return `<div class="compact-row"><span><strong>${a.label}</strong></span><span class="dnd-pill ${isProf ? "good" : ""}">${signed(bonus)}</span></div>`;
+              return `<div class="compact-row" style="cursor:pointer" onclick="rollExpression('1d20${signed(bonus)}', '${a.label} Save', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik roll saving throw"><span><strong>${a.label}</strong></span><span class="dnd-pill ${isProf ? "good" : ""}">${signed(bonus)}</span></div>`;
             }).join("")}
           </div>
         </div>
@@ -4385,7 +4444,7 @@
         <div class="span-4">
           <h3 style="margin-bottom:.55rem">Skills</h3>
           <div class="dnd-check-grid">
-            ${DATA.skills.map((s) => `<div class="compact-row"><span><strong>${s.label}</strong><small>${abilityLabel(s.ability)}</small></span><span class="dnd-pill ${c.skills.includes(s.id) ? "good" : ""}">${signed(skillBonus(c, s.id))}</span></div>`).join("")}
+            ${DATA.skills.map((s) => `<div class="compact-row" style="cursor:pointer" onclick="rollExpression('1d20${signed(skillBonus(c, s.id))}', '${s.label} Check', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik untuk roll skill"><span><strong>${s.label}</strong><small>${abilityLabel(s.ability)}</small></span><span class="dnd-pill ${c.skills.includes(s.id) ? "good" : ""}">${signed(skillBonus(c, s.id))}</span></div>`).join("")}
           </div>
         </div>
 
@@ -4419,7 +4478,7 @@
           <h3>Other Proficiencies & Languages</h3>
           <p class="dnd-muted"><strong>Armor Proficiencies:</strong> ${esc(klass.armor)}</p>
           <p class="dnd-muted"><strong>Weapon Proficiencies:</strong> ${esc(klass.weapons)}</p>
-          <p class="dnd-muted"><strong>Tool Proficiencies:</strong> ${esc(klass.tools || "None")}</p>
+          <p class="dnd-muted" style="cursor:pointer" onclick="rollExpression('+${prof}', 'Tool Check', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik untuk Tool check"><strong>Tool Proficiencies:</strong> ${esc(klass.tools || "None")}</p>
           <p class="dnd-muted"><strong>Languages:</strong> ${esc(languages || "Common")}</p>
         </div>
         <div class="span-6 dnd-card is-soft">

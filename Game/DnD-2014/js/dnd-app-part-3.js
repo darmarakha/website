@@ -606,6 +606,58 @@
     animateDice(total, skill.label);
   }
 
+  function rollExpression(expression, label, charName) {
+    if (!canTakeGameAction("roll dice")) return;
+    const str = String(expression || "").replace(/\s+/g, "").toLowerCase();
+    let diceCount = 1;
+    let diceSides = 20;
+    let modifier = 0;
+    let match;
+    
+    if (/^[+-]\d+$/.test(str)) {
+      modifier = parseInt(str, 10);
+    } else if ((match = str.match(/^(\d*)d(\d+)([+-]\d+)?$/))) {
+      diceCount = parseInt(match[1] || 1, 10);
+      diceSides = parseInt(match[2], 10);
+      modifier = match[3] ? parseInt(match[3], 10) : 0;
+    } else {
+      toast("Format dadu tidak valid: " + expression);
+      return;
+    }
+    
+    let total = 0;
+    let rolls = [];
+    for (let i = 0; i < diceCount; i++) {
+      const r = Math.floor(Math.random() * diceSides) + 1;
+      rolls.push(r);
+      total += r;
+    }
+    total += modifier;
+    
+    state.ui.diceResult = total;
+    state.ui.diceLabel = label;
+    state.ui.diceDetail = `${diceCount}d${diceSides}${modifier ? signed(modifier) : ""} [${rolls.join(", ")}]`;
+    state.rollLog.unshift({
+      id: uid("roll"),
+      label: label,
+      total,
+      detail: `${diceCount}d${diceSides}${modifier ? signed(modifier) : ""} = ${total} (${charName || "Karakter"})`,
+      user: currentUser()?.name || "Guest",
+      createdAt: nowIso()
+    });
+    state.rollLog = state.rollLog.slice(0, 80);
+    saveState();
+    animateDice(total, label);
+  }
+
+  function toggleInspiration(charId) {
+    const c = state.characters.find(x => x.id === charId);
+    if (!c) return;
+    c.inspiration = c.inspiration ? 0 : 1;
+    saveState();
+    render();
+  }
+
   function skillBonus(character, skillId) {
     const skill = skillById(skillId);
     if (!skill) return 0;
