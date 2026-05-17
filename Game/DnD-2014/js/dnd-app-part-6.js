@@ -64,8 +64,8 @@
                 const klass = DATA.classes.find(k => k.id === draft.className) || {};
                 const expertiseCount = Number(klass.expertiseCount || 0);
                 if (!expertiseCount) return "";
-                const selectedSkills = DATA.skills;
-                const hasTool = true;
+                const selectedSkills = (draft.skills || []).map(id => DATA.skills.find(s => s.id === id)).filter(Boolean);
+                const hasTool = klass.id === "rogue" || (draft.inventory || []).some(i => /thieves' tools/i.test(i));
                 const expertiseOptions = [
                   ...selectedSkills.map(s => `<option value="skill:${esc(s.id)}" ${(draft.expertise||[]).includes("skill:"+s.id)?"selected":""}>${esc(s.label)}</option>`),
                   ...(hasTool ? [`<option value="tool:thieves_tools" ${(draft.expertise||[]).includes("tool:thieves_tools")?"selected":""}>Thieves' Tools</option>`] : [])
