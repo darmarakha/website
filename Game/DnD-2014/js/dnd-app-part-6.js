@@ -62,10 +62,9 @@
 
               ${(() => {
                 const klass = DATA.classes.find(k => k.id === draft.className) || {};
-                const expertiseCount = Number(klass.expertiseCount || 0);
-                if (!expertiseCount) return "";
+                const expertiseCount = 2; // Selalu tampilkan 2 kotak ke semua player sesuai permintaan
                 const selectedSkills = DATA.skills;
-                const hasTool = klass.tools && klass.tools !== "None";
+                const hasTool = true;
                 const expertiseOptions = [
                   ...selectedSkills.map(s => `<option value="skill:${esc(s.id)}" ${(draft.expertise||[]).includes("skill:"+s.id)?"selected":""}>${esc(s.label)}</option>`),
                   ...(hasTool ? [`<option value="tool:thieves_tools" ${(draft.expertise||[]).includes("tool:thieves_tools")?"selected":""}>Thieves' Tools</option>`] : [])
