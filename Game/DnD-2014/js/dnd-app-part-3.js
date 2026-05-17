@@ -2,6 +2,8 @@
       bond: form.bond?.value.trim() || "",
       flaw: form.flaw?.value.trim() || "",
       appearance,
+      portrait: state.characterPortraitDraft || (isExisting ? existing.portrait : ""),
+      portraitName: state.characterPortraitDraftName || (isExisting ? existing.portraitName : ""),
       abilities: abilityScores,
       skills: skillBreakdown.all,
       startingChoice,
