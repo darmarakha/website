@@ -430,6 +430,13 @@
     draft.inspiration = Number(form.inspiration?.value || draft.inspiration || 0);
     draft.hitDiceRemaining = Number(form.hitDiceRemaining?.value || draft.hitDiceRemaining || 1);
     
+    // Parse expertise
+    const expertise = [];
+    qsa("select[name^='expertise-']", form).forEach((el) => {
+      if (el.value) expertise.push(el.value);
+    });
+    draft.expertise = expertise;
+    
     // Parse attacks
     const attacks = [];
     const attackRows = qsa(".attack-row", form);
