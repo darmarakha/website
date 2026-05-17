@@ -102,7 +102,7 @@ $gemu_signup_url = '../../index.php';
     <script src="dnd-map-ai.js?v=<?php echo (int)$gemu_asset_version; ?>" defer></script>
     <script src="dnd-app.php?v=<?php echo (int)$gemu_asset_version; ?>" defer></script>
     <audio id="dnd-bg-music" loop preload="none">
-        <source src="assets/Celtic Music - Fantasy Worlds Through Flute Sounds _ Relaxing Medieval Music Mix for Work & Study, [LnmY5Rgpb1Y].mp3" type="audio/mpeg">
+        <source src="assets/bgm.mp3" type="audio/mpeg">
     </audio>
 
     <button id="dnd-music-toggle" class="floating-music-btn" title="Play/Pause Fantasy Music">
