@@ -60,19 +60,24 @@
               <p class="dnd-muted skill-proficiency-note">Pilih skill yang benar-benar dikuasai karakter. Saat dipilih, skill memakai ability modifier + Proficiency Bonus level karakter, dan bonus proficiency hanya dihitung satu kali.</p>
               ${renderClassSkillGrid(draft, canEditStats)}
 
-              <h3 style="margin:1rem 0 .6rem">Attacks & Spellcasting</h3>
-              <p class="dnd-muted">Tambahkan senjata atau spell serangan utama karakter di sini.</p>
-              <div id="attacks-input-list">
-                ${(draft.attacks || []).map((atk, index) => `
-                  <div class="attack-row dnd-form-grid" style="margin-bottom: 0.5rem; background: rgba(0,0,0,0.05); padding: 0.5rem; border-radius: 4px;">
-                    <div class="dnd-field"><label>Name</label><input name="attack-name" value="${esc(atk.name)}" placeholder="Longsword"></div>
-                    <div class="dnd-field"><label>Atk Bonus</label><input name="attack-bonus" value="${esc(atk.bonus)}" placeholder="+5"></div>
-                    <div class="dnd-field"><label>Damage/Type</label><input name="attack-damage" value="${esc(atk.damage)}" placeholder="1d8+3 slashing"></div>
-                    <button type="button" class="dnd-btn danger" onclick="this.parentElement.remove()" style="align-self: end; margin-bottom: 0.5rem;">Hapus</button>
-                  </div>
-                `).join("")}
-              </div>
-              <button type="button" class="dnd-btn" onclick="const div = document.createElement('div'); div.className='attack-row dnd-form-grid'; div.style='margin-bottom: 0.5rem; background: rgba(0,0,0,0.05); padding: 0.5rem; border-radius: 4px;'; div.innerHTML = \`<div class='dnd-field'><label>Name</label><input name='attack-name' placeholder='Longsword'></div><div class='dnd-field'><label>Atk Bonus</label><input name='attack-bonus' placeholder='+5'></div><div class='dnd-field'><label>Damage/Type</label><input name='attack-damage' placeholder='1d8+3 slashing'></div><button type='button' class='dnd-btn danger' onclick='this.parentElement.remove()' style='align-self: end; margin-bottom: 0.5rem;'>Hapus</button>\`; document.getElementById('attacks-input-list').appendChild(div);">+ Tambah Serangan</button>
+              ${(() => {
+                const expertiseCount = Number(klass.expertiseCount || 0);
+                if (!expertiseCount) return "";
+                const selectedSkills = (draft.skills || []).map(id => DATA.skills.find(s => s.id === id)).filter(Boolean);
+                const hasTool = klass.tools && klass.tools !== "None";
+                const expertiseOptions = [
+                  ...selectedSkills.map(s => `<option value="skill:${esc(s.id)}" ${(draft.expertise||[]).includes("skill:"+s.id)?"selected":""}>${esc(s.label)}</option>`),
+                  ...(hasTool ? [`<option value="tool:thieves_tools" ${(draft.expertise||[]).includes("tool:thieves_tools")?"selected":""}>Thieves' Tools</option>`] : [])
+                ].join("");
+                return `<h3 style="margin:1rem 0 .35rem">Expertise</h3>
+                <p class="dnd-muted">Pilih ${expertiseCount} skill atau tool untuk mendapat Expertise (double proficiency bonus). Hanya bisa memilih dari skill yang sudah dipilih di atas.</p>
+                <div class="dnd-form-grid">
+                  ${Array.from({length: expertiseCount}, (_, i) => `<div class="dnd-field"><label>Expertise ${i+1}</label><select name="expertise-${i}">
+                    <option value="">— Pilih skill/tool —</option>
+                    ${expertiseOptions}
+                  </select></div>`).join("")}
+                </div>`;
+              })()}
             `)}
 
             ${renderCharacterStepPanel("equipment", activeStep, "Pilih Perlengkapan", "Pilih starting package untuk menentukan barang awal, gold awal, dan ringkasan equipment karakter.", `
@@ -82,6 +87,22 @@
               </div>
             `)}
             ${renderCharacterStepActions(activeStep)}
+
+            <div style="margin-top: 1.5rem" id="attacks-section-after-equipment">
+              <h3 style="margin:0 0 .35rem">Attacks &amp; Spellcasting</h3>
+              <p class="dnd-muted">Serangan otomatis terdeteksi dari equipment. Tambah serangan tambahan manual di sini jika diperlukan.</p>
+              <div id="attacks-input-list">
+                ${(draft.attacks || []).map((atk) => `
+                  <div class="attack-row dnd-form-grid" style="margin-bottom: 0.5rem; background: rgba(0,0,0,0.05); padding: 0.5rem; border-radius: 4px;">
+                    <div class="dnd-field"><label>Name</label><input name="attack-name" value="${esc(atk.name)}" placeholder="Longsword"></div>
+                    <div class="dnd-field"><label>Atk Bonus</label><input name="attack-bonus" value="${esc(atk.bonus)}" placeholder="+5"></div>
+                    <div class="dnd-field"><label>Damage/Type</label><input name="attack-damage" value="${esc(atk.damage)}" placeholder="1d8+3 slashing"></div>
+                    <button type="button" class="dnd-btn danger" onclick="this.parentElement.remove()" style="align-self: end; margin-bottom: 0.5rem;">Hapus</button>
+                  </div>
+                `).join("")}
+              </div>
+              <button type="button" class="dnd-btn" onclick="const div = document.createElement('div'); div.className='attack-row dnd-form-grid'; div.style='margin-bottom: 0.5rem; background: rgba(0,0,0,0.05); padding: 0.5rem; border-radius: 4px;'; div.innerHTML = \`<div class='dnd-field'><label>Name</label><input name='attack-name' placeholder='Longsword'></div><div class='dnd-field'><label>Atk Bonus</label><input name='attack-bonus' placeholder='+5'></div><div class='dnd-field'><label>Damage/Type</label><input name='attack-damage' placeholder='1d8+3 slashing'></div><button type='button' class='dnd-btn danger' onclick='this.parentElement.remove()' style='align-self: end; margin-bottom: 0.5rem;'>Hapus</button>\`; document.getElementById('attacks-input-list').appendChild(div);">+ Tambah Serangan</button>
+            </div>
           </form>
         </div>
         <aside class="dnd-card character-builder-guide" id="character-builder-guide">
@@ -205,8 +226,9 @@
         <div class="span-12" style="border: 2px solid var(--dnd-border, #555); border-radius: 8px; padding: 12px; box-shadow: 2px 2px 5px rgba(0,0,0,0.2);">
           <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem;"><strong>TOOL:</strong> ${esc((c.inventory || []).filter(i => /tool|kit|set/i.test(i)).join(", ") || "-")}</div>
           <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem;"><strong>LANGUAGE:</strong> ${esc(languages || "Common")}</div>
-          <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem;"><strong>ARMOR:</strong> ${esc(klass.armor || "None")}</div>
-          <div style="padding: 6px 0; font-size: 0.85rem;"><strong>WEAPON:</strong> ${esc(klass.weapons || "Simple weapons")}</div>
+          <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem;"><strong>ARMOR PROFICIENCIES:</strong> ${esc(klass.armor || "None")}</div>
+          <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem;"><strong>WEAPON PROFICIENCIES:</strong> ${esc(klass.weapons || "Simple weapons")}</div>
+          <div style="padding: 6px 0; font-size: 0.85rem;"><strong>TOOL PROFICIENCIES:</strong> ${esc(klass.tools || "None")}</div>
           <div style="text-align: center; margin-top: 12px; font-weight: bold; font-size: 0.85rem; letter-spacing: 1px; color: var(--dnd-highlight, #e6c27a);">OTHER PROFICIENCIES & LANGUAGES</div>
         </div>
         <div class="span-12 dnd-card is-soft"><h3>Personality & Story</h3><p class="dnd-muted"><strong>Traits:</strong> ${esc((c.personalityTraits || []).filter(Boolean).join(" | ") || "Belum diisi")}</p><p class="dnd-muted"><strong>Ideal:</strong> ${esc(c.ideal || "Belum diisi")}</p><p class="dnd-muted"><strong>Bond:</strong> ${esc(c.bond || "Belum diisi")}</p><p class="dnd-muted"><strong>Flaw:</strong> ${esc(c.flaw || "Belum diisi")}</p></div>

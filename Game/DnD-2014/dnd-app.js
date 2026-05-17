@@ -1807,8 +1807,9 @@
       return `${item}${contents ? " (Isi: " + contents + ")" : ""}`;
     }).join(", ");
     const profLang = [
-      `Armor: ${klass.armor}`,
-      `Gears: ${klass.weapons}`,
+      `Armor Proficiencies: ${klass.armor}`,
+      `Weapon Proficiencies: ${klass.weapons}`,
+      `Tool Proficiencies: ${klass.tools || "None"}`,
       `Languages: ${languages || "Common"}`
     ].join("\n");
     const attacks = (character.inventory || [])
@@ -2071,8 +2072,9 @@
       }),
       "",
       "Other Proficiencies & Languages",
-      `Armor: ${klass.armor}`,
-      `Gears: ${klass.weapons}`,
+      `Armor Proficiencies: ${klass.armor}`,
+      `Weapon Proficiencies: ${klass.weapons}`,
+      `Tool Proficiencies: ${klass.tools || "None"}`,
       `Languages: ${languages || "Common"}`,
       "",
       "Attacks & Spellcasting",
@@ -3938,6 +3940,7 @@
       <p>${esc(race?.description || "Belum ada race yang dipilih.")}</p>
       ${!draft.race ? `<p><strong>Subrace:</strong> Pilih race dulu.</p>` : subrace ? `<p><strong>Subrace:</strong> ${esc(subrace.note || subrace.name)}</p>` : `<p><strong>Subrace:</strong> Belum dipilih atau race ini tidak memakai pilihan subrace.</p>`}
       <div class="guide-two-cols">
+        <div><strong>Creature Type</strong><small>${esc(race?.creatureType || "Humanoid")}</small></div>
         <div><strong>Bonus ability</strong><small>${esc(abilityBonusSummary(draft))}</small></div>
         <div><strong>Skill dari ras</strong><small>${esc((raceExtension(draft.race).automaticSkills || []).map((id) => skillById(id)?.label || id).join(", ") || (raceSkillChoiceCount(draft) ? raceSkillChoiceCount(draft) + " skill bebas" : "0 skill"))}</small></div>
         <div><strong>Speed</strong><small>${esc(effectiveRaceSpeed(draft))} ft</small></div>
@@ -3963,8 +3966,10 @@
         <div><strong>Hit Die</strong><small>d${esc(klass.hitDie)}</small></div>
         <div><strong>Primary</strong><small>${esc(klass.primary || "-")}</small></div>
         <div><strong>Saving Throws</strong><small>${esc((klass.saves || []).map(abilityLabel).join(", ") || "-")}</small></div>
-        <div><strong>Armor</strong><small>${esc(klass.armor || "-")}</small></div>
-        <div><strong>Gear</strong><small>${esc(klass.weapons || "-")}</small></div>
+        <div><strong>Armor Proficiencies</strong><small>${esc(klass.armor || "-")}</small></div>
+        <div><strong>Weapon Proficiencies</strong><small>${esc(klass.weapons || "-")}</small></div>
+        <div><strong>Tool Proficiencies</strong><small>${esc(klass.tools || "None")}</small></div>
+        ${klass.expertiseCount ? `<div><strong>Expertise</strong><small>${esc(klass.expertiseCount)} skill/tool (dari skill yang sudah dipilih)</small></div>` : ""}
       </div>
       <strong>Fitur awal</strong>
       ${renderMiniList(klass.features, "Belum ada fitur.")}
@@ -4397,7 +4402,7 @@
       <div class="dnd-grid" style="margin-top:1.5rem">
         <div class="span-6 dnd-card is-soft">
           <h3>Traits & Features</h3>
-          <div class="traits-container">${traitList}</div>
+              <div class="traits-container">${traitList}</div>
         </div>
         <div class="span-6 dnd-card is-soft">
           <h3>Inventory & Equipment</h3>
@@ -4406,8 +4411,9 @@
         </div>
         <div class="span-6 dnd-card is-soft">
           <h3>Other Proficiencies & Languages</h3>
-          <p class="dnd-muted"><strong>Armor:</strong> ${esc(klass.armor)}</p>
-          <p class="dnd-muted"><strong>Weapons:</strong> ${esc(klass.weapons)}</p>
+          <p class="dnd-muted"><strong>Armor Proficiencies:</strong> ${esc(klass.armor)}</p>
+          <p class="dnd-muted"><strong>Weapon Proficiencies:</strong> ${esc(klass.weapons)}</p>
+          <p class="dnd-muted"><strong>Tool Proficiencies:</strong> ${esc(klass.tools || "None")}</p>
           <p class="dnd-muted"><strong>Languages:</strong> ${esc(languages || "Common")}</p>
         </div>
         <div class="span-6 dnd-card is-soft">
