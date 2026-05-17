@@ -135,13 +135,19 @@ $gemu_signup_url = '../../index.php';
         transform: scale(1.1);
     }
     .floating-music-btn.playing {
-        animation: dnd-pulse-border 2s infinite;
+        animation: dnd-pulse-border 2s infinite, dnd-dance 1s infinite;
         border-color: #fce8a4;
+        background: rgba(80, 60, 20, 0.9);
     }
     @keyframes dnd-pulse-border {
         0% { box-shadow: 0 0 0 0 rgba(230, 194, 122, 0.7); }
-        70% { box-shadow: 0 0 0 10px rgba(230, 194, 122, 0); }
+        70% { box-shadow: 0 0 0 15px rgba(230, 194, 122, 0); }
         100% { box-shadow: 0 0 0 0 rgba(230, 194, 122, 0); }
+    }
+    @keyframes dnd-dance {
+        0%, 100% { transform: rotate(0deg) scale(1.1); }
+        25% { transform: rotate(-15deg) scale(1.2); }
+        75% { transform: rotate(15deg) scale(1.2); }
     }
     </style>
 
@@ -162,7 +168,7 @@ $gemu_signup_url = '../../index.php';
                     audioEl.volume = 0.4;
                     audioEl.play().then(() => {
                         musicBtn.classList.add("playing");
-                        musicBtn.textContent = "🎵";
+                        musicBtn.textContent = "🔊";
                         isPlaying = true;
                     }).catch(err => {
                         console.error("Gagal memutar musik:", err);
