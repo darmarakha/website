@@ -61,6 +61,7 @@
               ${renderClassSkillGrid(draft, canEditStats)}
 
               ${(() => {
+                const klass = DATA.classes.find(k => k.id === draft.className) || {};
                 const expertiseCount = Number(klass.expertiseCount || 0);
                 if (!expertiseCount) return "";
                 const selectedSkills = (draft.skills || []).map(id => DATA.skills.find(s => s.id === id)).filter(Boolean);
