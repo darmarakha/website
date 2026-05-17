@@ -180,6 +180,8 @@
       }
       if (target.matches("input[name='skills']")) {
         enforceSkillCheckboxLimit(target);
+        state.ui.characterDraft = characterDraftFromForm(qs("#character-form"));
+        render();
       }
       updateCharacterBuilderGuide();
     }
@@ -1963,7 +1965,8 @@
     DATA.skills.forEach((skill, i) => {
       const col = i < 9 ? margin : margin + 260;
       const rowY = i < 9 ? y + i * 15 : y + (i - 9) * 15;
-      const checked = character.skills.includes(skill.id) ? "[x]" : "[ ]";
+      const hasExp = (character.expertise || []).includes("skill:" + skill.id);
+      const checked = hasExp ? "[E]" : (character.skills.includes(skill.id) ? "[x]" : "[ ]");
       doc.setFont("helvetica", character.skills.includes(skill.id) ? "bold" : "normal");
       doc.setFontSize(8);
       doc.text(`${checked} ${signed(skillBonus(character, skill.id))} ${skill.label}`, col, rowY);
@@ -2209,7 +2212,10 @@
   function skillBonus(character, skillId) {
     const skill = skillById(skillId);
     if (!skill) return 0;
-    return mod(character.abilities[skill.ability]) + (character.skills.includes(skillId) ? proficiencyBonus(character.level) : 0);
+    let prof = 0;
+    if (character.skills.includes(skillId)) prof = proficiencyBonus(character.level);
+    if ((character.expertise || []).includes("skill:" + skillId)) prof *= 2;
+    return mod(character.abilities[skill.ability]) + prof;
   }
 
   function skillGuideText(skillId) {

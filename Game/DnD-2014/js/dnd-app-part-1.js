@@ -182,6 +182,8 @@
       }
       if (target.matches("input[name='skills']")) {
         enforceSkillCheckboxLimit(target);
+        state.ui.characterDraft = characterDraftFromForm(qs("#character-form"));
+        render();
       }
       updateCharacterBuilderGuide();
     }
