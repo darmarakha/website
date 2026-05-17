@@ -64,7 +64,7 @@
                 const klass = DATA.classes.find(k => k.id === draft.className) || {};
                 const expertiseCount = Number(klass.expertiseCount || 0);
                 if (!expertiseCount) return "";
-                const selectedSkills = (draft.skills || []).map(id => DATA.skills.find(s => s.id === id)).filter(Boolean);
+                const selectedSkills = DATA.skills;
                 const hasTool = klass.tools && klass.tools !== "None";
                 const expertiseOptions = [
                   ...selectedSkills.map(s => `<option value="skill:${esc(s.id)}" ${(draft.expertise||[]).includes("skill:"+s.id)?"selected":""}>${esc(s.label)}</option>`),
@@ -89,21 +89,7 @@
             `)}
             ${renderCharacterStepActions(activeStep)}
 
-            <div style="margin-top: 1.5rem" id="attacks-section-after-equipment">
-              <h3 style="margin:0 0 .35rem">Attacks &amp; Spellcasting</h3>
-              <p class="dnd-muted">Serangan otomatis terdeteksi dari equipment. Tambah serangan tambahan manual di sini jika diperlukan.</p>
-              <div id="attacks-input-list">
-                ${(draft.attacks || []).map((atk) => `
-                  <div class="attack-row dnd-form-grid" style="margin-bottom: 0.5rem; background: rgba(0,0,0,0.05); padding: 0.5rem; border-radius: 4px;">
-                    <div class="dnd-field"><label>Name</label><input name="attack-name" value="${esc(atk.name)}" placeholder="Longsword"></div>
-                    <div class="dnd-field"><label>Atk Bonus</label><input name="attack-bonus" value="${esc(atk.bonus)}" placeholder="klik = auto calc" onfocus="if(!this.value){ const v = Math.max(Math.floor(((${draft.abilities?.str||10})-10)/2), Math.floor(((${draft.abilities?.dex||10})-10)/2)) + 2 + Math.floor(((${draft.level||1})-1)/4); this.value = (v>=0?'+':'') + v; }"></div>
-                    <div class="dnd-field"><label>Damage/Type</label><input name="attack-damage" value="${esc(atk.damage)}" placeholder="1d8+3 slashing"></div>
-                    <button type="button" class="dnd-btn danger" onclick="this.parentElement.remove()" style="align-self: end; margin-bottom: 0.5rem;">Hapus</button>
-                  </div>
-                `).join("")}
-              </div>
-              <button type="button" class="dnd-btn" onclick="const div = document.createElement('div'); div.className='attack-row dnd-form-grid'; div.style='margin-bottom: 0.5rem; background: rgba(0,0,0,0.05); padding: 0.5rem; border-radius: 4px;'; div.innerHTML = \`<div class='dnd-field'><label>Name</label><input name='attack-name' placeholder='Longsword'></div><div class='dnd-field'><label>Atk Bonus</label><input name='attack-bonus' placeholder='klik = auto calc' onfocus='if(!this.value){ const v = Math.max(Math.floor(((${draft.abilities?.str||10})-10)/2), Math.floor(((${draft.abilities?.dex||10})-10)/2)) + 2 + Math.floor(((${draft.level||1})-1)/4); this.value = (v>=0?&quot;+&quot;:&quot;&quot;) + v; }'></div><div class='dnd-field'><label>Damage/Type</label><input name='attack-damage' placeholder='1d8+3 slashing'></div><button type='button' class='dnd-btn danger' onclick='this.parentElement.remove()' style='align-self: end; margin-bottom: 0.5rem;'>Hapus</button>\`; document.getElementById('attacks-input-list').appendChild(div);">+ Tambah Serangan</button>
-            </div>
+
           </form>
         </div>
         <aside class="dnd-card character-builder-guide" id="character-builder-guide">
