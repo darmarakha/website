@@ -184,6 +184,12 @@
         enforceSkillCheckboxLimit(target);
         state.ui.characterDraft = characterDraftFromForm(qs("#character-form"));
         render();
+        return;
+      }
+      if (target.matches("select[name='race'], select[name='classNameField']")) {
+        state.ui.characterDraft = characterDraftFromForm(qs("#character-form"));
+        render();
+        return;
       }
       updateCharacterBuilderGuide();
     }
