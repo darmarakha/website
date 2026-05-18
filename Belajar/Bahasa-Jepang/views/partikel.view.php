@@ -102,8 +102,8 @@
                 <p class="text-2xl font-bold text-white" id="progKontras">0/2</p>
             </div>
             <div class="bg-dark-900/50 p-4 rounded-xl border border-white/5 text-center flex flex-col justify-center">
-                <p class="text-xs text-neutral-400 uppercase tracking-wider mb-1">Ujian JLPT</p>
-                <p class="text-2xl font-bold text-white" id="progQuiz">0/1</p>
+                <p class="text-xs text-neutral-400 uppercase tracking-wider mb-1">Latihan / Ujian</p>
+                <p class="text-xl font-bold text-white" id="progQuiz">0/2</p>
             </div>
             <div class="bg-dark-900/50 p-4 rounded-xl border border-white/5 text-center flex flex-col items-center justify-center">
                 <p class="text-xs text-neutral-400 uppercase tracking-wider mb-1">Badge</p>
@@ -231,6 +231,23 @@
         <div id="modalContent"></div>
     </div>
   </div>
+
+    <!-- ========== SECTION: LATIHAN PARTIKEL ========== -->
+  <section class="py-16 px-6 lg:px-12">
+    <div class="max-w-3xl mx-auto text-center mb-12">
+      <h2 class="text-3xl font-bold mb-4">Latihan Partikel N5</h2>
+      <p class="text-neutral-400">Pemanasan sebelum ujian. Latihan ini memiliki 5 soal acak dengan bantuan Hint (Petunjuk) dan umpan balik instan.</p>
+    </div>
+
+    <div class="max-w-2xl mx-auto glass-card rounded-3xl p-8 border border-white/10" id="latihanContainer">
+      <div class="text-center py-10" id="latihanStartMenu">
+          <i data-lucide="help-circle" class="w-16 h-16 text-purple-400 mx-auto mb-4"></i>
+          <h3 class="text-2xl font-bold mb-2">Mulai Pemanasan</h3>
+          <p class="text-neutral-400 mb-6">Cocok untuk memperkuat insting. Jika kesulitan, tekan tombol Hint untuk melihat petunjuk.</p>
+          <button id="btnStartLatihan" class="px-8 py-3 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl shadow-lg shadow-purple-500/30 transition">Mulai Latihan</button>
+      </div>
+    </div>
+  </section>
 
   <!-- ========== SECTION: UJIAN JLPT PARTIKEL ========== -->
   <section class="py-16 px-6 lg:px-12 bg-dark-800/20 border-t border-white/5">

@@ -10,7 +10,7 @@ const partikelData = [
             { jp: '<ruby>私<rt>わたし</rt></ruby> は <ruby>学生<rt>がくせい</rt></ruby> です。', id: 'Saya adalah pelajar.' },
             { jp: 'この <ruby>本<rt>ほん</rt></ruby> は 面白い です。', id: 'Buku ini menarik.' }
         ],
-        catatan: 'Dibaca "wa", bukan "ha". Menandakan "kalau tentang...". Menunjukkan hal yang sudah diketahui oleh pembicara dan pendengar.',
+        perbandingan: '<b>Kapan pakai は vs が?</b><br>Gunakan <b>は</b> saat membicarakan topik secara umum, atau membandingkan dua hal (misal: Anjing saya suka, tapi Kucing saya tidak suka).', catatan: 'Dibaca "wa", bukan "ha". Menandakan "kalau tentang...". Menunjukkan hal yang sudah diketahui oleh pembicara dan pendengar.',
         salah: 'Jangan gunakan は untuk penanda informasi baru.'
     },
     {
@@ -23,7 +23,7 @@ const partikelData = [
             { jp: '<ruby>雨<rt>あめ</rt></ruby> が <ruby>降<rt>ふ</rt></ruby>ります。', id: 'Hujan turun.' },
             { jp: '<ruby>部屋<rt>へや</rt></ruby> に <ruby>猫<rt>ねこ</rt></ruby> が います。', id: 'Ada kucing di kamar.' }
         ],
-        catatan: 'Menandai siapa/apa yang melakukan aksi. Sangat sering dipakai dengan kata kerja あります (ada benda mati) dan います (ada mahluk hidup).',
+        perbandingan: '<b>Kapan pakai が vs は?</b><br>Gunakan <b>が</b> saat memperkenalkan informasi baru untuk pertama kalinya, menjawab pertanyaan kata tanya (Siapa yang pergi? -> <i>Saya が</i>), atau hal yang melekat otomatis pada suatu benda mati (Hujan <i>が</i> turun).', catatan: 'Menandai siapa/apa yang melakukan aksi. Sangat sering dipakai dengan kata kerja あります (ada benda mati) dan います (ada mahluk hidup).',
         salah: 'Jangan tertukar dengan は. が lebih menekankan pada Subjeknya.'
     },
     {
@@ -50,7 +50,7 @@ const partikelData = [
             { jp: '<ruby>七時<rt>しちじ</rt></ruby> に <ruby>起<rt>お</rt></ruby>きます。', id: 'Saya bangun pada jam tujuh. (Waktu)' },
             { jp: '<ruby>日本<rt>にほん</rt></ruby> に <ruby>行<rt>い</rt></ruby>きます。', id: 'Saya pergi ke Jepang. (Tujuan)' }
         ],
-        catatan: 'Berfungsi seperti paku yang menancap pada satu titik (waktu tertentu, tempat berada yang tidak bergerak).',
+        perbandingan: '<b>Kapan pakai に vs で?</b><br>Gunakan <b>に</b> jika subjeknya <i>diam/menetap</i> di tempat tersebut (ada, tinggal, bermalam).', catatan: 'Berfungsi seperti paku yang menancap pada satu titik (waktu tertentu, tempat berada yang tidak bergerak).',
         salah: 'Jangan pakai に untuk tempat dimana kamu melakukan aktivitas bergerak (seperti makan, belajar).'
     },
     {
@@ -63,7 +63,7 @@ const partikelData = [
             { jp: '<ruby>学校<rt>がっこう</rt></ruby> で <ruby>勉強<rt>べんきょう</rt></ruby>します。', id: 'Saya belajar di sekolah. (Tempat Aksi)' },
             { jp: '<ruby>鉛筆<rt>えんぴつ</rt></ruby> で <ruby>書<rt>か</rt></ruby>きます。', id: 'Saya menulis dengan pensil. (Alat)' }
         ],
-        catatan: 'Menunjukkan "di mana" sebuah aktivitas dilakukan, atau "dengan cara/alat apa" sebuah aksi dilakukan.',
+        perbandingan: '<b>Kapan pakai で vs に?</b><br>Gunakan <b>で</b> jika ada sebuah <i>aktivitas yang dinamis/aksi</i> yang dilakukan di tempat tersebut (makan, belajar, bermain).', catatan: 'Menunjukkan "di mana" sebuah aktivitas dilakukan, atau "dengan cara/alat apa" sebuah aksi dilakukan.',
         salah: 'Jangan tertukar dengan に. で butuh aksi dinamis, に statis.'
     },
     {
@@ -76,7 +76,7 @@ const partikelData = [
             { jp: '<ruby>日本<rt>にほん</rt></ruby> へ <ruby>行<rt>い</rt></ruby>きます。', id: 'Saya pergi menuju Jepang.' },
             { jp: '<ruby>右<rt>みぎ</rt></ruby> へ <ruby>曲<rt>ま</rt></ruby>がります。', id: 'Belok ke arah kanan.' }
         ],
-        catatan: 'Dibaca "e". Secara fungsional mirip dengan に untuk tujuan tempat, tapi へ lebih menekankan "arah perjalanannya" daripada "titik tujuannya".',
+        perbandingan: '<b>Kapan pakai へ vs に?</b><br>Keduanya bisa dipakai untuk tempat tujuan. Namun, <b>へ</b> menekankan <i>arah perjalanannya</i> (menuju ke), sedangkan <b>に</b> menekankan <i>titik akhir pendaratannya</i>.', catatan: 'Dibaca "e". Secara fungsional mirip dengan に untuk tujuan tempat, tapi へ lebih menekankan "arah perjalanannya" daripada "titik tujuannya".',
         salah: 'Jangan baca "he".'
     },
     {
@@ -115,7 +115,7 @@ const partikelData = [
             { jp: 'パン と <ruby>牛乳<rt>ぎゅうにゅう</rt></ruby> を <ruby>買<rt>か</rt></ruby>います。', id: 'Saya membeli roti dan susu. (Daftar)' },
             { jp: '<ruby>友達<rt>ともだち</rt></ruby> と <ruby>映画<rt>えいが</rt></ruby> を <ruby>見<rt>み</rt></ruby>ます。', id: 'Saya menonton film bersama teman.' }
         ],
-        catatan: 'Jika digunakan sebagai "dan", itu menyiratkan hanya barang-barang tersebut yang dibicarakan (daftar tertutup).',
+        perbandingan: '<b>Kapan pakai と vs や?</b><br>Gunakan <b>と</b> jika kamu mendaftar <i>semua</i> benda tanpa ada sisa.', catatan: 'Jika digunakan sebagai "dan", itu menyiratkan hanya barang-barang tersebut yang dibicarakan (daftar tertutup).',
         salah: 'Jangan pakai と untuk menyambung klausa/kalimat. と hanya menyambung Kata Benda.'
     },
     {
@@ -127,7 +127,7 @@ const partikelData = [
         contoh: [
             { jp: 'パン や <ruby>牛乳<rt>ぎゅうにゅう</rt></ruby> を <ruby>買<rt>か</rt></ruby>います。', id: 'Saya membeli (hal-hal seperti) roti dan susu.' }
         ],
-        catatan: 'Mengisyaratkan masih ada barang lain yang dibeli selain roti dan susu.',
+        perbandingan: '<b>Kapan pakai や vs と?</b><br>Gunakan <b>や</b> jika kamu hanya memberi contoh 1-2 benda, dan mengisyaratkan bahwa <i>masih ada barang lain</i> yang serupa yang tidak disebutkan.', catatan: 'Mengisyaratkan masih ada barang lain yang dibeli selain roti dan susu.',
         salah: 'Jangan pakai や jika kamu sudah menyebutkan seluruh barangnya.'
     },
     {
@@ -179,7 +179,7 @@ const partikelData = [
             { jp: '<ruby>美味<rt>おい</rt></ruby>しい です よ。', id: 'Ini enak lho (saya beri tahu ya).' },
             { jp: 'ここに あります よ。', id: 'Ada di sini lho.' }
         ],
-        catatan: 'Digunakan saat pembicara tahu sesuatu yang diasumsikan belum diketahui pendengar.',
+        perbandingan: '<b>Kapan pakai よ vs ね?</b><br>Gunakan <b>よ</b> jika lawan bicaramu <i>tidak tahu</i> informasi tersebut, dan kamu ingin memberitahukannya.', catatan: 'Digunakan saat pembicara tahu sesuatu yang diasumsikan belum diketahui pendengar.',
         salah: 'Jangan terlalu sering dipakai terus-menerus karena bisa terdengar menggurui atau agresif.'
     },
     {
@@ -192,7 +192,7 @@ const partikelData = [
             { jp: '<ruby>美味<rt>おい</rt></ruby>しい です ね。', id: 'Ini enak ya (kan?).' },
             { jp: '<ruby>明日<rt>あした</rt></ruby> は <ruby>休<rt>やす</rt></ruby>み です ね。', id: 'Besok libur, kan?' }
         ],
-        catatan: 'Digunakan saat pembicara mengharapkan pendengar setuju dengannya, atau sekadar pelembut kalimat.',
+        perbandingan: '<b>Kapan pakai ね vs よ?</b><br>Gunakan <b>ね</b> jika kamu yakin bahwa lawan bicaramu <i>juga memiliki pemikiran yang sama</i> atau mengetahui hal yang sama, sehingga kamu hanya sekedar mengkonfirmasinya.', catatan: 'Digunakan saat pembicara mengharapkan pendengar setuju dengannya, atau sekadar pelembut kalimat.',
         salah: 'Berbeda dengan よ, ね berasumsi pendengar memiliki pemahaman/pengalaman yang sama.'
     }
 ];
@@ -234,8 +234,8 @@ function saveProgress() {
     localStorage.setItem('gy_jp_particle_progress_data', JSON.stringify(userProgress));
 
     // Calculate total percentage
-    let totalItems = 15 /* dasar */ + 2 /* kontras */ + 1 /* quiz */;
-    let completed = userProgress.partikelSelesai.length + userProgress.kontrasSelesai.length + (userProgress.quizSelesai ? 1 : 0);
+    let totalItems = 15 /* dasar */ + 2 /* kontras */ + 2 /* latihan & ujian */;
+    let completed = userProgress.partikelSelesai.length + userProgress.kontrasSelesai.length + (userProgress.latihanSelesai ? 1 : 0) + (userProgress.quizSelesai ? 1 : 0);
     let percentage = Math.round((completed / totalItems) * 100);
 
     localStorage.setItem('gy_jp_particle_progress', percentage);
@@ -244,8 +244,8 @@ function saveProgress() {
 
 // Update UI based on progress
 function updateUIProgress() {
-    let totalItems = 15 + 2 + 1;
-    let completed = userProgress.partikelSelesai.length + userProgress.kontrasSelesai.length + (userProgress.quizSelesai ? 1 : 0);
+    let totalItems = 15 + 2 + 2;
+    let completed = userProgress.partikelSelesai.length + userProgress.kontrasSelesai.length + (userProgress.latihanSelesai ? 1 : 0) + (userProgress.quizSelesai ? 1 : 0);
     let percentage = Math.round((completed / totalItems) * 100);
 
     document.getElementById('totalProgressText').innerText = percentage + '%';
@@ -256,7 +256,8 @@ function updateUIProgress() {
 
     let progQuiz = document.getElementById('progQuiz');
     if (progQuiz) {
-        progQuiz.innerText = userProgress.quizSelesai ? '1/1' : '0/1';
+        let qCount = (userProgress.latihanSelesai ? 1 : 0) + (userProgress.quizSelesai ? 1 : 0);
+        progQuiz.innerText = qCount + '/2';
     }
 
     // Update Badge
@@ -356,6 +357,13 @@ function openPartikelModal(id) {
                     `).join('')}
                 </div>
             </div>
+            ${p.perbandingan ? `
+            <div class="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl text-sm">
+                <p class="text-blue-300 font-semibold mb-2 flex items-center gap-2"><i data-lucide="split" class="w-4 h-4"></i> Perbandingan</p>
+                <p class="text-blue-200/90 leading-relaxed">${p.perbandingan}</p>
+            </div>
+            ` : ''}
+
             <div class="bg-orange-500/10 border border-orange-500/20 p-4 rounded-xl text-sm">
                 <p class="text-orange-300 font-semibold mb-1 flex items-center gap-2"><i data-lucide="alert-triangle" class="w-4 h-4"></i> Catatan & Kesalahan Umum</p>
                 <p class="text-orange-200/80 mb-2">${p.catatan}</p>
@@ -994,3 +1002,213 @@ function showUjianResult() {
     lucide.createIcons();
     showToast('JLPT Selesai', `Skor akhir: ${percentage}`);
 }
+
+// =====================================
+// LATIHAN MODE
+// =====================================
+let currentLatihanIndex = 0;
+let latihanScore = 0;
+let latihanData = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btnStartLatihan = document.getElementById('btnStartLatihan');
+    if(btnStartLatihan) {
+        btnStartLatihan.addEventListener('click', startLatihan);
+    }
+});
+
+function startLatihan() {
+    currentLatihanIndex = 0;
+    latihanScore = 0;
+
+    // Ambil 5 soal acak dari bank ujian untuk latihan
+    latihanData = shuffleArray([...ujianBank]).slice(0, 5);
+
+    renderLatihan();
+}
+
+function renderLatihan() {
+    if (currentLatihanIndex >= latihanData.length) {
+        showLatihanResult();
+        return;
+    }
+
+    const q = latihanData[currentLatihanIndex];
+    const container = document.getElementById('latihanContainer');
+
+    let contentHtml = '';
+    if (q.type === 'mcq') {
+        let optionsHtml = '';
+        q.options.forEach((opt, idx) => {
+            optionsHtml += `<button class="latihan-option w-full text-left p-4 rounded-xl border border-white/10 bg-dark-900 hover:bg-white/5 font-medium mb-3 transition" onclick="answerLatihanMcq(${idx})">${opt}</button>`;
+        });
+        contentHtml = `
+            <div class="options-container" id="latihanOptions">
+                ${optionsHtml}
+            </div>
+        `;
+    } else if (q.type === 'essay') {
+        let inputHtml = '';
+        if (Array.isArray(q.jawaban)) {
+            q.jawaban.forEach((_, idx) => {
+                 inputHtml += `<input type="text" id="latihanEssayInput_${idx}" class="latihan-essay-input w-24 bg-dark-900 border border-white/20 rounded-lg p-3 text-center text-xl font-jp mx-2 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500" placeholder="partikel">`;
+            });
+        } else {
+             inputHtml = `<input type="text" id="latihanEssayInput" class="latihan-essay-input w-32 bg-dark-900 border border-white/20 rounded-lg p-3 text-center text-xl font-jp mx-auto block focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500" placeholder="ketik romaji...">`;
+        }
+
+        contentHtml = `
+            <div class="py-6 text-center">
+                <div class="flex items-center justify-center flex-wrap mb-6">
+                    ${inputHtml}
+                </div>
+                <button class="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl transition shadow-lg shadow-purple-500/20" onclick="answerLatihanEssay()">Kirim Jawaban</button>
+            </div>
+        `;
+    }
+
+    container.innerHTML = `
+        <div class="flex justify-between items-center mb-6 text-sm text-neutral-400 font-bold uppercase tracking-wider">
+            <span class="text-purple-400">Soal Latihan ${currentLatihanIndex + 1} / ${latihanData.length}</span>
+            <button onclick="toggleHint()" class="text-purple-300 hover:text-purple-200 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded flex items-center gap-1 transition">
+                <i data-lucide="lightbulb" class="w-4 h-4"></i> Hint
+            </button>
+        </div>
+
+        <div id="latihanHint" class="hidden mb-4 bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-xl text-yellow-200/90 text-sm">
+            <i data-lucide="info" class="w-4 h-4 inline mr-1"></i> ${q.hint || 'Tidak ada petunjuk spesifik.'}
+        </div>
+
+        <div class="bg-white/5 p-6 rounded-2xl border border-white/10 mb-6">
+            <h3 class="text-2xl font-bold font-jp leading-relaxed">${q.soal}</h3>
+            <p class="text-sm text-neutral-400 mt-2"><i data-lucide="languages" class="w-4 h-4 inline mr-1"></i> ${q.terjemahan || 'Arti kalimat di atas.'}</p>
+        </div>
+        ${contentHtml}
+        <div id="latihanFeedback" class="hidden mt-6 p-4 rounded-xl text-sm border"></div>
+        <button id="btnNextLatihan" class="hidden mt-6 w-full py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition" onclick="nextLatihan()">Soal Selanjutnya</button>
+    `;
+
+    setTimeout(() => {
+        const inputs = document.querySelectorAll('.latihan-essay-input');
+        inputs.forEach(input => {
+            if (typeof wanakana !== 'undefined') {
+                wanakana.bind(input);
+            }
+        });
+        if(inputs.length > 0) inputs[0].focus();
+    }, 100);
+
+    lucide.createIcons();
+}
+
+function toggleHint() {
+    const el = document.getElementById('latihanHint');
+    if(el) el.classList.toggle('hidden');
+}
+
+function answerLatihanMcq(selectedIdx) {
+    const q = latihanData[currentLatihanIndex];
+    const opts = document.querySelectorAll('.latihan-option');
+    opts.forEach(opt => opt.disabled = true);
+
+    let isCorrect = (selectedIdx === q.jawaban);
+    if (isCorrect) {
+        opts[selectedIdx].classList.add('bg-emerald-500/20', 'border-emerald-500/50', 'text-emerald-400');
+        latihanScore += 20;
+        showLatihanFeedback(true, q.penjelasan);
+    } else {
+        opts[selectedIdx].classList.add('bg-rose-500/20', 'border-rose-500/50', 'text-rose-400');
+        opts[q.jawaban].classList.add('bg-emerald-500/20', 'border-emerald-500/50', 'text-emerald-400');
+        showLatihanFeedback(false, q.penjelasan);
+    }
+}
+
+function answerLatihanEssay() {
+    const q = latihanData[currentLatihanIndex];
+    let isCorrect = true;
+
+    if (Array.isArray(q.jawaban)) {
+        q.jawaban.forEach((ans, idx) => {
+            const input = document.getElementById('latihanEssayInput_' + idx);
+            if (!input) return;
+            let val = input.value.trim();
+            if (val !== ans) {
+                isCorrect = false;
+                input.classList.add('border-rose-500', 'text-rose-400');
+            } else {
+                input.classList.add('border-emerald-500', 'text-emerald-400');
+            }
+            input.disabled = true;
+        });
+    } else {
+        const input = document.getElementById('latihanEssayInput');
+        let val = input ? input.value.trim() : '';
+        if (val !== q.jawaban) {
+            isCorrect = false;
+            if(input) input.classList.add('border-rose-500', 'text-rose-400');
+        } else {
+            if(input) input.classList.add('border-emerald-500', 'text-emerald-400');
+        }
+        if(input) input.disabled = true;
+    }
+
+    const btnSubmit = document.querySelector('.latihan-essay-input').parentElement.nextElementSibling;
+    if (btnSubmit) btnSubmit.classList.add('hidden');
+
+    if (isCorrect) {
+        latihanScore += 20;
+        showLatihanFeedback(true, q.penjelasan);
+    } else {
+        let correctAnswerText = Array.isArray(q.jawaban) ? q.jawaban.join(' dan ') : q.jawaban;
+        showLatihanFeedback(false, `Jawaban benar: <strong>${correctAnswerText}</strong>. <br>${q.penjelasan}`);
+    }
+}
+
+function showLatihanFeedback(isCorrect, explanation) {
+    const feedback = document.getElementById('latihanFeedback');
+    const btnNext = document.getElementById('btnNextLatihan');
+
+    if (isCorrect) {
+        feedback.className = "mt-6 p-4 rounded-xl text-sm border border-emerald-500/30 bg-emerald-500/10 text-emerald-200 block";
+        feedback.innerHTML = `<strong>Benar!</strong> ${explanation}`;
+    } else {
+        feedback.className = "mt-6 p-4 rounded-xl text-sm border border-rose-500/30 bg-rose-500/10 text-rose-200 block";
+        feedback.innerHTML = `<strong>Salah.</strong> ${explanation}`;
+    }
+
+    btnNext.classList.remove('hidden');
+    if (currentLatihanIndex === latihanData.length - 1) {
+        btnNext.innerText = "Selesaikan Latihan";
+    }
+}
+
+function nextLatihan() {
+    currentLatihanIndex++;
+    renderLatihan();
+}
+
+function showLatihanResult() {
+    const container = document.getElementById('latihanContainer');
+
+    // Save completion to localstorage (treat it as part of the quiz progress fraction)
+    if (!userProgress.latihanSelesai && latihanScore >= 80) {
+        userProgress.latihanSelesai = true;
+        saveProgress();
+    }
+
+    let msg = latihanScore >= 80 ? 'Bagus! Pemanasan yang sangat baik.' : 'Tetap semangat! Gunakan tombol Hint jika masih kesulitan.';
+
+    container.innerHTML = `
+        <div class="text-center py-10">
+            <div class="w-24 h-24 rounded-full bg-purple-500/20 flex items-center justify-center border-4 border-purple-500 mx-auto mb-6">
+                <span class="text-3xl font-bold text-white">${latihanScore}</span>
+            </div>
+            <h3 class="text-2xl font-bold mb-2">Latihan Selesai!</h3>
+            <p class="text-neutral-400 mb-8">${msg}</p>
+            <button class="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition" onclick="startLatihan()">Ulangi Latihan</button>
+        </div>
+    `;
+
+    showToast('Latihan Selesai', `Skor pemanasanmu: ${latihanScore}/100.`);
+}
+// =====================================
