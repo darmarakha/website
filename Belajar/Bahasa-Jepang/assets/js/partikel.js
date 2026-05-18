@@ -748,6 +748,7 @@ let currentUjianIndex = 0;
 let ujianScore = 0;
 let ujianData = [];
 let ujianMaxScore = 0;
+let ujianHistory = [];
 
 // Initialize Ujian
 document.addEventListener('DOMContentLoaded', () => {
@@ -761,6 +762,7 @@ function startUjian() {
     currentUjianIndex = 0;
     ujianScore = 0;
     ujianMaxScore = 0;
+    ujianHistory = [];
 
     // Ambil 8 soal acak dari bank ujian
     ujianData = shuffleArray([...ujianBank]);
@@ -816,6 +818,7 @@ function renderUjian() {
         </div>
         <div class="bg-white/5 p-6 rounded-2xl border border-white/10 mb-6">
             <h3 class="text-2xl font-bold font-jp leading-relaxed">${q.soal}</h3>
+            <p class="text-sm text-neutral-400 mt-2"><i data-lucide="languages" class="w-4 h-4 inline mr-1"></i> ${q.terjemahan || 'Arti kalimat di atas.'}</p>
         </div>
         ${contentHtml}
         <div id="ujianFeedback" class="hidden mt-6 p-4 rounded-xl text-sm border"></div>
@@ -839,43 +842,58 @@ function renderUjian() {
 function answerUjianMcq(selectedIdx) {
     const q = ujianData[currentUjianIndex];
     const opts = document.querySelectorAll('.ujian-option');
-    const feedback = document.getElementById('ujianFeedback');
-    const btnNext = document.getElementById('btnNextUjian');
-
     opts.forEach(opt => opt.disabled = true);
-    ujianMaxScore += 10;
 
-    if (selectedIdx === q.jawaban) {
+    ujianMaxScore += 10;
+    let isCorrect = (selectedIdx === q.jawaban);
+
+    if (isCorrect) {
         opts[selectedIdx].classList.add('bg-emerald-500/20', 'border-emerald-500/50', 'text-emerald-400');
         ujianScore += 10;
-        showUjianFeedback(true, q.penjelasan);
     } else {
         opts[selectedIdx].classList.add('bg-rose-500/20', 'border-rose-500/50', 'text-rose-400');
-        opts[q.jawaban].classList.add('bg-emerald-500/20', 'border-emerald-500/50', 'text-emerald-400');
-        showUjianFeedback(false, q.penjelasan);
     }
+
+    let userAnswerText = q.options[selectedIdx].substring(3); // Remove A.
+    let correctAnswerText = q.options[q.jawaban].substring(3);
+
+    ujianHistory.push({
+        soal: q.soal,
+        terjemahan: q.terjemahan,
+        jawabanUser: userAnswerText,
+        jawabanBenar: correctAnswerText,
+        isCorrect: isCorrect,
+        penjelasan: q.penjelasan
+    });
+
+    setTimeout(nextUjian, 600);
 }
 
 function answerUjianEssay() {
     const q = ujianData[currentUjianIndex];
-    const feedback = document.getElementById('ujianFeedback');
     let isCorrect = true;
     ujianMaxScore += 10;
+    let userAnswers = [];
 
     if (Array.isArray(q.jawaban)) {
         q.jawaban.forEach((ans, idx) => {
             const input = document.getElementById('ujianEssayInput_' + idx);
-            if (!input || input.value.trim() !== ans) {
+            if (!input) return;
+            let val = input.value.trim();
+            userAnswers.push(val || '-');
+            if (val !== ans) {
                 isCorrect = false;
-                if(input) input.classList.add('border-rose-500', 'text-rose-400');
+                input.classList.add('border-rose-500', 'text-rose-400');
             } else {
-                if(input) input.classList.add('border-emerald-500', 'text-emerald-400');
+                input.classList.add('border-emerald-500', 'text-emerald-400');
             }
-            if(input) input.disabled = true;
+            input.disabled = true;
         });
     } else {
         const input = document.getElementById('ujianEssayInput');
-        if (!input || input.value.trim() !== q.jawaban) {
+        let val = input ? input.value.trim() : '';
+        userAnswers.push(val || '-');
+        if (val !== q.jawaban) {
             isCorrect = false;
             if(input) input.classList.add('border-rose-500', 'text-rose-400');
         } else {
@@ -889,28 +907,20 @@ function answerUjianEssay() {
 
     if (isCorrect) {
         ujianScore += 10;
-        showUjianFeedback(true, q.penjelasan);
-    } else {
-        showUjianFeedback(false, `Jawaban yang tepat adalah: <strong>${Array.isArray(q.jawaban) ? q.jawaban.join(' dan ') : q.jawaban}</strong>. <br>` + q.penjelasan);
-    }
-}
-
-function showUjianFeedback(isCorrect, explanation) {
-    const feedback = document.getElementById('ujianFeedback');
-    const btnNext = document.getElementById('btnNextUjian');
-
-    if (isCorrect) {
-        feedback.className = "mt-6 p-4 rounded-xl text-sm border border-emerald-500/30 bg-emerald-500/10 text-emerald-200 block";
-        feedback.innerHTML = `<strong>Benar!</strong> ${explanation}`;
-    } else {
-        feedback.className = "mt-6 p-4 rounded-xl text-sm border border-rose-500/30 bg-rose-500/10 text-rose-200 block";
-        feedback.innerHTML = `<strong>Salah.</strong> ${explanation}`;
     }
 
-    btnNext.classList.remove('hidden');
-    if (currentUjianIndex === ujianData.length - 1) {
-        btnNext.innerText = "Selesaikan Ujian";
-    }
+    let correctAnswerText = Array.isArray(q.jawaban) ? q.jawaban.join(' dan ') : q.jawaban;
+
+    ujianHistory.push({
+        soal: q.soal,
+        terjemahan: q.terjemahan,
+        jawabanUser: userAnswers.join(' dan '),
+        jawabanBenar: correctAnswerText,
+        isCorrect: isCorrect,
+        penjelasan: q.penjelasan
+    });
+
+    setTimeout(nextUjian, 600);
 }
 
 function nextUjian() {
@@ -934,6 +944,37 @@ function showUjianResult() {
     let borderColor = percentage >= 80 ? 'border-emerald-500' : 'border-orange-500';
     let bgColor = percentage >= 80 ? 'bg-emerald-500/20' : 'bg-orange-500/20';
 
+    let reviewHtml = '';
+    ujianHistory.forEach((item, idx) => {
+        let statusIcon = item.isCorrect
+            ? '<i data-lucide="check-circle" class="w-5 h-5 text-emerald-400 mt-1 shrink-0"></i>'
+            : '<i data-lucide="x-circle" class="w-5 h-5 text-rose-400 mt-1 shrink-0"></i>';
+
+        let userAnsClass = item.isCorrect ? 'text-emerald-400' : 'text-rose-400 line-through';
+        let correctAnsHtml = item.isCorrect ? '' : `<span class="text-emerald-400 ml-2 font-bold">${item.jawabanBenar}</span>`;
+
+        reviewHtml += `
+            <div class="bg-dark-900/50 p-5 rounded-2xl border border-white/5 mb-4 text-left">
+                <div class="flex gap-3">
+                    ${statusIcon}
+                    <div class="flex-1">
+                        <p class="text-lg font-bold font-jp text-white leading-relaxed mb-1">${idx + 1}. ${item.soal}</p>
+                        <p class="text-xs text-neutral-500 mb-3">${item.terjemahan || ''}</p>
+
+                        <div class="bg-white/5 rounded-lg p-3 mb-3 border border-white/5">
+                            <span class="text-xs text-neutral-400 uppercase tracking-wider block mb-1">Jawaban Kamu:</span>
+                            <span class="${userAnsClass} font-bold">${item.jawabanUser}</span> ${correctAnsHtml}
+                        </div>
+
+                        <div class="text-sm text-neutral-300">
+                            <strong class="text-white">Penjelasan:</strong> ${item.penjelasan}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
     container.innerHTML = `
         <div class="text-center py-10">
             <div class="w-32 h-32 rounded-full ${bgColor} flex items-center justify-center border-4 ${borderColor} mx-auto mb-6">
@@ -941,9 +982,15 @@ function showUjianResult() {
             </div>
             <h3 class="text-3xl font-bold mb-2">Sertifikasi Selesai</h3>
             <p class="text-neutral-400 mb-8">${msg}</p>
-            <button class="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition" onclick="startUjian()">Ulangi Ujian JLPT</button>
+            <button class="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition mb-12" onclick="startUjian()">Ulangi Ujian JLPT</button>
+
+            <div class="border-t border-white/10 pt-8 mt-4">
+                <h4 class="text-xl font-bold mb-6 text-left flex items-center gap-2"><i data-lucide="book-open" class="w-5 h-5 text-orange-400"></i> Review Jawaban & Penjelasan Lengkap</h4>
+                ${reviewHtml}
+            </div>
         </div>
     `;
 
+    lucide.createIcons();
     showToast('JLPT Selesai', `Skor akhir: ${percentage}`);
 }
