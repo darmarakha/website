@@ -5,165 +5,195 @@ const partikelData = [
         char: 'は',
         romaji: 'wa',
         fungsi: 'Topik kalimat',
-        rumus: 'A は B です',
-        contoh: 'わたし は がくせい です。',
-        terjemahan: 'Saya adalah pelajar.',
-        catatan: 'Dibaca "wa", bukan "ha". Menunjukkan "kalau tentang..."',
-        salah: 'Jangan gunakan は untuk penanda subjek baru atau fokus aksi.'
+        rumus: '[Subjek/Topik] + は + [Keterangan/Predikat]',
+        contoh: [
+            { jp: '<ruby>私<rt>わたし</rt></ruby> は <ruby>学生<rt>がくせい</rt></ruby> です。', id: 'Saya adalah pelajar.' },
+            { jp: 'この <ruby>本<rt>ほん</rt></ruby> は 面白い です。', id: 'Buku ini menarik.' }
+        ],
+        catatan: 'Dibaca "wa", bukan "ha". Menandakan "kalau tentang...". Menunjukkan hal yang sudah diketahui oleh pembicara dan pendengar.',
+        salah: 'Jangan gunakan は untuk penanda informasi baru.'
     },
     {
         id: 'ga',
         char: 'が',
         romaji: 'ga',
-        fungsi: 'Subjek / Informasi baru',
-        rumus: 'Kata Benda が Kata Kerja',
-        contoh: 'あめ が ふります。',
-        terjemahan: 'Hujan turun.',
-        catatan: 'Menandai siapa/apa yang melakukan. Sering dipakai untuk keberadaan (ada/berada).',
-        salah: 'Jangan tertukar dengan は. が menekankan subjeknya.'
+        fungsi: 'Subjek / Informasi baru / Keberadaan',
+        rumus: '[Subjek Spesifik] + が + [Kata Kerja Intransitif / Keberadaan]',
+        contoh: [
+            { jp: '<ruby>雨<rt>あめ</rt></ruby> が <ruby>降<rt>ふ</rt></ruby>ります。', id: 'Hujan turun.' },
+            { jp: '<ruby>部屋<rt>へや</rt></ruby> に <ruby>猫<rt>ねこ</rt></ruby> が います。', id: 'Ada kucing di kamar.' }
+        ],
+        catatan: 'Menandai siapa/apa yang melakukan aksi. Sangat sering dipakai dengan kata kerja あります (ada benda mati) dan います (ada mahluk hidup).',
+        salah: 'Jangan tertukar dengan は. が lebih menekankan pada Subjeknya.'
     },
     {
         id: 'wo',
         char: 'を',
         romaji: 'o',
-        fungsi: 'Objek langsung',
-        rumus: 'Objek を Kata Kerja',
-        contoh: 'みず を のみます。',
-        terjemahan: 'Saya minum air.',
-        catatan: 'Menandai objek yang dikenai pekerjaan. Dibaca "o".',
-        salah: 'Jangan pakai を untuk tempat aksi (gunakan で).'
+        fungsi: 'Objek langsung aksi',
+        rumus: '[Objek Penderita] + を + [Kata Kerja Transitif]',
+        contoh: [
+            { jp: '<ruby>水<rt>みず</rt></ruby> を <ruby>飲<rt>の</rt></ruby>みます。', id: 'Saya minum air.' },
+            { jp: '<ruby>本<rt>ほん</rt></ruby> を <ruby>読<rt>よ</rt></ruby>みます。', id: 'Saya membaca buku.' }
+        ],
+        catatan: 'Menandai benda yang secara langsung dikenai pekerjaan. Dibaca "o", walau diketik "wo".',
+        salah: 'Jangan pakai を untuk menunjukkan lokasi, kecuali pada pengecualian kata kerja gerak (misal: melewati taman -> こうえん を さんぽします).'
     },
     {
         id: 'ni',
         char: 'に',
         romaji: 'ni',
         fungsi: 'Waktu, Tujuan, Titik Keberadaan',
-        rumus: 'Waktu/Tempat に',
-        contoh: 'がっこう に います。',
-        terjemahan: 'Saya berada di sekolah.',
-        catatan: 'Menunjukkan titik lokasi benda/orang berada, atau titik waktu.',
-        salah: 'Jangan pakai に untuk tempat aktivitas bergerak/aksi.'
+        rumus: '[Waktu/Tempat Spesifik] + に',
+        contoh: [
+            { jp: '<ruby>学校<rt>がっこう</rt></ruby> に います。', id: 'Saya berada di sekolah. (Keberadaan)' },
+            { jp: '<ruby>七時<rt>しちじ</rt></ruby> に <ruby>起<rt>お</rt></ruby>きます。', id: 'Saya bangun pada jam tujuh. (Waktu)' },
+            { jp: '<ruby>日本<rt>にほん</rt></ruby> に <ruby>行<rt>い</rt></ruby>きます。', id: 'Saya pergi ke Jepang. (Tujuan)' }
+        ],
+        catatan: 'Berfungsi seperti paku yang menancap pada satu titik (waktu tertentu, tempat berada yang tidak bergerak).',
+        salah: 'Jangan pakai に untuk tempat dimana kamu melakukan aktivitas bergerak (seperti makan, belajar).'
     },
     {
         id: 'de',
         char: 'で',
         romaji: 'de',
         fungsi: 'Tempat aksi, Alat/Cara',
-        rumus: 'Tempat/Alat で',
-        contoh: 'がっこう で べんきょうします。',
-        terjemahan: 'Saya belajar di sekolah.',
-        catatan: 'Menunjukkan di mana sebuah aktivitas dilakukan, atau dengan menggunakan apa.',
-        salah: 'Jangan tertukar dengan に untuk keberadaan.'
+        rumus: '[Tempat Aksi / Alat / Kendaraan] + で + [Kata Kerja]',
+        contoh: [
+            { jp: '<ruby>学校<rt>がっこう</rt></ruby> で <ruby>勉強<rt>べんきょう</rt></ruby>します。', id: 'Saya belajar di sekolah. (Tempat Aksi)' },
+            { jp: '<ruby>鉛筆<rt>えんぴつ</rt></ruby> で <ruby>書<rt>か</rt></ruby>きます。', id: 'Saya menulis dengan pensil. (Alat)' }
+        ],
+        catatan: 'Menunjukkan "di mana" sebuah aktivitas dilakukan, atau "dengan cara/alat apa" sebuah aksi dilakukan.',
+        salah: 'Jangan tertukar dengan に. で butuh aksi dinamis, に statis.'
     },
     {
         id: 'e',
         char: 'へ',
         romaji: 'e',
-        fungsi: 'Arah tujuan',
-        rumus: 'Tempat へ',
-        contoh: 'にほん へ いきます。',
-        terjemahan: 'Saya pergi menuju Jepang.',
-        catatan: 'Dibaca "e". Mirip dengan に tapi lebih menekankan arah perjalanan.',
+        fungsi: 'Arah tujuan (Direction)',
+        rumus: '[Tempat/Arah] + へ + [Kata Kerja Gerak]',
+        contoh: [
+            { jp: '<ruby>日本<rt>にほん</rt></ruby> へ <ruby>行<rt>い</rt></ruby>きます。', id: 'Saya pergi menuju Jepang.' },
+            { jp: '<ruby>右<rt>みぎ</rt></ruby> へ <ruby>曲<rt>ま</rt></ruby>がります。', id: 'Belok ke arah kanan.' }
+        ],
+        catatan: 'Dibaca "e". Secara fungsional mirip dengan に untuk tujuan tempat, tapi へ lebih menekankan "arah perjalanannya" daripada "titik tujuannya".',
         salah: 'Jangan baca "he".'
     },
     {
         id: 'no',
         char: 'の',
         romaji: 'no',
-        fungsi: 'Kepemilikan / Penjelas',
-        rumus: 'A の B',
-        contoh: 'わたし の ほん です。',
-        terjemahan: 'Ini adalah buku saya.',
-        catatan: 'Menghubungkan dua kata benda. A menjelaskan B.',
-        salah: 'B tidak selalu barang, bisa juga keterangan (misal: Guru Bahasa Jepang -> Nihongo no Sensei).'
+        fungsi: 'Kepemilikan / Penjelas Nomina',
+        rumus: '[Kata Benda 1] + の + [Kata Benda 2]',
+        contoh: [
+            { jp: '<ruby>私<rt>わたし</rt></ruby> の <ruby>本<rt>ほん</rt></ruby> です。', id: 'Ini adalah buku milik saya.' },
+            { jp: '<ruby>日本語<rt>にほんご</rt></ruby> の <ruby>先生<rt>せんせい</rt></ruby> です。', id: 'Beliau adalah guru (pelajaran) bahasa Jepang.' }
+        ],
+        catatan: 'Menghubungkan dua kata benda. Benda 1 selalu menjelaskan Benda 2.',
+        salah: 'Benda 1 tidak melulu soal "milik", bisa juga kategori/asal.'
     },
     {
         id: 'mo',
         char: 'も',
         romaji: 'mo',
-        fungsi: 'Juga',
-        rumus: 'A も B です',
-        contoh: 'わたし も がくせい です。',
-        terjemahan: 'Saya juga pelajar.',
-        catatan: 'Menggantikan は, が, atau を untuk menyatakan "juga".',
-        salah: 'Jangan menggabungkan は dan も (contoh salah: わたしはも).'
+        fungsi: 'Juga (Also/Too)',
+        rumus: '[Kata Benda] + も + [Predikat]',
+        contoh: [
+            { jp: '<ruby>私<rt>わたし</rt></ruby> も <ruby>学生<rt>がくせい</rt></ruby> です。', id: 'Saya juga seorang pelajar.' },
+            { jp: '<ruby>昨日<rt>きのう</rt></ruby> も <ruby>働<rt>はたら</rt></ruby>きました。', id: 'Kemarin saya juga bekerja.' }
+        ],
+        catatan: 'Partikel も selalu menggantikan partikel は, が, atau を. Tapi untuk partikel lain (seperti に/で), も ditambahkan setelahnya (misal: にも, でも).',
+        salah: 'Jangan menggabungkan は dan も menjadi はも.'
     },
     {
         id: 'to',
         char: 'と',
         romaji: 'to',
-        fungsi: 'Dan / Bersama dengan',
-        rumus: 'A と B (Daftar lengkap) atau A と Kata Kerja',
-        contoh: 'パン と ぎゅうにゅう を かいます。',
-        terjemahan: 'Membeli roti dan susu.',
-        catatan: 'Menyebutkan semua hal dalam daftar secara spesifik.',
-        salah: 'Jangan pakai と untuk menyambung kalimat, hanya untuk kata benda.'
+        fungsi: 'Dan / Bersama dengan (Daftar lengkap)',
+        rumus: '[Benda 1] + と + [Benda 2] / [Orang] + と + [Aksi]',
+        contoh: [
+            { jp: 'パン と <ruby>牛乳<rt>ぎゅうにゅう</rt></ruby> を <ruby>買<rt>か</rt></ruby>います。', id: 'Saya membeli roti dan susu. (Daftar)' },
+            { jp: '<ruby>友達<rt>ともだち</rt></ruby> と <ruby>映画<rt>えいが</rt></ruby> を <ruby>見<rt>み</rt></ruby>ます。', id: 'Saya menonton film bersama teman.' }
+        ],
+        catatan: 'Jika digunakan sebagai "dan", itu menyiratkan hanya barang-barang tersebut yang dibicarakan (daftar tertutup).',
+        salah: 'Jangan pakai と untuk menyambung klausa/kalimat. と hanya menyambung Kata Benda.'
     },
     {
         id: 'ya',
         char: 'や',
         romaji: 'ya',
-        fungsi: 'Dan (Daftar tidak lengkap)',
-        rumus: 'A や B',
-        contoh: 'パン や ぎゅうにゅう を かいます。',
-        terjemahan: 'Membeli (hal seperti) roti dan susu.',
-        catatan: 'Mengisyaratkan ada hal lain selain yang disebutkan.',
-        salah: 'Jangan pakai や jika kamu sudah menyebutkan semua barangnya.'
+        fungsi: 'Dan / Seperti (Daftar tidak lengkap)',
+        rumus: '[Benda 1] + や + [Benda 2]',
+        contoh: [
+            { jp: 'パン や <ruby>牛乳<rt>ぎゅうにゅう</rt></ruby> を <ruby>買<rt>か</rt></ruby>います。', id: 'Saya membeli (hal-hal seperti) roti dan susu.' }
+        ],
+        catatan: 'Mengisyaratkan masih ada barang lain yang dibeli selain roti dan susu.',
+        salah: 'Jangan pakai や jika kamu sudah menyebutkan seluruh barangnya.'
     },
     {
         id: 'kara',
         char: 'から',
         romaji: 'kara',
         fungsi: 'Dari / Karena',
-        rumus: 'Tempat/Waktu から',
-        contoh: 'うち から きました。',
-        terjemahan: 'Saya datang dari rumah.',
-        catatan: 'Menunjukkan titik awal dari sebuah lokasi atau waktu.',
-        salah: 'Jangan tertukar dengan まで (sampai).'
+        rumus: '[Titik Awal Waktu/Tempat] + から',
+        contoh: [
+            { jp: '<ruby>家<rt>いえ</rt></ruby> から <ruby>来<rt>き</rt></ruby>ました。', id: 'Saya datang dari rumah.' },
+            { jp: '<ruby>九時<rt>くじ</rt></ruby> から <ruby>始<rt>はじ</rt></ruby>まります。', id: 'Akan dimulai dari jam 9.' }
+        ],
+        catatan: 'Menunjukkan titik mula dari sebuah lokasi, waktu, atau urutan.',
+        salah: 'Jika digunakan sebagai "karena", diletakkan di AKHIR klausa.'
     },
     {
         id: 'made',
         char: 'まで',
         romaji: 'made',
-        fungsi: 'Sampai',
-        rumus: 'Tempat/Waktu まで',
-        contoh: 'がっこう まで いきます。',
-        terjemahan: 'Pergi sampai sekolah.',
-        catatan: 'Menunjukkan titik akhir atau batas.',
-        salah: 'Bisa digabung dengan から (contoh: 9-ji kara 5-ji made).'
+        fungsi: 'Sampai / Hingga',
+        rumus: '[Titik Akhir Waktu/Tempat] + まで',
+        contoh: [
+            { jp: '<ruby>学校<rt>がっこう</rt></ruby> まで <ruby>行<rt>い</rt></ruby>きます。', id: 'Saya pergi sampai sekolah.' },
+            { jp: '<ruby>九時<rt>くじ</rt></ruby> から <ruby>五時<rt>ごじ</rt></ruby> まで <ruby>働<rt>はたら</rt></ruby>きます。', id: 'Saya bekerja dari jam 9 sampai jam 5.' }
+        ],
+        catatan: 'Menunjukkan titik purna atau batas akhir.',
+        salah: 'Sering dipakai berpasangan dengan から, namun bisa juga berdiri sendiri.'
     },
     {
         id: 'ka',
         char: 'か',
         romaji: 'ka',
         fungsi: 'Penanda Pertanyaan / Atau',
-        rumus: 'Kalimat + か / A か B',
-        contoh: 'これは なんですか。',
-        terjemahan: 'Ini apa?',
-        catatan: 'Diletakkan di akhir kalimat untuk menjadikannya pertanyaan, atau di antara kata benda untuk arti "atau".',
-        salah: 'Dalam bahasa Jepang formal, jarang memakai tanda tanya (?) bila sudah ada か.'
+        rumus: '[Kalimat] + か / [Benda A] か [Benda B]',
+        contoh: [
+            { jp: 'これは <ruby>何<rt>なん</rt></ruby> です か。', id: 'Ini apa?' },
+            { jp: '<ruby>明日<rt>あした</rt></ruby> か <ruby>明後日<rt>あさって</rt></ruby>。', id: 'Besok atau lusa.' }
+        ],
+        catatan: 'Diletakkan di akhir kalimat untuk menjadikannya pertanyaan (mirip tanda tanya).',
+        salah: 'Dalam bahasa Jepang formal tertulis, jarang memakai tanda baca "?" bila sudah ada か.'
     },
     {
         id: 'yo',
         char: 'よ',
         romaji: 'yo',
         fungsi: 'Penekanan / Memberi tahu info baru',
-        rumus: 'Kalimat + よ',
-        contoh: 'おいしい です よ。',
-        terjemahan: 'Enak lho.',
-        catatan: 'Digunakan saat pembicara tahu sesuatu yang pendengar belum tahu.',
-        salah: 'Jangan terlalu sering dipakai agar tidak terdengar menggurui.'
+        rumus: '[Kalimat] + よ',
+        contoh: [
+            { jp: '<ruby>美味<rt>おい</rt></ruby>しい です よ。', id: 'Ini enak lho (saya beri tahu ya).' },
+            { jp: 'ここに あります よ。', id: 'Ada di sini lho.' }
+        ],
+        catatan: 'Digunakan saat pembicara tahu sesuatu yang diasumsikan belum diketahui pendengar.',
+        salah: 'Jangan terlalu sering dipakai terus-menerus karena bisa terdengar menggurui atau agresif.'
     },
     {
         id: 'ne',
         char: 'ね',
         romaji: 'ne',
         fungsi: 'Meminta persetujuan / Konfirmasi',
-        rumus: 'Kalimat + ね',
-        contoh: 'おいしい です ね。',
-        terjemahan: 'Enak ya (kan).',
-        catatan: 'Digunakan saat pembicara mengharapkan pendengar setuju dengannya.',
-        salah: 'Berbeda dengan よ, ね berasumsi pendengar juga sepaham.'
+        rumus: '[Kalimat] + ね',
+        contoh: [
+            { jp: '<ruby>美味<rt>おい</rt></ruby>しい です ね。', id: 'Ini enak ya (kan?).' },
+            { jp: '<ruby>明日<rt>あした</rt></ruby> は <ruby>休<rt>やす</rt></ruby>み です ね。', id: 'Besok libur, kan?' }
+        ],
+        catatan: 'Digunakan saat pembicara mengharapkan pendengar setuju dengannya, atau sekadar pelembut kalimat.',
+        salah: 'Berbeda dengan よ, ね berasumsi pendengar memiliki pemahaman/pengalaman yang sama.'
     }
 ];
 
@@ -272,9 +302,10 @@ function renderPartikelGrid() {
         card.id = 'card_' + p.id;
         card.onclick = () => openPartikelModal(p.id);
 
+        let charClass = p.char.length > 1 ? 'text-xl' : 'text-3xl';
         card.innerHTML = `
             <div class="flex items-center justify-between mb-4">
-                <div class="card-icon w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center font-jp text-3xl font-bold transition-all duration-300 group-hover:bg-purple-500/20 group-hover:text-purple-400 border border-white/5 group-hover:border-purple-500/30 ${isCompleted ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' : ''}">
+                <div class="card-icon w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center font-jp ${charClass} font-bold transition-all duration-300 group-hover:bg-purple-500/20 group-hover:text-purple-400 border border-white/5 group-hover:border-purple-500/30 ${isCompleted ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' : ''}">
                     ${p.char}
                 </div>
                 <div class="status-check ${isCompleted ? '' : 'hidden'}">
@@ -296,7 +327,7 @@ function openPartikelModal(id) {
     const content = document.getElementById('modalContent');
     content.innerHTML = `
         <div class="flex items-center gap-4 mb-6 border-b border-white/10 pb-4">
-            <div class="w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center font-jp text-4xl font-bold text-purple-400 border border-purple-500/30">
+            <div class="w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center font-jp ${p.char.length > 1 ? 'text-2xl' : 'text-4xl'} font-bold text-purple-400 border border-purple-500/30">
                 ${p.char}
             </div>
             <div>
@@ -315,10 +346,14 @@ function openPartikelModal(id) {
                 <p class="text-purple-300 font-mono bg-purple-500/10 p-3 rounded-lg border border-purple-500/20">${p.rumus}</p>
             </div>
             <div>
-                <p class="text-xs text-neutral-500 uppercase tracking-wider mb-1">Contoh</p>
-                <div class="bg-dark-900/50 p-4 rounded-xl border border-white/5">
-                    <p class="text-lg font-bold text-white mb-1">${p.contoh.replace(p.char, `<span class="text-purple-400">${p.char}</span>`)}</p>
-                    <p class="text-sm text-neutral-400">${p.terjemahan}</p>
+                <p class="text-xs text-neutral-500 uppercase tracking-wider mb-2">Contoh Kalimat</p>
+                <div class="space-y-3">
+                    ${p.contoh.map(c => `
+                        <div class="bg-dark-900/50 p-4 rounded-xl border border-white/5">
+                            <p class="text-xl font-jp text-white mb-2 leading-relaxed tracking-wide">${c.jp.replace(p.char, `<span class="text-purple-400 font-bold">${p.char}</span>`)}</p>
+                            <p class="text-sm text-neutral-400">${c.id}</p>
+                        </div>
+                    `).join('')}
                 </div>
             </div>
             <div class="bg-orange-500/10 border border-orange-500/20 p-4 rounded-xl text-sm">
