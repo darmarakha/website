@@ -250,6 +250,26 @@
     </div>
   </div>
 
+  <!-- ========== SECTION: UJIAN JLPT PARTIKEL ========== -->
+  <section class="py-16 px-6 lg:px-12 bg-dark-800/20 border-t border-white/5">
+    <div class="max-w-4xl mx-auto text-center mb-12">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-300 text-sm font-semibold mb-6">
+        <i data-lucide="award" class="w-4 h-4"></i> Simulasi JLPT
+      </div>
+      <h2 class="text-3xl font-bold mb-4">Ujian JLPT: Partikel</h2>
+      <p class="text-neutral-400">Uji seberapa dalam pemahamanmu. Ujian ini berisi soal pilihan ganda dan essai (ketik partikel yang tepat).</p>
+    </div>
+
+    <div class="max-w-3xl mx-auto glass-card rounded-3xl p-8 border border-white/10" id="ujianContainer">
+      <div class="text-center py-10" id="ujianStartMenu">
+          <i data-lucide="graduation-cap" class="w-16 h-16 text-orange-400 mx-auto mb-4"></i>
+          <h3 class="text-2xl font-bold mb-2">Simulasi JLPT N5 Partikel</h3>
+          <p class="text-neutral-400 mb-6">Ujian komprehensif. Keyboard akan otomatis mengubah huruf Romaji menjadi Hiragana pada sesi essai.</p>
+          <button id="btnStartUjian" class="px-8 py-3 bg-gradient-to-r from-orange-500 to-sakura-500 hover:from-orange-600 hover:to-sakura-600 text-white font-bold rounded-xl shadow-lg transition">Mulai Ujian JLPT</button>
+      </div>
+    </div>
+  </section>
+
   <!-- Toast -->
   <div class="fixed bottom-8 right-8 z-[70] translate-y-24 transition-all duration-500 opacity-0" id="toast">
     <div class="glass-card rounded-2xl border border-white/10 p-4 shadow-2xl flex items-center gap-4 min-w-[300px] bg-dark-800">
@@ -263,6 +283,8 @@
     </div>
   </div>
 
+  <!-- Wanakana JS for Romaji -> Kana conversion -->
+  <script src="https://unpkg.com/wanakana"></script>
   <script src="assets/js/partikel.js"></script>
   <script>
     lucide.createIcons();
