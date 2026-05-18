@@ -1,4 +1,31 @@
-[Mon May 18 04:29:50 2026] PHP 8.3.6 Development Server (http://localhost:8000) started
-[Mon May 18 04:30:25 2026] [::1]:52016 Accepted
-[Mon May 18 04:30:25 2026] [::1]:52016 [200]: GET /Belajar/Bahasa-Jepang/angka.php
-[Mon May 18 04:30:25 2026] [::1]:52016 Closing
+[Mon May 18 05:33:28 2026] PHP 8.3.6 Development Server (http://localhost:8000) started
+[Mon May 18 05:33:53 2026] [::1]:57948 Accepted
+[Mon May 18 05:33:53 2026] [::1]:57948 [200]: GET /Belajar/Bahasa-Jepang/index.php
+[Mon May 18 05:33:53 2026] [::1]:57948 Closing
+[Mon May 18 05:33:54 2026] [::1]:57962 Accepted
+[Mon May 18 05:33:54 2026] [::1]:57962 [200]: GET /Belajar/Bahasa-Jepang/assets/css/style.css
+[Mon May 18 05:33:54 2026] [::1]:57962 Closing
+[Mon May 18 05:33:54 2026] [::1]:57970 Accepted
+[Mon May 18 05:33:54 2026] [::1]:57970 [200]: GET /Belajar/Bahasa-Jepang/assets/js/script.js
+[Mon May 18 05:33:54 2026] [::1]:57970 Closing
+[Mon May 18 05:34:11 2026] [::1]:55518 Accepted
+[Mon May 18 05:34:11 2026] [::1]:55518 [200]: GET /Belajar/Bahasa-Jepang/index.php
+[Mon May 18 05:34:11 2026] [::1]:55518 Closing
+[Mon May 18 05:34:11 2026] [::1]:55530 Accepted
+[Mon May 18 05:34:11 2026] [::1]:55530 [200]: GET /Belajar/Bahasa-Jepang/assets/css/style.css
+[Mon May 18 05:34:11 2026] [::1]:55530 Closing
+[Mon May 18 05:34:11 2026] [::1]:55540 Accepted
+[Mon May 18 05:34:11 2026] [::1]:55540 [200]: GET /Belajar/Bahasa-Jepang/assets/js/script.js
+[Mon May 18 05:34:11 2026] [::1]:55540 Closing
+[Mon May 18 05:34:17 2026] [::1]:55740 Accepted
+[Mon May 18 05:34:17 2026] [::1]:55740 [200]: GET /Belajar/Bahasa-Jepang/partikel.php
+[Mon May 18 05:34:17 2026] [::1]:55740 Closing
+[Mon May 18 05:34:17 2026] [::1]:55744 Accepted
+[Mon May 18 05:34:17 2026] [::1]:55760 Accepted
+[Mon May 18 05:34:17 2026] [::1]:55768 Accepted
+[Mon May 18 05:34:17 2026] [::1]:55744 [200]: GET /Belajar/Bahasa-Jepang/assets/css/partikel.css
+[Mon May 18 05:34:17 2026] [::1]:55744 Closing
+[Mon May 18 05:34:17 2026] [::1]:55760 [200]: GET /Belajar/Bahasa-Jepang/assets/css/style.css
+[Mon May 18 05:34:17 2026] [::1]:55760 Closing
+[Mon May 18 05:34:17 2026] [::1]:55768 [200]: GET /Belajar/Bahasa-Jepang/assets/js/partikel.js
+[Mon May 18 05:34:17 2026] [::1]:55768 Closing
