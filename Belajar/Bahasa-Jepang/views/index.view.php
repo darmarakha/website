@@ -914,6 +914,41 @@
     }
   </script>
   
+    <!-- ========== PLACEMENT TEST MODAL ========== -->
+  <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 transition-all duration-500 opacity-0 pointer-events-none" id="placementModal">
+    <div class="absolute inset-0 bg-dark-900/80 backdrop-blur-sm" onclick="closePlacementModal()"></div>
+    <div class="relative w-full max-w-lg glass-card rounded-[2rem] border border-white/10 p-8 shadow-2xl scale-95 transition-transform duration-500 overflow-hidden" id="placementCard">
+      <div class="absolute -top-12 -right-12 w-32 h-32 bg-orange-500/20 rounded-full blur-3xl"></div>
+
+      <div id="ptContent">
+        <div class="flex items-center justify-between mb-8">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-orange-400/10 flex items-center justify-center border border-orange-400/20">
+              <i data-lucide="compass" class="w-5 h-5 text-orange-400"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-white">Placement Test (AI Guide)</h3>
+              <p class="text-xs text-neutral-500">Pertanyaan <span id="ptNum">1</span>/5</p>
+            </div>
+          </div>
+          <button onclick="closePlacementModal()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-neutral-400 hover:text-white transition-colors">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <h4 class="text-xl font-semibold text-white mb-6 leading-relaxed" id="ptQuestionText">Loading...</h4>
+        <div class="space-y-3" id="ptOptionsContainer"></div>
+      </div>
+
+      <div id="ptResult" class="hidden text-center py-4">
+        <div class="text-6xl mb-6" id="ptResultEmoji">🤖</div>
+        <h3 class="text-2xl font-bold text-white mb-2" id="ptResultTitle">Rekomendasi AI</h3>
+        <p class="text-neutral-400 mb-8" id="ptResultDesc"></p>
+        <button onclick="closePlacementModal(); document.getElementById('materi').scrollIntoView({behavior:'smooth'});" class="btn-primary w-full py-4 rounded-2xl font-bold">Mulai Belajar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ========== LEVEL MODAL ========== -->
   <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 transition-all duration-500 opacity-0 pointer-events-none" id="levelModal">
     <div class="absolute inset-0 bg-dark-900/80 backdrop-blur-sm" onclick="closeLevelModal()"></div>
@@ -962,6 +997,67 @@
         <p class="text-neutral-400 mb-8" id="resultDesc">Selamat! Kamu siap untuk mulai belajar materi N5.</p>
         <button onclick="closeLevelModal()" class="btn-primary w-full py-4 rounded-2xl font-bold">Mulai Belajar Sekarang</button>
       </div>
+    </div>
+  </div>
+
+    <!-- ========== CERTIFICATE MODAL ========== -->
+  <style>
+    @media print {
+        body * { visibility: hidden; }
+        #certPrintArea, #certPrintArea * { visibility: visible; }
+        #certPrintArea { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: white !important; }
+        .cert-bg { display: none !important; }
+        .print-cert { border: 10px solid #d4af37 !important; padding: 40px !important; color: black !important; text-align: center !important; width: 100% !important; max-width: 800px !important; font-family: serif !important; background: url('https://www.transparenttextures.com/patterns/rice-paper-2.png') !important;}
+        .print-cert h1 { font-size: 50px !important; margin-bottom: 20px !important; color: #b8860b !important; }
+        .print-cert h2 { font-size: 30px !important; margin-bottom: 40px !important; color: #333 !important; }
+        .print-cert p { font-size: 20px !important; margin-bottom: 10px !important; color: #555 !important;}
+        .print-cert .name { font-size: 40px !important; font-weight: bold !important; margin: 30px 0 !important; color: black !important; text-decoration: underline !important;}
+        .print-cert .logo { width: 100px !important; height: 100px !important; margin: 0 auto 20px !important; background: #d4af37 !important; color: white !important; border-radius: 50% !important; display: flex !important; align-items: center !important; justify-content: center !important; font-size: 40px !important; font-weight: bold !important;}
+    }
+  </style>
+
+  <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 transition-all duration-500 opacity-0 pointer-events-none" id="certModal">
+    <div class="absolute inset-0 bg-dark-900/90 backdrop-blur-sm" onclick="document.getElementById('certModal').classList.remove('active'); document.body.style.overflow=''"></div>
+
+    <div class="relative w-full max-w-2xl bg-white rounded-xl shadow-2xl p-8 overflow-hidden" id="certPrintArea">
+      <div class="cert-bg absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/rice-paper-2.png')] opacity-50"></div>
+      <div class="absolute inset-4 border-[8px] border-amber-500/80 rounded-lg pointer-events-none"></div>
+      <div class="absolute inset-6 border-2 border-amber-500/40 rounded pointer-events-none"></div>
+
+      <div class="relative z-10 text-center py-8 print-cert">
+        <div class="logo w-20 h-20 mx-auto bg-amber-500 text-white rounded-full flex items-center justify-center text-4xl font-bold font-jp mb-6 shadow-lg">日</div>
+        <h1 class="text-4xl md:text-5xl font-serif text-amber-600 font-bold mb-2 uppercase tracking-widest">Certificate</h1>
+        <h2 class="text-xl md:text-2xl text-neutral-600 font-serif mb-8 tracking-wider">of Achievement</h2>
+
+        <p class="text-neutral-500 mb-2">This is to certify that</p>
+        <p class="name text-3xl md:text-4xl font-bold text-dark-900 mb-6 font-serif">
+            <?php echo !empty($_SESSION['user_name']) ? htmlspecialchars($_SESSION['user_name']) : 'Pelajar GemuYokai'; ?>
+        </p>
+
+        <p class="text-neutral-500 mb-6 max-w-md mx-auto leading-relaxed">
+            has successfully completed the <b>JLPT N5</b> preparatory course and demonstrated fundamental Japanese language proficiency.
+        </p>
+
+        <div class="flex justify-center items-end gap-16 mt-12 pt-8 border-t border-amber-200 w-3/4 mx-auto">
+            <div>
+                <p class="font-bold text-dark-900"><?php echo date('F j, Y'); ?></p>
+                <p class="text-xs text-neutral-500 uppercase tracking-widest">Date</p>
+            </div>
+            <div class="text-center">
+                <p class="text-3xl font-jp text-amber-600 mb-1">合格</p>
+                <p class="text-xs text-neutral-500 uppercase tracking-widest">Passed</p>
+            </div>
+            <div>
+                <p class="font-bold text-dark-900">GemuYokai</p>
+                <p class="text-xs text-neutral-500 uppercase tracking-widest">Director</p>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4">
+        <button onclick="document.getElementById('certModal').classList.remove('active'); document.body.style.overflow=''" class="btn-secondary px-6 py-3 rounded-xl text-white font-semibold shadow-lg">Tutup</button>
+        <button onclick="window.print()" class="btn-primary px-6 py-3 rounded-xl text-white font-semibold shadow-lg flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i> Download PDF</button>
     </div>
   </div>
 

@@ -1,0 +1,602 @@
+[
+    {
+        "jp": "わたし",
+        "romaji": "watashi",
+        "kana": "わたし",
+        "id": "saya",
+        "cat": "Orang",
+        "usage": "Digunakan secara umum oleh laki-laki dan perempuan dalam situasi formal maupun kasual.",
+        "ex_jp": "わたしは がくせいです。",
+        "ex_id": "Saya adalah pelajar."
+    },
+    {
+        "jp": "あなた",
+        "romaji": "anata",
+        "kana": "あなた",
+        "id": "kamu",
+        "cat": "Orang",
+        "usage": "Sopan untuk \"kamu\", namun dalam percakapan sehari-hari orang Jepang lebih sering memanggil nama.",
+        "ex_jp": "あなたは だれですか。",
+        "ex_id": "Kamu siapa?"
+    },
+    {
+        "jp": "先生",
+        "romaji": "sensei",
+        "kana": "せんせい",
+        "id": "guru",
+        "cat": "Orang",
+        "usage": "Gelar untuk guru, dokter, politisi, atau orang yang dihormati karena profesinya.",
+        "ex_jp": "あのひとは 先生です。",
+        "ex_id": "Orang itu adalah guru."
+    },
+    {
+        "jp": "学生",
+        "romaji": "gakusei",
+        "kana": "がくせい",
+        "id": "pelajar",
+        "cat": "Orang",
+        "usage": "Merujuk pada pelajar secara umum, biasanya untuk tingkat SMP, SMA, atau Universitas.",
+        "ex_jp": "わたしは 大学の学生です。",
+        "ex_id": "Saya adalah mahasiswa universitas."
+    },
+    {
+        "jp": "友だち",
+        "romaji": "tomodachi",
+        "kana": "ともだち",
+        "id": "teman",
+        "cat": "Orang",
+        "usage": "Teman atau kawan. Teman dekat biasanya disebut shinyuu.",
+        "ex_jp": "友だちと えいがを みます。",
+        "ex_id": "Menonton film bersama teman."
+    },
+    {
+        "jp": "家族",
+        "romaji": "kazoku",
+        "kana": "かぞく",
+        "id": "keluarga",
+        "cat": "Orang",
+        "usage": "Keluarga. Jika menyebut keluarga orang lain, gunakan \"gokazoku\".",
+        "ex_jp": "家族は 四人です。",
+        "ex_id": "Keluarga saya 4 orang."
+    },
+    {
+        "jp": "だれ",
+        "romaji": "dare",
+        "kana": "だれ",
+        "id": "siapa",
+        "cat": "Orang",
+        "usage": "Kata tanya untuk menanyakan orang. Bentuk lebih sopannya adalah \"donata\".",
+        "ex_jp": "あの人は だれですか。",
+        "ex_id": "Orang itu siapa?"
+    },
+    {
+        "jp": "家",
+        "romaji": "ie \/ uchi",
+        "kana": "いえ \/ うち",
+        "id": "rumah",
+        "cat": "Tempat",
+        "usage": "ie merujuk pada bangunan rumah, uchi merujuk pada konsep \"rumahku\" atau \"keluargaku\".",
+        "ex_jp": "わたしの 家は おおきいです。",
+        "ex_id": "Rumah saya besar."
+    },
+    {
+        "jp": "学校",
+        "romaji": "gakkou",
+        "kana": "がっこう",
+        "id": "sekolah",
+        "cat": "Tempat",
+        "usage": "Bangunan sekolah. Bisa digabung: shougakkou (SD), chuugakkou (SMP).",
+        "ex_jp": "学校へ 行きます。",
+        "ex_id": "Pergi ke sekolah."
+    },
+    {
+        "jp": "駅",
+        "romaji": "eki",
+        "kana": "えき",
+        "id": "stasiun",
+        "cat": "Tempat",
+        "usage": "Stasiun kereta api. Jepang sangat bergantung pada stasiun untuk transportasi.",
+        "ex_jp": "駅で 友だちに あいます。",
+        "ex_id": "Bertemu teman di stasiun."
+    },
+    {
+        "jp": "店",
+        "romaji": "mise",
+        "kana": "みせ",
+        "id": "toko",
+        "cat": "Tempat",
+        "usage": "Toko umum. Bisa untuk toko baju, buku, kafe, dsb.",
+        "ex_jp": "あの店で ほんを かいます。",
+        "ex_id": "Membeli buku di toko itu."
+    },
+    {
+        "jp": "部屋",
+        "romaji": "heya",
+        "kana": "へや",
+        "id": "kamar",
+        "cat": "Tempat",
+        "usage": "Ruangan atau kamar di dalam sebuah bangunan atau rumah.",
+        "ex_jp": "わたしの 部屋は きれいです。",
+        "ex_id": "Kamar saya bersih."
+    },
+    {
+        "jp": "会社",
+        "romaji": "kaisha",
+        "kana": "かいしゃ",
+        "id": "perusahaan",
+        "cat": "Tempat",
+        "usage": "Kantor atau perusahaan tempat bekerja.",
+        "ex_jp": "父は 会社へ 行きます。",
+        "ex_id": "Ayah pergi ke kantor."
+    },
+    {
+        "jp": "病院",
+        "romaji": "byouin",
+        "kana": "びょういん",
+        "id": "rumah sakit",
+        "cat": "Tempat",
+        "usage": "Tempat untuk berobat. Dokter disebut \"isha\".",
+        "ex_jp": "病院に 行きます。",
+        "ex_id": "Pergi ke rumah sakit."
+    },
+    {
+        "jp": "水",
+        "romaji": "mizu",
+        "kana": "みず",
+        "id": "air",
+        "cat": "Benda",
+        "usage": "Air dingin atau air biasa. Air panas disebut \"oyu\".",
+        "ex_jp": "水を のみます。",
+        "ex_id": "Minum air."
+    },
+    {
+        "jp": "本",
+        "romaji": "hon",
+        "kana": "ほん",
+        "id": "buku",
+        "cat": "Benda",
+        "usage": "Buku cetak. Buku catatan disebut \"nooto\".",
+        "ex_jp": "本を よみます。",
+        "ex_id": "Membaca buku."
+    },
+    {
+        "jp": "車",
+        "romaji": "kuruma",
+        "kana": "くるま",
+        "id": "mobil",
+        "cat": "Benda",
+        "usage": "Kendaraan mobil. Bisa juga berarti roda.",
+        "ex_jp": "新しい車を かいます。",
+        "ex_id": "Membeli mobil baru."
+    },
+    {
+        "jp": "電車",
+        "romaji": "densha",
+        "kana": "でんしゃ",
+        "id": "kereta listrik",
+        "cat": "Benda",
+        "usage": "Transportasi umum utama di Jepang.",
+        "ex_jp": "電車で 会社へ 行きます。",
+        "ex_id": "Pergi ke kantor dengan kereta."
+    },
+    {
+        "jp": "電話",
+        "romaji": "denwa",
+        "kana": "でんわ",
+        "id": "telepon",
+        "cat": "Benda",
+        "usage": "Telepon. Telepon genggam disebut \"keitai\" atau \"sumaho\".",
+        "ex_jp": "友だちに 電話を します。",
+        "ex_id": "Menelepon teman."
+    },
+    {
+        "jp": "お金",
+        "romaji": "okane",
+        "kana": "おかね",
+        "id": "uang",
+        "cat": "Benda",
+        "usage": "Uang. Biasanya diawali \"o\" sebagai penanda kesopanan.",
+        "ex_jp": "お金が ありません。",
+        "ex_id": "Tidak punya uang."
+    },
+    {
+        "jp": "靴",
+        "romaji": "kutsu",
+        "kana": "くつ",
+        "id": "sepatu",
+        "cat": "Benda",
+        "usage": "Sepatu secara umum.",
+        "ex_jp": "新しい靴を かいました。",
+        "ex_id": "Membeli sepatu baru."
+    },
+    {
+        "jp": "かばん",
+        "romaji": "kaban",
+        "kana": "かばん",
+        "id": "tas",
+        "cat": "Benda",
+        "usage": "Tas, tas sekolah, atau koper.",
+        "ex_jp": "かばんの 中に ほんが あります。",
+        "ex_id": "Ada buku di dalam tas."
+    },
+    {
+        "jp": "食べる",
+        "romaji": "taberu",
+        "kana": "たべる",
+        "id": "makan",
+        "cat": "Kata Kerja",
+        "usage": "Bentuk kamus dari makan. Bentuk sopannya \"tabemasu\". Membutuhkan partikel \"wo\" (を).",
+        "ex_jp": "パンを 食べます。",
+        "ex_id": "Makan roti."
+    },
+    {
+        "jp": "飲む",
+        "romaji": "nomu",
+        "kana": "のむ",
+        "id": "minum",
+        "cat": "Kata Kerja",
+        "usage": "Bentuk kamus dari minum. Bentuk sopannya \"nomimasu\".",
+        "ex_jp": "水を 飲みます。",
+        "ex_id": "Minum air."
+    },
+    {
+        "jp": "行く",
+        "romaji": "iku",
+        "kana": "いく",
+        "id": "pergi",
+        "cat": "Kata Kerja",
+        "usage": "Diikuti partikel \"ni\" (に) atau \"e\" (へ) menuju suatu tempat.",
+        "ex_jp": "学校へ 行きます。",
+        "ex_id": "Pergi ke sekolah."
+    },
+    {
+        "jp": "来る",
+        "romaji": "kuru",
+        "kana": "くる",
+        "id": "datang",
+        "cat": "Kata Kerja",
+        "usage": "Kata kerja tak beraturan. Bentuk sopannya \"kimasu\".",
+        "ex_jp": "日本から 来ました。",
+        "ex_id": "Datang dari Jepang."
+    },
+    {
+        "jp": "見る",
+        "romaji": "miru",
+        "kana": "みる",
+        "id": "melihat",
+        "cat": "Kata Kerja",
+        "usage": "Melihat, menonton (TV\/film), atau memandang.",
+        "ex_jp": "えいがを 見ます。",
+        "ex_id": "Menonton film."
+    },
+    {
+        "jp": "する",
+        "romaji": "suru",
+        "kana": "する",
+        "id": "melakukan",
+        "cat": "Kata Kerja",
+        "usage": "Kata kerja tak beraturan \"shimasu\". Digunakan mengubah kata benda jadi kata kerja (cth: benkyou suru = belajar).",
+        "ex_jp": "スポーツを します。",
+        "ex_id": "Berolahraga (melakukan olahraga)."
+    },
+    {
+        "jp": "読む",
+        "romaji": "yomu",
+        "kana": "よむ",
+        "id": "membaca",
+        "cat": "Kata Kerja",
+        "usage": "Membaca buku, koran, dll.",
+        "ex_jp": "本を 読みます。",
+        "ex_id": "Membaca buku."
+    },
+    {
+        "jp": "書く",
+        "romaji": "kaku",
+        "kana": "かく",
+        "id": "menulis",
+        "cat": "Kata Kerja",
+        "usage": "Menulis surat, laporan, karakter, dll.",
+        "ex_jp": "てがみを 書きます。",
+        "ex_id": "Menulis surat."
+    },
+    {
+        "jp": "買う",
+        "romaji": "kau",
+        "kana": "かう",
+        "id": "membeli",
+        "cat": "Kata Kerja",
+        "usage": "Membeli barang. Partikel yang dihubungkan dengan tempat membeli adalah \"de\" (で).",
+        "ex_jp": "スーパーで りんごを 買います。",
+        "ex_id": "Membeli apel di supermarket."
+    },
+    {
+        "jp": "話す",
+        "romaji": "hanasu",
+        "kana": "はなす",
+        "id": "berbicara",
+        "cat": "Kata Kerja",
+        "usage": "Berbicara atau menceritakan sesuatu.",
+        "ex_jp": "日本語を 話します。",
+        "ex_id": "Berbicara bahasa Jepang."
+    },
+    {
+        "jp": "聞く",
+        "romaji": "kiku",
+        "kana": "きく",
+        "id": "mendengar\/bertanya",
+        "cat": "Kata Kerja",
+        "usage": "Bisa berarti mendengar (musik) atau bertanya (kepada orang dengan partikel に).",
+        "ex_jp": "おんがくを 聞きます。",
+        "ex_id": "Mendengarkan musik."
+    },
+    {
+        "jp": "寝る",
+        "romaji": "neru",
+        "kana": "ねる",
+        "id": "tidur",
+        "cat": "Kata Kerja",
+        "usage": "Tidur. Bentuk sopannya \"nemasu\".",
+        "ex_jp": "十時に 寝ます。",
+        "ex_id": "Tidur jam 10."
+    },
+    {
+        "jp": "大きい",
+        "romaji": "ookii",
+        "kana": "おおきい",
+        "id": "besar",
+        "cat": "Kata Sifat",
+        "usage": "Kata sifat-i. Menjelaskan ukuran atau skala yang besar.",
+        "ex_jp": "この本は 大きいです。",
+        "ex_id": "Buku ini besar."
+    },
+    {
+        "jp": "小さい",
+        "romaji": "chiisai",
+        "kana": "ちいさい",
+        "id": "kecil",
+        "cat": "Kata Sifat",
+        "usage": "Kata sifat-i. Menjelaskan ukuran yang kecil.",
+        "ex_jp": "小さい 犬が います。",
+        "ex_id": "Ada anjing kecil."
+    },
+    {
+        "jp": "新しい",
+        "romaji": "atarashii",
+        "kana": "あたらしい",
+        "id": "baru",
+        "cat": "Kata Sifat",
+        "usage": "Kata sifat-i. Baru untuk benda. (Orang baru = shinjin).",
+        "ex_jp": "新しい車を かいました。",
+        "ex_id": "Membeli mobil baru."
+    },
+    {
+        "jp": "古い",
+        "romaji": "furui",
+        "kana": "ふるい",
+        "id": "lama\/tua",
+        "cat": "Kata Sifat",
+        "usage": "Kata sifat-i. Usang\/lama HANYA untuk benda. (Orang tua = toshiyori).",
+        "ex_jp": "このテレビは 古いです。",
+        "ex_id": "TV ini tua\/lama."
+    },
+    {
+        "jp": "高い",
+        "romaji": "takai",
+        "kana": "たかい",
+        "id": "tinggi\/mahal",
+        "cat": "Kata Sifat",
+        "usage": "Kata sifat-i. Bisa berarti harga yang mahal, atau tempat yang tinggi.",
+        "ex_jp": "あの山は 高いです。",
+        "ex_id": "Gunung itu tinggi."
+    },
+    {
+        "jp": "安い",
+        "romaji": "yasui",
+        "kana": "やすい",
+        "id": "murah",
+        "cat": "Kata Sifat",
+        "usage": "Kata sifat-i. Harga yang murah.",
+        "ex_jp": "このりんごは 安いです。",
+        "ex_id": "Apel ini murah."
+    },
+    {
+        "jp": "おいしい",
+        "romaji": "oishii",
+        "kana": "おいしい",
+        "id": "enak",
+        "cat": "Kata Sifat",
+        "usage": "Kata sifat-i. Enak untuk makanan\/minuman.",
+        "ex_jp": "このパンは おいしいです。",
+        "ex_id": "Roti ini enak."
+    },
+    {
+        "jp": "きれい",
+        "romaji": "kirei",
+        "kana": "きれい",
+        "id": "cantik\/bersih",
+        "cat": "Kata Sifat",
+        "usage": "Kata sifat-na! (Meskipun berakhiran i). Cantik untuk pemandangan\/orang, atau bersih untuk tempat.",
+        "ex_jp": "へやは きれいです。",
+        "ex_id": "Kamarnya bersih."
+    },
+    {
+        "jp": "今日",
+        "romaji": "kyou",
+        "kana": "きょう",
+        "id": "hari ini",
+        "cat": "Waktu",
+        "usage": "Keterangan waktu. Biasanya diletakkan di awal kalimat tanpa partikel \"ni\".",
+        "ex_jp": "今日は あついです。",
+        "ex_id": "Hari ini panas."
+    },
+    {
+        "jp": "明日",
+        "romaji": "ashita",
+        "kana": "あした",
+        "id": "besok",
+        "cat": "Waktu",
+        "usage": "Besok hari.",
+        "ex_jp": "明日は 休みです。",
+        "ex_id": "Besok libur."
+    },
+    {
+        "jp": "昨日",
+        "romaji": "kinou",
+        "kana": "きのう",
+        "id": "kemarin",
+        "cat": "Waktu",
+        "usage": "Kemarin. Kalimat harus dalam bentuk lampau (past tense).",
+        "ex_jp": "昨日は あめでした。",
+        "ex_id": "Kemarin hujan."
+    },
+    {
+        "jp": "毎日",
+        "romaji": "mainichi",
+        "kana": "まいにち",
+        "id": "setiap hari",
+        "cat": "Waktu",
+        "usage": "Rutinitas harian.",
+        "ex_jp": "毎日 日本語を べんきょうします。",
+        "ex_id": "Setiap hari belajar bahasa Jepang."
+    },
+    {
+        "jp": "今",
+        "romaji": "ima",
+        "kana": "いま",
+        "id": "sekarang",
+        "cat": "Waktu",
+        "usage": "Saat ini. Sering dipakai menanyakan jam (Ima nanji desu ka).",
+        "ex_jp": "今は 十時です。",
+        "ex_id": "Sekarang jam 10."
+    },
+    {
+        "jp": "朝",
+        "romaji": "asa",
+        "kana": "あさ",
+        "id": "pagi",
+        "cat": "Waktu",
+        "usage": "Pagi hari. Makan pagi = asa-gohan.",
+        "ex_jp": "朝、 コーヒーを のみます。",
+        "ex_id": "Pagi hari, saya minum kopi."
+    },
+    {
+        "jp": "夜",
+        "romaji": "yoru",
+        "kana": "よる",
+        "id": "malam",
+        "cat": "Waktu",
+        "usage": "Malam hari. Makan malam = ban-gohan \/ yoru-gohan.",
+        "ex_jp": "夜は ねます。",
+        "ex_id": "Malam hari, saya tidur."
+    },
+    {
+        "jp": "時間",
+        "romaji": "jikan",
+        "kana": "じかん",
+        "id": "waktu",
+        "cat": "Waktu",
+        "usage": "Waktu (durasi).",
+        "ex_jp": "時間が ありません。",
+        "ex_id": "Tidak ada waktu."
+    },
+    {
+        "jp": "一",
+        "romaji": "ichi",
+        "kana": "いち",
+        "id": "satu",
+        "cat": "Angka",
+        "usage": "Angka 1.",
+        "ex_jp": "りんごが 一つ あります。",
+        "ex_id": "Ada satu buah apel."
+    },
+    {
+        "jp": "二",
+        "romaji": "ni",
+        "kana": "に",
+        "id": "dua",
+        "cat": "Angka",
+        "usage": "Angka 2.",
+        "ex_jp": "本が 二さつ あります。",
+        "ex_id": "Ada dua buah buku."
+    },
+    {
+        "jp": "三",
+        "romaji": "san",
+        "kana": "さん",
+        "id": "tiga",
+        "cat": "Angka",
+        "usage": "Angka 3.",
+        "ex_jp": "ねこが 三びき います。",
+        "ex_id": "Ada tiga ekor kucing."
+    },
+    {
+        "jp": "百",
+        "romaji": "hyaku",
+        "kana": "ひゃく",
+        "id": "seratus",
+        "cat": "Angka",
+        "usage": "100. Pengecualian bacaan: 300(sanbyaku), 600(roppyaku), 800(happyaku).",
+        "ex_jp": "これは 百えんです。",
+        "ex_id": "Ini harganya 100 yen."
+    },
+    {
+        "jp": "千",
+        "romaji": "sen",
+        "kana": "せん",
+        "id": "seribu",
+        "cat": "Angka",
+        "usage": "1000. Pengecualian bacaan: 3000(sanzen), 8000(hassen).",
+        "ex_jp": "千えん かします。",
+        "ex_id": "Saya pinjamkan 1000 yen."
+    },
+    {
+        "jp": "はい",
+        "romaji": "hai",
+        "kana": "はい",
+        "id": "iya",
+        "cat": "Lain-lain",
+        "usage": "Jawaban afirmatif yang sopan.",
+        "ex_jp": "はい、 そうです。",
+        "ex_id": "Iya, betul."
+    },
+    {
+        "jp": "いいえ",
+        "romaji": "iie",
+        "kana": "いいえ",
+        "id": "tidak",
+        "cat": "Lain-lain",
+        "usage": "Jawaban negatif yang sopan.",
+        "ex_jp": "いいえ、 ちがいます。",
+        "ex_id": "Tidak, salah\/berbeda."
+    },
+    {
+        "jp": "とても",
+        "romaji": "totemo",
+        "kana": "とても",
+        "id": "sangat",
+        "cat": "Lain-lain",
+        "usage": "Adverbia (kata keterangan) yang menguatkan arti positif.",
+        "ex_jp": "これは とても おいしいです。",
+        "ex_id": "Ini sangat enak."
+    },
+    {
+        "jp": "少し",
+        "romaji": "sukoshi",
+        "kana": "すこし",
+        "id": "sedikit",
+        "cat": "Lain-lain",
+        "usage": "Kata keterangan kuantitas\/derajat.",
+        "ex_jp": "日本語が 少し わかります。",
+        "ex_id": "Saya mengerti sedikit bahasa Jepang."
+    },
+    {
+        "jp": "いつも",
+        "romaji": "itsumo",
+        "kana": "いつも",
+        "id": "selalu",
+        "cat": "Lain-lain",
+        "usage": "Keterangan frekuensi.",
+        "ex_jp": "彼は いつも 元気です。",
+        "ex_id": "Dia selalu bersemangat."
+    }
+]

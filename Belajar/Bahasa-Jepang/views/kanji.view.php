@@ -97,8 +97,8 @@ $prog = max(0, min(100, (int)($prog_kanji ?? 0)));
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#07111f;--bg2:#0f172a;--card:rgba(15,23,42,.82);--card2:rgba(30,41,59,.72);--line:rgba(148,163,184,.22);--text:#eef6ff;--muted:#aab7c8;--cyan:#36d6d6;--blue:#58a6ff;--green:#34d399;--amber:#f6b63d;--pink:#fb7185;--shadow:0 26px 80px rgba(0,0,0,.35)}
-    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(circle at 12% 0%,rgba(54,214,214,.20),transparent 35%),radial-gradient(circle at 85% 5%,rgba(251,113,133,.14),transparent 31%),linear-gradient(135deg,var(--bg),var(--bg2) 52%,#111827);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow-x:hidden}body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(148,163,184,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.055) 1px,transparent 1px);background-size:38px 38px;mask-image:linear-gradient(to bottom,#000,transparent 80%)}a{color:inherit;text-decoration:none}button,input{font:inherit}.wrap{width:min(1180px,calc(100% - 28px));margin:auto;position:relative;z-index:1}.jp{font-family:"Noto Sans JP",sans-serif}.top{position:sticky;top:0;z-index:30;background:rgba(7,17,31,.82);border-bottom:1px solid var(--line);backdrop-filter:blur(18px)}.nav{min-height:70px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{display:flex;align-items:center;gap:12px;font-weight:950;letter-spacing:-.04em}.mark{width:46px;height:46px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,var(--green),var(--blue));color:#06121d;font-size:24px;box-shadow:0 18px 42px rgba(54,214,214,.22)}.brand small{display:block;color:var(--muted);letter-spacing:0;font-weight:700}.nav-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.btn{border:0;border-radius:999px;padding:11px 15px;font-weight:900;cursor:pointer;background:linear-gradient(135deg,var(--green),var(--cyan));color:#06121d;display:inline-flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 16px 38px rgba(52,211,153,.18);transition:.18s}.btn:hover{transform:translateY(-2px)}.btn.ghost{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line);box-shadow:none}.hero{padding:42px 0 24px;display:grid;grid-template-columns:1.02fr .98fr;gap:18px;align-items:stretch}.panel{border:1px solid var(--line);background:var(--card);border-radius:28px;box-shadow:var(--shadow);padding:24px;position:relative;overflow:hidden}.panel:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 88% 0%,rgba(54,214,214,.13),transparent 45%);pointer-events:none}.eyebrow{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(54,214,214,.24);background:rgba(54,214,214,.08);color:var(--cyan);border-radius:999px;padding:8px 11px;font-size:12px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}.hero h1{font-size:clamp(36px,5.7vw,72px);line-height:.95;margin:16px 0 0;letter-spacing:-.075em}.grad{background:linear-gradient(135deg,var(--green),var(--cyan),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}.lead{color:var(--muted);line-height:1.78;font-size:16px;max-width:720px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}.stat{border:1px solid var(--line);background:rgba(255,255,255,.055);border-radius:18px;padding:13px}.stat b{display:block;color:var(--green);font-size:25px}.stat span{display:block;color:var(--muted);font-size:12px;font-weight:800}.preview-card{display:grid;grid-template-columns:.9fr 1.1fr;gap:14px;align-items:center;min-height:100%}.big-kanji{aspect-ratio:1;border-radius:28px;background:linear-gradient(135deg,rgba(52,211,153,.90),rgba(88,166,255,.84),rgba(251,113,133,.68));display:grid;place-items:center;font-size:clamp(90px,13vw,170px);font-weight:950;color:white;text-shadow:0 18px 42px rgba(0,0,0,.24)}.preview-copy h2{font-size:29px;margin:0 0 8px;letter-spacing:-.045em}.preview-copy p{color:var(--muted);line-height:1.7;margin:0}.toolbar{padding:18px;margin:8px 0 18px;border:1px solid var(--line);background:rgba(15,23,42,.72);border-radius:24px;display:grid;gap:14px}.search{position:relative}.search input{width:100%;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);border-radius:18px;padding:14px 16px 14px 44px;outline:none}.search input:focus{border-color:rgba(52,211,153,.68);box-shadow:0 0 0 4px rgba(52,211,153,.12)}.search:before{content:"⌕";position:absolute;left:16px;top:50%;transform:translateY(-52%);color:var(--muted);font-size:22px}.filters{display:flex;flex-wrap:wrap;gap:8px}.filter{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);border-radius:999px;padding:9px 11px;font-weight:850;font-size:12px;cursor:pointer}.filter.active{border-color:rgba(52,211,153,.6);background:rgba(52,211,153,.14);color:#b7f7d8}.grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:12px}.card{border:1px solid var(--line);background:rgba(15,23,42,.78);border-radius:22px;min-height:150px;padding:14px;cursor:pointer;text-align:left;color:var(--text);box-shadow:0 12px 38px rgba(0,0,0,.18);position:relative;overflow:hidden;transition:.18s}.card:hover{transform:translateY(-4px);border-color:rgba(52,211,153,.62);box-shadow:0 18px 52px rgba(0,0,0,.28)}.card:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 82% 0%,rgba(52,211,153,.13),transparent 48%);pointer-events:none}.card .k{font-size:48px;font-weight:950;line-height:1}.card .m{color:var(--muted);font-size:12px;font-weight:800;margin-top:8px;line-height:1.35}.card .meta{position:absolute;left:14px;right:14px;bottom:12px;display:flex;justify-content:space-between;gap:8px;color:#8eead0;font-size:11px;font-weight:900}.empty{display:none;text-align:center;border:1px dashed rgba(148,163,184,.3);background:rgba(255,255,255,.035);border-radius:24px;padding:28px;color:var(--muted)}.empty.show{display:block}.modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:18px;opacity:0;pointer-events:none;transition:.22s}.modal.show{opacity:1;pointer-events:auto}.shade{position:absolute;inset:0;background:rgba(2,6,23,.82);backdrop-filter:blur(10px)}.dialog{position:relative;width:min(1040px,100%);max-height:92vh;overflow:hidden;border:1px solid var(--line);background:rgba(15,23,42,.96);border-radius:30px;box-shadow:0 34px 120px rgba(0,0,0,.55);transform:translateY(16px) scale(.98);transition:.22s}.modal.show .dialog{transform:translateY(0) scale(1)}.dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}.dialog-title{display:flex;align-items:center;gap:12px}.dialog-title .mini{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,var(--green),var(--blue));display:grid;place-items:center;color:#06121d;font-size:25px;font-weight:950}.close{width:42px;height:42px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);cursor:pointer;font-size:22px}.dialog-body{padding:20px;overflow:auto;max-height:calc(92vh - 83px)}.detail{display:grid;grid-template-columns:.95fr 1.05fr;gap:18px}.writer-box{border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:26px;padding:16px}.stage{aspect-ratio:1;border-radius:22px;background:#0b1220;border:1px solid rgba(255,255,255,.08);display:grid;place-items:center;position:relative;overflow:hidden}.stage:before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:50% 50%}.stage:after{content:"";position:absolute;inset:0;background:linear-gradient(transparent calc(50% - .5px),rgba(255,255,255,.12) calc(50% - .5px),rgba(255,255,255,.12) calc(50% + .5px),transparent calc(50% + .5px)),linear-gradient(90deg,transparent calc(50% - .5px),rgba(255,255,255,.12) calc(50% - .5px),rgba(255,255,255,.12) calc(50% + .5px),transparent calc(50% + .5px));pointer-events:none}.stroke-img{max-width:88%;max-height:88%;object-fit:contain;position:relative;z-index:1;image-rendering:auto}.writer-fallback{position:relative;z-index:2;width:250px;height:250px}.writer-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}.note{font-size:12px;color:var(--muted);line-height:1.55;margin-top:12px}.info{display:grid;gap:14px}.meaning{border:1px solid var(--line);background:rgba(255,255,255,.055);border-radius:20px;padding:16px}.meaning small{display:block;color:var(--green);font-weight:950;text-transform:uppercase;letter-spacing:.12em}.meaning b{display:block;font-size:28px;margin-top:6px}.readings{display:grid;grid-template-columns:1fr 1fr;gap:12px}.reading{border:1px solid var(--line);background:rgba(255,255,255,.045);border-radius:18px;padding:14px}.reading small{color:var(--muted);font-weight:900}.reading strong{display:block;margin-top:7px;font-size:18px}.usage{border:1px solid var(--line);background:rgba(255,255,255,.045);border-radius:18px;padding:14px;color:var(--muted);line-height:1.65}.examples{display:grid;gap:10px}.ex{border:1px solid var(--line);background:rgba(255,255,255,.045);border-radius:16px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:12px}.ex b{font-size:21px;color:#8eead0}.ex span{display:block;color:var(--muted);font-size:12px;margin-top:3px}.ex em{font-style:normal;text-align:right;color:var(--text);font-weight:800}.footer{padding:28px 0 44px;color:var(--muted);text-align:center;font-size:13px}@media(max-width:1050px){.grid{grid-template-columns:repeat(6,1fr)}}@media(max-width:850px){.hero,.detail,.preview-card{grid-template-columns:1fr}.grid{grid-template-columns:repeat(4,1fr)}.nav{padding:12px 0;align-items:flex-start}.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:560px){.wrap{width:min(100% - 22px,1180px)}.brand small{display:none}.nav-actions{width:100%}.nav-actions .btn{flex:1}.panel{padding:18px}.grid{grid-template-columns:repeat(2,1fr);gap:10px}.card{min-height:136px}.stats,.readings{grid-template-columns:1fr}.dialog{border-radius:22px}.dialog-body{padding:14px}.ex{align-items:flex-start;flex-direction:column}.ex em{text-align:left}.big-kanji{font-size:110px}}
+    :root{--bg:#0d0f14;--bg2:#151821;--card:rgba(255,255,255,0.02);--card2:rgba(255,255,255,0.04);--line:rgba(255,255,255,0.08);--text:#f5f1ea;--muted:#a3a3a3;--cyan:#e8c468;--blue:#a78bfa;--green:#e8c468;--amber:#f6b63d;--pink:#fb7185;--shadow:0 26px 80px rgba(0,0,0,.5)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow-x:hidden}body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:38px 38px;mask-image:linear-gradient(to bottom,#000,transparent 80%)}a{color:inherit;text-decoration:none}button,input{font:inherit}.wrap{width:min(1180px,calc(100% - 28px));margin:auto;position:relative;z-index:1}.jp{font-family:"Noto Sans JP",sans-serif}.top{position:sticky;top:0;z-index:30;background:rgba(7,17,31,.82);border-bottom:1px solid var(--line);backdrop-filter:blur(18px)}.nav{min-height:70px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{display:flex;align-items:center;gap:12px;font-weight:950;letter-spacing:-.04em}.mark{width:46px;height:46px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,var(--green),var(--blue));color:#06121d;font-size:24px;box-shadow:0 18px 42px rgba(232, 196, 104, 0.15)}.brand small{display:block;color:var(--muted);letter-spacing:0;font-weight:700}.nav-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.btn{border:0;border-radius:999px;padding:11px 15px;font-weight:900;cursor:pointer;background:linear-gradient(135deg,var(--green),var(--cyan));color:#06121d;display:inline-flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 16px 38px rgba(232, 196, 104, 0.15);transition:.18s}.btn:hover{transform:translateY(-2px)}.btn.ghost{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line);box-shadow:none}.hero{padding:42px 0 24px;display:grid;grid-template-columns:1.02fr .98fr;gap:18px;align-items:stretch}.panel{border:1px solid var(--line);background:var(--card);border-radius:28px;box-shadow:var(--shadow);padding:24px;position:relative;overflow:hidden}.panel:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 88% 0%,rgba(232, 196, 104, 0.05),transparent 45%);pointer-events:none}.eyebrow{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(232, 196, 104, 0.24);background:rgba(232, 196, 104, 0.08);color:var(--cyan);border-radius:999px;padding:8px 11px;font-size:12px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}.hero h1{font-size:clamp(36px,5.7vw,72px);line-height:.95;margin:16px 0 0;letter-spacing:-.075em}.grad{background:linear-gradient(135deg,var(--green),var(--cyan),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}.lead{color:var(--muted);line-height:1.78;font-size:16px;max-width:720px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}.stat{border:1px solid var(--line);background:rgba(255,255,255,.055);border-radius:18px;padding:13px}.stat b{display:block;color:var(--green);font-size:25px}.stat span{display:block;color:var(--muted);font-size:12px;font-weight:800}.preview-card{display:grid;grid-template-columns:.9fr 1.1fr;gap:14px;align-items:center;min-height:100%}.big-kanji{aspect-ratio:1;border-radius:28px;background:linear-gradient(135deg,rgba(52,211,153,.90),rgba(88,166,255,.84),rgba(251,113,133,.68));display:grid;place-items:center;font-size:clamp(90px,13vw,170px);font-weight:950;color:white;text-shadow:0 18px 42px rgba(0,0,0,.24)}.preview-copy h2{font-size:29px;margin:0 0 8px;letter-spacing:-.045em}.preview-copy p{color:var(--muted);line-height:1.7;margin:0}.toolbar{padding:18px;margin:8px 0 18px;border:1px solid var(--line);background:rgba(15,23,42,.72);border-radius:24px;display:grid;gap:14px}.search{position:relative}.search input{width:100%;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);border-radius:18px;padding:14px 16px 14px 44px;outline:none}.search input:focus{border-color:rgba(232, 196, 104, 0.68);box-shadow:0 0 0 4px rgba(232, 196, 104, 0.12)}.search:before{content:"⌕";position:absolute;left:16px;top:50%;transform:translateY(-52%);color:var(--muted);font-size:22px}.filters{display:flex;flex-wrap:wrap;gap:8px}.filter{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);border-radius:999px;padding:9px 11px;font-weight:850;font-size:12px;cursor:pointer}.filter.active{border-color:rgba(232, 196, 104, 0.6);background:rgba(232, 196, 104, 0.14);color:#fceabb}.grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:12px}.card{border:1px solid var(--line);background:rgba(255,255,255,0.03);border-radius:22px;min-height:150px;padding:14px;cursor:pointer;text-align:left;color:var(--text);box-shadow:0 12px 38px rgba(0,0,0,.18);position:relative;overflow:hidden;transition:.18s}.card:hover{transform:translateY(-4px);border-color:rgba(232, 196, 104, 0.62);box-shadow:0 18px 52px rgba(0,0,0,.28)}.card:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 82% 0%,rgba(232, 196, 104, 0.05),transparent 48%);pointer-events:none}.card .k{font-size:48px;font-weight:950;line-height:1}.card .m{color:var(--muted);font-size:12px;font-weight:800;margin-top:8px;line-height:1.35}.card .meta{position:absolute;left:14px;right:14px;bottom:12px;display:flex;justify-content:space-between;gap:8px;color:#e8c468;font-size:11px;font-weight:900}.empty{display:none;text-align:center;border:1px dashed rgba(148,163,184,.3);background:rgba(255,255,255,.035);border-radius:24px;padding:28px;color:var(--muted)}.empty.show{display:block}.modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:18px;opacity:0;pointer-events:none;transition:.22s}.modal.show{opacity:1;pointer-events:auto}.shade{position:absolute;inset:0;background:rgba(2,6,23,.82);backdrop-filter:blur(10px)}.dialog{position:relative;width:min(1040px,100%);max-height:92vh;overflow:hidden;border:1px solid var(--line);background:rgba(15,23,42,.96);border-radius:30px;box-shadow:0 34px 120px rgba(0,0,0,.55);transform:translateY(16px) scale(.98);transition:.22s}.modal.show .dialog{transform:translateY(0) scale(1)}.dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}.dialog-title{display:flex;align-items:center;gap:12px}.dialog-title .mini{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,var(--green),var(--blue));display:grid;place-items:center;color:#06121d;font-size:25px;font-weight:950}.close{width:42px;height:42px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);cursor:pointer;font-size:22px}.dialog-body{padding:20px;overflow:auto;max-height:calc(92vh - 83px)}.detail{display:grid;grid-template-columns:.95fr 1.05fr;gap:18px}.writer-box{border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:26px;padding:16px}.stage{aspect-ratio:1;border-radius:22px;background:#0b1220;border:1px solid rgba(255,255,255,.08);display:grid;place-items:center;position:relative;overflow:hidden}.stage:before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:50% 50%}.stage:after{content:"";position:absolute;inset:0;background:linear-gradient(transparent calc(50% - .5px),rgba(255,255,255,.12) calc(50% - .5px),rgba(255,255,255,.12) calc(50% + .5px),transparent calc(50% + .5px)),linear-gradient(90deg,transparent calc(50% - .5px),rgba(255,255,255,.12) calc(50% - .5px),rgba(255,255,255,.12) calc(50% + .5px),transparent calc(50% + .5px));pointer-events:none}.stroke-img{max-width:88%;max-height:88%;object-fit:contain;position:relative;z-index:1;image-rendering:auto}.writer-fallback{position:relative;z-index:2;width:250px;height:250px}.writer-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}.note{font-size:12px;color:var(--muted);line-height:1.55;margin-top:12px}.info{display:grid;gap:14px}.meaning{border:1px solid var(--line);background:rgba(255,255,255,.055);border-radius:20px;padding:16px}.meaning small{display:block;color:var(--green);font-weight:950;text-transform:uppercase;letter-spacing:.12em}.meaning b{display:block;font-size:28px;margin-top:6px}.readings{display:grid;grid-template-columns:1fr 1fr;gap:12px}.reading{border:1px solid var(--line);background:rgba(255,255,255,.045);border-radius:18px;padding:14px}.reading small{color:var(--muted);font-weight:900}.reading strong{display:block;margin-top:7px;font-size:18px}.usage{border:1px solid var(--line);background:rgba(255,255,255,.045);border-radius:18px;padding:14px;color:var(--muted);line-height:1.65}.examples{display:grid;gap:10px}.ex{border:1px solid var(--line);background:rgba(255,255,255,.045);border-radius:16px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:12px}.ex b{font-size:21px;color:#e8c468}.ex span{display:block;color:var(--muted);font-size:12px;margin-top:3px}.ex em{font-style:normal;text-align:right;color:var(--text);font-weight:800}.footer{padding:28px 0 44px;color:var(--muted);text-align:center;font-size:13px}@media(max-width:1050px){.grid{grid-template-columns:repeat(6,1fr)}}@media(max-width:850px){.hero,.detail,.preview-card{grid-template-columns:1fr}.grid{grid-template-columns:repeat(4,1fr)}.nav{padding:12px 0;align-items:flex-start}.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:560px){.wrap{width:min(100% - 22px,1180px)}.brand small{display:none}.nav-actions{width:100%}.nav-actions .btn{flex:1}.panel{padding:18px}.grid{grid-template-columns:repeat(2,1fr);gap:10px}.card{min-height:136px}.stats,.readings{grid-template-columns:1fr}.dialog{border-radius:22px}.dialog-body{padding:14px}.ex{align-items:flex-start;flex-direction:column}.ex em{text-align:left}.big-kanji{font-size:110px}}
   </style>
 </head>
 <body>
@@ -125,11 +125,13 @@ $prog = max(0, min(100, (int)($prog_kanji ?? 0)));
         <span class="eyebrow">JLPT N5 Kanji</span>
         <h1>Daftar kanji N5 <span class="grad">lengkap & rapi.</span></h1>
         <p class="lead">Pilih kanji untuk melihat arti, onyomi, kunyomi, contoh penggunaan, jumlah goresan, dan animasi cara menulis. Animasi memakai gambar stroke order; kalau gambar gagal dimuat, halaman otomatis memakai fallback SVG writer.</p>
+
         <div class="stats">
           <div class="stat"><b id="totalCount"><?= count($kanjiN5) ?></b><span>kanji umum N5</span></div>
           <div class="stat"><b><?= $prog ?>%</b><span>progress akun</span></div>
           <div class="stat"><b>GIF</b><span>stroke animation</span></div>
         </div>
+        <button class="btn" id="startKanjiQuizBtn" style="margin-top:20px; width:100%; padding: 14px; font-size: 16px;">🎯 Mulai Test Kanji</button>
       </div>
       <aside class="panel preview-card">
         <div class="big-kanji jp">書</div>
@@ -189,6 +191,20 @@ $prog = max(0, min(100, (int)($prog_kanji ?? 0)));
     </div>
   </div>
 
+    <div class="modal" id="kanjiQuizModal" aria-hidden="true">
+    <div class="shade" id="kanjiQuizShade"></div>
+    <div class="dialog" style="max-width: 600px;">
+      <div class="dialog-head">
+        <div class="dialog-title"><strong>JLPT N5 Kanji Test</strong></div>
+        <button class="close" id="closeKanjiQuizBtn">×</button>
+      </div>
+      <div class="dialog-body" id="kanjiQuizBody" style="text-align: center; padding: 40px 20px;">
+        <h2 style="font-size: 32px; margin-bottom: 16px;">Format Ujian</h2>
+        <p style="color: var(--muted); margin-bottom: 32px; line-height: 1.6;">Test terdiri dari 10 soal pilihan ganda:<br>Kanji → Arti, Onyomi/Kunyomi, Jebakan Bentuk, dan Konteks Kalimat.</p>
+        <button class="btn" id="beginKanjiQuizBtn" style="padding: 16px 32px; font-size: 16px;">Mulai Sekarang</button>
+      </div>
+    </div>
+  </div>
   <footer class="footer wrap">GemuYokai Nihongo · Kanji N5 dengan arti, penggunaan, dan animasi cara menulis</footer>
 
   <script>
@@ -289,6 +305,196 @@ $prog = max(0, min(100, (int)($prog_kanji ?? 0)));
       speechSynthesis.speak(utterance);
     }
 
+    // QUIZ LOGIC
+    const kqModal = $('#kanjiQuizModal');
+    const kqBody = $('#kanjiQuizBody');
+    let kqQuestions = [];
+    let kqCurrent = 0;
+    let kqScore = 0;
+    let kqMistakes = [];
+
+    $('#startKanjiQuizBtn').addEventListener('click', () => {
+      kqModal.classList.add('show');
+      kqModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      renderKanjiIntro();
+    });
+
+    $('#closeKanjiQuizBtn').addEventListener('click', () => {
+      kqModal.classList.remove('show');
+      kqModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    });
+
+    function renderKanjiIntro() {
+      kqBody.innerHTML = `
+        <h2 style="font-size: 32px; margin-bottom: 16px;">Format Ujian</h2>
+        <p style="color: var(--muted); margin-bottom: 32px; line-height: 1.6;">Test terdiri dari 10 soal pilihan ganda:<br>Kanji → Arti, Onyomi/Kunyomi (HOTS), Jebakan Bentuk, dan Konteks Kalimat.</p>
+        <button class="btn" id="beginKanjiQuizBtn" style="padding: 16px 32px; font-size: 16px;">Mulai Sekarang</button>
+      `;
+      $('#beginKanjiQuizBtn').addEventListener('click', startKanjiQuiz);
+    }
+
+    function shuffleArr(array) {
+      let cur = array.length, ran;
+      while (cur != 0) {
+        ran = Math.floor(Math.random() * cur); cur--;
+        [array[cur], array[ran]] = [array[ran], array[cur]];
+      }
+      return array;
+    }
+
+    const trapPairs = [
+      {k1: '大', k2: '太', m1: 'besar', m2: 'gemuk'},
+      {k1: '土', k2: '士', m1: 'tanah', m2: 'prajurit'},
+      {k1: '人', k2: '入', m1: 'orang', m2: 'masuk'},
+      {k1: '木', k2: '本', m1: 'pohon', m2: 'buku'},
+      {k1: '日', k2: '白', m1: 'hari', m2: 'putih'},
+      {k1: '千', k2: '干', m1: 'seribu', m2: 'kering'},
+      {k1: '万', k2: '方', m1: 'sepuluh ribu', m2: 'arah'}
+    ];
+
+    function startKanjiQuiz() {
+      const pool = shuffleArr([...KANJI]);
+      kqQuestions = [];
+      kqCurrent = 0;
+      kqScore = 0;
+      kqMistakes = [];
+
+      for(let i=0; i<10; i++) {
+        let type = Math.random();
+        let q, a, wrongMap;
+        let item = pool[i];
+
+        if(i === 2 || i === 7) { // 2 Trap Questions
+            let trap = trapPairs[Math.floor(Math.random() * trapPairs.length)];
+            let isK1 = Math.random() > 0.5;
+            let targetK = isK1 ? trap.k1 : trap.k2;
+            let targetM = isK1 ? trap.m1 : trap.m2;
+            let wrongM = isK1 ? trap.m2 : trap.m1;
+            q = `Apa arti dari kanji <span class="jp" style="font-size:32px;color:var(--amber)">${targetK}</span> ?`;
+            a = targetM;
+            let others = shuffleArr(KANJI.filter(x => x.meaning !== targetM && x.meaning !== wrongM)).slice(0, 2).map(x=>x.meaning);
+            kqQuestions.push({ q, a, opts: shuffleArr([a, wrongM, ...others]) });
+            continue;
+        }
+
+        if(i === 4 || i === 8) { // 2 Context Questions
+            if(item.examples.length > 0) {
+                let ex = item.examples[0];
+                q = `Dalam kata <span class="jp" style="font-size:24px;color:var(--amber)">${ex.w}</span>, bagaimana cara membacanya?`;
+                a = ex.r;
+                let others = shuffleArr(KANJI.flatMap(x=>x.examples).map(x=>x.r).filter(x=>x!==a)).slice(0,3);
+                kqQuestions.push({ q, a, opts: shuffleArr([a, ...others]) });
+                continue;
+            }
+        }
+
+        if (type < 0.4) {
+          // Kanji -> Arti
+          q = `Apa arti dari <span class="jp" style="font-size:32px;color:var(--amber)">${item.k}</span> ?`;
+          a = item.meaning;
+          wrongMap = shuffleArr(KANJI.filter(x => x.k !== item.k).map(x => x.meaning)).slice(0,3);
+        } else if (type < 0.7) {
+          // Kanji -> Onyomi
+          q = `Manakah yang termasuk Onyomi dari <span class="jp" style="font-size:32px;color:var(--amber)">${item.k}</span> ?`;
+          a = item.on ? item.on.split(',')[0].trim() : (item.kun ? item.kun.split(',')[0].trim() : 'Tidak ada');
+          wrongMap = shuffleArr(KANJI.filter(x => x.k !== item.k && x.on).map(x => x.on.split(',')[0].trim())).slice(0,3);
+        } else {
+          // Kanji -> Kunyomi
+          q = `Manakah yang termasuk Kunyomi dari <span class="jp" style="font-size:32px;color:var(--amber)">${item.k}</span> ?`;
+          a = item.kun ? item.kun.split(',')[0].trim() : (item.on ? item.on.split(',')[0].trim() : 'Tidak ada');
+          wrongMap = shuffleArr(KANJI.filter(x => x.k !== item.k && x.kun).map(x => x.kun.split(',')[0].trim())).slice(0,3);
+        }
+        kqQuestions.push({ q, a, opts: shuffleArr([a, ...wrongMap]) });
+      }
+
+      renderKanjiQ();
+    }
+
+    function renderKanjiQ() {
+      if(kqCurrent >= kqQuestions.length) {
+        finishKanjiQuiz();
+        return;
+      }
+      let q = kqQuestions[kqCurrent];
+
+      let html = `
+        <div style="font-size: 14px; color: var(--amber); font-weight: 700; margin-bottom: 16px; text-transform: uppercase;">Soal ${kqCurrent + 1} / 10</div>
+        <div style="font-size: 24px; font-weight: 800; margin-bottom: 32px; line-height: 1.4;">${q.q}</div>
+        <div style="display: grid; gap: 12px; text-align:left;" id="kqOpts">
+      `;
+      q.opts.forEach((opt, idx) => {
+          html += `<button class="filter" style="padding:16px 20px; font-size:16px; border-radius:16px;" data-idx="${idx}">${opt}</button>`;
+      });
+      html += `</div>`;
+      kqBody.innerHTML = html;
+
+      let answered = false;
+      document.querySelectorAll('#kqOpts button').forEach(btn => {
+          btn.addEventListener('click', function() {
+              if(answered) return;
+              answered = true;
+              let opt = this.textContent;
+              if(opt === q.a) {
+                  this.style.background = 'rgba(16, 185, 129, 0.2)';
+                  this.style.borderColor = '#10b981';
+                  this.style.color = '#34d399';
+                  kqScore++;
+              } else {
+                  this.style.background = 'rgba(239, 68, 68, 0.2)';
+                  this.style.borderColor = '#ef4444';
+                  this.style.color = '#f87171';
+                  kqMistakes.push({q: q.q, a: q.a, u: opt});
+                  document.querySelectorAll('#kqOpts button').forEach(b => {
+                      if(b.textContent === q.a) {
+                          b.style.borderColor = '#10b981';
+                          b.style.color = '#34d399';
+                      }
+                  });
+              }
+              setTimeout(() => {
+                  kqCurrent++;
+                  renderKanjiQ();
+              }, 1000);
+          });
+      });
+    }
+
+    function finishKanjiQuiz() {
+      let msg = "";
+      if(kqScore >= 9) msg = "Luar biasa! Pemahaman Kanji N5 Anda sangat tajam.";
+      else if(kqScore >= 7) msg = "Bagus sekali! Perhatikan jebakan kanji yang mirip.";
+      else if(kqScore >= 5) msg = "Cukup baik. Perbanyak latihan membaca kalimat.";
+      else msg = "Terus berlatih! Ulangi hafalan arti dan onyomi/kunyomi dasar.";
+
+      let html = `
+        <div style="font-size: 16px; color: var(--amber); font-weight: 700; margin-bottom: 8px;">HASIL TEST</div>
+        <div style="font-size: 72px; font-weight: 900; color: var(--amber); line-height: 1; margin-bottom: 8px;">${kqScore}/10</div>
+        <div style="font-size: 18px; margin-bottom: 32px; color: var(--muted);">${msg}</div>
+      `;
+
+      if(kqMistakes.length > 0) {
+          html += `<div style="text-align: left; background: rgba(255,255,255,0.03); border-radius: 16px; padding: 20px; border: 1px solid var(--line); margin-bottom: 32px; max-height:200px; overflow-y:auto;">
+            <div style="font-weight: bold; margin-bottom: 16px;">Review Kesalahan:</div>
+          `;
+          kqMistakes.forEach(m => {
+             html += `
+                <div style="border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 12px;">
+                  <div style="font-size: 14px; color: var(--muted); margin-bottom: 4px;">${m.q}</div>
+                  <span style="font-size: 16px; font-weight: bold; color: #10b981;">${m.a}</span>
+                  <span style="font-size: 14px; color: #ef4444; text-decoration: line-through; margin-left: 8px;">${m.u}</span>
+                </div>
+             `;
+          });
+          html += `</div>`;
+      }
+
+      html += `<button class="btn" id="retryKanjiQuizBtn" style="padding: 16px 32px; font-size: 16px; width:100%;">Ulangi Test</button>`;
+      kqBody.innerHTML = html;
+
+      $('#retryKanjiQuizBtn').addEventListener('click', renderKanjiIntro);
+    }
     searchInput.addEventListener('input', e => { query = normalize(e.target.value); render(); });
     $('#closeBtn').addEventListener('click', closeModal);
     $('#shade').addEventListener('click', closeModal);
