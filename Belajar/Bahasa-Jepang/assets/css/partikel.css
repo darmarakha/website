@@ -58,3 +58,26 @@
 #partikelModal.active #partikelModalCard {
     transform: scale(1);
 }
+
+/* Additional overrides for JLPT Ujian to ensure mobile responsiveness */
+#ujianContainer {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+    .ujian-essay-input {
+        width: 100% !important;
+        max-width: 200px;
+        margin-bottom: 1rem;
+    }
+}
+
+/* Additional overrides for Partikel Card Grid on Mobile */
+@media (max-width: 640px) {
+    #partikelGrid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
