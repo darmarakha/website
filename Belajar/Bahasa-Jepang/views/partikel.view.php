@@ -84,28 +84,28 @@
       </p>
 
       <!-- Mini Progress -->
-      <div class="max-w-3xl mx-auto bg-white/5 border border-white/10 rounded-3xl p-6 glass-card text-left">
+      <div class="max-w-3xl mx-auto bg-dark-800/50 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl text-left">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold text-white flex items-center gap-2"><i data-lucide="award" class="w-5 h-5 text-purple-400"></i> Progress Belajar</h3>
-            <span class="text-purple-400 font-bold" id="totalProgressText">0%</span>
+            <span class="text-purple-400 font-bold text-xl" id="totalProgressText">0%</span>
         </div>
-        <div class="w-full bg-dark-800 rounded-full h-3 mb-6 overflow-hidden border border-white/5">
-            <div class="bg-gradient-to-r from-purple-500 to-sakura-400 h-3 rounded-full transition-all duration-1000" style="width: 0%" id="totalProgressBar"></div>
+        <div class="w-full bg-dark-900 rounded-full h-3 mb-6 overflow-hidden border border-white/5 shadow-inner">
+            <div class="bg-gradient-to-r from-purple-500 via-pink-500 to-sakura-400 h-3 rounded-full transition-all duration-1000" style="width: 0%" id="totalProgressBar"></div>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-dark-800/50 p-3 rounded-xl border border-white/5 text-center">
+            <div class="bg-dark-900/50 p-4 rounded-xl border border-white/5 text-center flex flex-col justify-center">
                 <p class="text-xs text-neutral-400 uppercase tracking-wider mb-1">Partikel Dasar</p>
-                <p class="text-lg font-bold text-white" id="progDasar">0/8</p>
+                <p class="text-2xl font-bold text-white" id="progDasar">0/15</p>
             </div>
-            <div class="bg-dark-800/50 p-3 rounded-xl border border-white/5 text-center">
+            <div class="bg-dark-900/50 p-4 rounded-xl border border-white/5 text-center flex flex-col justify-center">
                 <p class="text-xs text-neutral-400 uppercase tracking-wider mb-1">Latihan Kontras</p>
-                <p class="text-lg font-bold text-white" id="progKontras">0/2</p>
+                <p class="text-2xl font-bold text-white" id="progKontras">0/2</p>
             </div>
-            <div class="bg-dark-800/50 p-3 rounded-xl border border-white/5 text-center">
-                <p class="text-xs text-neutral-400 uppercase tracking-wider mb-1">Mini Quiz</p>
-                <p class="text-lg font-bold text-white" id="progQuiz">0/5</p>
+            <div class="bg-dark-900/50 p-4 rounded-xl border border-white/5 text-center flex flex-col justify-center">
+                <p class="text-xs text-neutral-400 uppercase tracking-wider mb-1">Ujian JLPT</p>
+                <p class="text-2xl font-bold text-white" id="progQuiz">0/1</p>
             </div>
-            <div class="bg-dark-800/50 p-3 rounded-xl border border-white/5 text-center flex flex-col items-center justify-center">
+            <div class="bg-dark-900/50 p-4 rounded-xl border border-white/5 text-center flex flex-col items-center justify-center">
                 <p class="text-xs text-neutral-400 uppercase tracking-wider mb-1">Badge</p>
                 <div class="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center border border-neutral-700" id="badgeIcon">
                     <i data-lucide="shield" class="w-4 h-4 text-neutral-500"></i>
@@ -152,10 +152,10 @@
     <div class="max-w-6xl mx-auto">
       <div class="text-center mb-12">
         <h2 class="text-3xl font-bold mb-4">Partikel Dasar N5</h2>
-        <p class="text-neutral-400">Pelajari 8 partikel paling fundamental untuk mulai membuat kalimat bahasa Jepang.</p>
+        <p class="text-neutral-400">Pelajari 15 partikel fundamental bahasa Jepang beserta pola penggunaannya.</p>
       </div>
 
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="partikelGrid">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="partikelGrid">
         <!-- Rendered by JS -->
       </div>
     </div>
@@ -221,24 +221,6 @@
     </div>
   </section>
 
-  <!-- ========== SECTION: LATIHAN INTERAKTIF / QUIZ ========== -->
-  <section class="py-16 px-6 lg:px-12">
-    <div class="max-w-3xl mx-auto text-center mb-12">
-      <h2 class="text-3xl font-bold mb-4">Mini Quiz Partikel</h2>
-      <p class="text-neutral-400">Uji pemahamanmu tentang partikel N5 dasar. Pilih partikel yang tepat untuk melengkapi kalimat.</p>
-    </div>
-
-    <div class="max-w-2xl mx-auto glass-card rounded-3xl p-8 border border-white/10" id="quizContainer">
-      <!-- Rendered by JS -->
-      <div class="text-center py-10" id="quizStartMenu">
-          <i data-lucide="help-circle" class="w-16 h-16 text-purple-400 mx-auto mb-4"></i>
-          <h3 class="text-2xl font-bold mb-2">Siap untuk Quiz?</h3>
-          <p class="text-neutral-400 mb-6">Ada 5 pertanyaan pilihan ganda untuk menguji insting partikelmu.</p>
-          <button id="btnStartQuiz" class="px-8 py-3 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl shadow-lg shadow-purple-500/30 transition">Mulai Quiz</button>
-      </div>
-    </div>
-  </section>
-
   <!-- Partikel Detail Modal -->
   <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 transition-all duration-300 opacity-0 pointer-events-none" id="partikelModal">
     <div class="absolute inset-0 bg-dark-900/80 backdrop-blur-sm" onclick="closePartikelModal()"></div>
@@ -249,6 +231,26 @@
         <div id="modalContent"></div>
     </div>
   </div>
+
+  <!-- ========== SECTION: UJIAN JLPT PARTIKEL ========== -->
+  <section class="py-16 px-6 lg:px-12 bg-dark-800/20 border-t border-white/5">
+    <div class="max-w-4xl mx-auto text-center mb-12">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-300 text-sm font-semibold mb-6">
+        <i data-lucide="award" class="w-4 h-4"></i> Simulasi JLPT
+      </div>
+      <h2 class="text-3xl font-bold mb-4">Ujian JLPT: Partikel</h2>
+      <p class="text-neutral-400">Uji seberapa dalam pemahamanmu. Ujian ini berisi soal pilihan ganda dan essai (ketik partikel yang tepat).</p>
+    </div>
+
+    <div class="max-w-3xl mx-auto glass-card rounded-3xl p-8 border border-white/10" id="ujianContainer">
+      <div class="text-center py-10" id="ujianStartMenu">
+          <i data-lucide="graduation-cap" class="w-16 h-16 text-orange-400 mx-auto mb-4"></i>
+          <h3 class="text-2xl font-bold mb-2">Simulasi JLPT N5 Partikel</h3>
+          <p class="text-neutral-400 mb-6">Ujian komprehensif. Keyboard akan otomatis mengubah huruf Romaji menjadi Hiragana pada sesi essai.</p>
+          <button id="btnStartUjian" class="px-8 py-3 bg-gradient-to-r from-orange-500 to-sakura-500 hover:from-orange-600 hover:to-sakura-600 text-white font-bold rounded-xl shadow-lg transition">Mulai Ujian JLPT</button>
+      </div>
+    </div>
+  </section>
 
   <!-- Toast -->
   <div class="fixed bottom-8 right-8 z-[70] translate-y-24 transition-all duration-500 opacity-0" id="toast">
@@ -263,6 +265,8 @@
     </div>
   </div>
 
+  <!-- Wanakana JS for Romaji -> Kana conversion -->
+  <script src="https://unpkg.com/wanakana"></script>
   <script src="assets/js/partikel.js"></script>
   <script>
     lucide.createIcons();
