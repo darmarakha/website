@@ -508,6 +508,26 @@
               <i data-lucide="chevron-right" class="w-5 h-5 text-neutral-500"></i>
             </div>
           </a>
+
+          <!-- Angka -->
+          <a href="angka.php" class="block reveal category-card glass-card rounded-2xl p-5 flex items-center gap-5" style="transition-delay:450ms">
+            <div class="cat-icon w-16 h-16 rounded-2xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/15 transition-all shrink-0">
+              <i data-lucide="hash" class="w-6 h-6 text-yellow-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 mb-1">
+                <h3 class="text-lg font-semibold text-white">Angka (Sūji)</h3>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-300 border border-yellow-500/15">Hitungan, Jam, Harga</span>
+              </div>
+              <p class="text-sm text-neutral-400 truncate">Pelajari cara menghitung, menyebutkan waktu, dan uang.</p>
+              <div class="mt-2 w-full bg-white/5 rounded-full h-1.5">
+                <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 h-1.5 rounded-full" style="width:0%"></div>
+              </div>
+            </div>
+            <div class="cat-arrow opacity-50 transition-all shrink-0">
+              <i data-lucide="chevron-right" class="w-5 h-5 text-neutral-500"></i>
+            </div>
+          </a>
         </div>
       </div>
     </div>
@@ -815,6 +835,7 @@
             <li><a href="katakana.php" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Katakana</a></li>
             <li><a href="kanji.php" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Kanji N5</a></li>
             <li><a href="bunpou.php" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Tata Bahasa</a></li>
+            <li><a href="angka.php" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Angka (Sūji)</a></li>
           </ul>
         </div>
         <div>
