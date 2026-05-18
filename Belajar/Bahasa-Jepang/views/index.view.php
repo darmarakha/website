@@ -449,6 +449,26 @@
             </div>
           </a>
 
+          <!-- Partikel -->
+          <a href="partikel.php" class="block reveal category-card glass-card rounded-2xl p-5 flex items-center gap-5" style="transition-delay:250ms">
+            <div class="cat-icon w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/15 transition-all shrink-0">
+              <span class="text-2xl font-jp font-semibold text-purple-300">助</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 mb-1">
+                <h3 class="text-lg font-semibold text-white">Partikel</h3>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/15">Penanda Hubungan Kata</span>
+              </div>
+              <p class="text-sm text-neutral-400 truncate">Penanda hubungan kata dalam kalimat Jepang: は, が, を, に, で, へ, の, も...</p>
+              <div class="mt-2 w-full bg-white/5 rounded-full h-1.5">
+                <div class="bg-gradient-to-r from-purple-400 to-purple-500 h-1.5 rounded-full" id="prog_partikel_bar" style="width:0%"></div>
+              </div>
+            </div>
+            <div class="cat-arrow opacity-50 transition-all shrink-0">
+              <i data-lucide="chevron-right" class="w-5 h-5 text-neutral-500"></i>
+            </div>
+          </a>
+
           <!-- Grammar (Kaiwa) -->
           <a href="kaiwa.php" class="block reveal category-card glass-card rounded-2xl p-5 flex items-center gap-5" style="transition-delay:300ms">
             <div class="cat-icon w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/15 transition-all shrink-0">
@@ -871,6 +891,15 @@
   <!-- Script Khusus Integrasi Animasi AI Progress & Validasi Harian -->
   <script>
     lucide.createIcons();
+
+    // Load Partikel Progress from localStorage
+    document.addEventListener("DOMContentLoaded", () => {
+        let partikelProg = localStorage.getItem('gy_jp_particle_progress') || 0;
+        let bar = document.getElementById('prog_partikel_bar');
+        if(bar) {
+            bar.style.width = partikelProg + '%';
+        }
+    });
 
     // Animasi Progress Circle Mengikuti Data PHP SQL Secara Akurat
     document.addEventListener('DOMContentLoaded', () => {

@@ -1,0 +1,60 @@
+/* Scoped CSS specifically for Partikel Module */
+.partikel-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.partikel-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.2);
+}
+
+.partikel-card.completed {
+    border-color: rgba(168, 85, 247, 0.5);
+    background: rgba(168, 85, 247, 0.05);
+}
+
+.partikel-card.completed .card-icon {
+    background: rgba(168, 85, 247, 0.2);
+    color: #c084fc;
+}
+
+.btn-mark-contrast.completed {
+    background: rgba(168, 85, 247, 0.2);
+    color: #c084fc;
+    border-color: rgba(168, 85, 247, 0.5);
+}
+
+.quiz-option {
+    transition: all 0.2s ease;
+}
+
+.quiz-option:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.quiz-option.correct {
+    background: rgba(52, 211, 153, 0.2);
+    border-color: rgba(52, 211, 153, 0.5);
+    color: #6ee7b7;
+}
+
+.quiz-option.wrong {
+    background: rgba(244, 63, 94, 0.2);
+    border-color: rgba(244, 63, 94, 0.5);
+    color: #fda4af;
+}
+
+#toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+#partikelModal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#partikelModal.active #partikelModalCard {
+    transform: scale(1);
+}
