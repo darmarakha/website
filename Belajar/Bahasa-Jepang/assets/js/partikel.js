@@ -1,3 +1,200 @@
+
+// =====================================
+// PROCEDURAL QUESTION GENERATOR
+// =====================================
+// Kita siapkan kamus lokal fallback (Full Kana) agar aman tanpa kanji.
+const dictionary = {
+    orang: [
+        { kana: 'わたし', id: 'Saya' },
+        { kana: 'あなた', id: 'Kamu' },
+        { kana: 'ともだち', id: 'Teman' },
+        { kana: 'せんせい', id: 'Guru' },
+        { kana: 'がくせい', id: 'Pelajar' },
+        { kana: 'ねこ', id: 'Kucing' },
+        { kana: 'いぬ', id: 'Anjing' }
+    ],
+    benda: [
+        { kana: 'みず', id: 'Air' },
+        { kana: 'パン', id: 'Roti' },
+        { kana: 'りんご', id: 'Apel' },
+        { kana: 'ほん', id: 'Buku' },
+        { kana: 'てがみ', id: 'Surat' },
+        { kana: 'くるま', id: 'Mobil' },
+        { kana: 'えんぴつ', id: 'Pensil' }
+    ],
+    tempat: [
+        { kana: 'がっこう', id: 'Sekolah' },
+        { kana: 'へや', id: 'Kamar' },
+        { kana: 'うち', id: 'Rumah' },
+        { kana: 'えき', id: 'Stasiun' },
+        { kana: 'こうえん', id: 'Taman' },
+        { kana: 'スーパー', id: 'Supermarket' }
+    ],
+    waktu: [
+        { kana: 'あした', id: 'Besok' },
+        { kana: 'きのう', id: 'Kemarin' },
+        { kana: 'きょう', id: 'Hari ini' },
+        { kana: 'あさ', id: 'Pagi' },
+        { kana: 'よる', id: 'Malam' }
+    ],
+    verbTrans: [
+        { kana: 'のみます', id: 'minum', particle: 'を' },
+        { kana: 'たべます', id: 'makan', particle: 'を' },
+        { kana: 'よみます', id: 'membaca', particle: 'を' },
+        { kana: 'かいます', id: 'membeli', particle: 'を' },
+        { kana: 'かきます', id: 'menulis', particle: 'を' }
+    ],
+    verbGerak: [
+        { kana: 'いきます', id: 'pergi', particle: 'へ' }, // Atau ni
+        { kana: 'きます', id: 'datang', particle: 'へ' },
+        { kana: 'かえります', id: 'pulang', particle: 'へ' }
+    ],
+    verbAda: [
+        { kana: 'あります', id: 'ada (benda mati)', particle: 'が' },
+        { kana: 'います', id: 'ada (hidup)', particle: 'が' }
+    ]
+};
+
+function getRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function getRandomItem(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function generateQuestions(amount) {
+    let generated = [];
+    const patterns = [
+        // Pola 1: [Orang] は [Benda] を [KataKerja Transitif]
+        () => {
+            let orang = getRandomItem(dictionary.orang);
+            let benda = getRandomItem(dictionary.benda);
+            let verb = getRandomItem(dictionary.verbTrans);
+            let p1 = Math.random() > 0.5 ? 'は' : 'が';
+
+            // Randomly blank out one of the particles
+            if (Math.random() > 0.5) {
+                return {
+                    type: "mcq",
+                    soal: `${orang.kana} ___ ${benda.kana} ${verb.particle} ${verb.kana}。`,
+                    terjemahan: `${orang.id} ${verb.id} ${benda.id}.`,
+                    options: [`A. ${p1}`, `B. に`, `C. で`, `D. へ`],
+                    jawaban: 0,
+                    penjelasan: `${p1} menandai subjek/topik pelakunya.`,
+                    hint: `Petunjuk: Siapa yang melakukan aksi?`
+                };
+            } else {
+                return {
+                    type: "essay",
+                    soal: `${orang.kana} ${p1} ${benda.kana} ___ ${verb.kana}。`,
+                    terjemahan: `${orang.id} ${verb.id} ${benda.id}.`,
+                    jawaban: verb.particle,
+                    penjelasan: `${verb.particle} menandai objek langsung yang dikenai pekerjaan.`,
+                    hint: `Petunjuk: Partikel objek langsung.`
+                };
+            }
+        },
+        // Pola 2: [Tempat] に [Benda/Orang] が あります/います
+        () => {
+            let tempat = getRandomItem(dictionary.tempat);
+            let isHidup = Math.random() > 0.5;
+            let subjek = isHidup ? getRandomItem(dictionary.orang) : getRandomItem(dictionary.benda);
+            let verb = isHidup ? dictionary.verbAda[1] : dictionary.verbAda[0];
+
+            if (Math.random() > 0.5) {
+                return {
+                    type: "mcq",
+                    soal: `${tempat.kana} ___ ${subjek.kana} が ${verb.kana}。`,
+                    terjemahan: `Di ${tempat.id.toLowerCase()} ada ${subjek.id.toLowerCase()}.`,
+                    options: ["A. で", "B. に", "C. を", "D. へ"],
+                    jawaban: 1,
+                    penjelasan: `に menandai lokasi tempat sesuatu berada (statis).`,
+                    hint: `Petunjuk: Menandai tempat menetap/berada.`
+                };
+            } else {
+                return {
+                    type: "essay",
+                    soal: `${tempat.kana} に ${subjek.kana} ___ ${verb.kana}。`,
+                    terjemahan: `Di ${tempat.id.toLowerCase()} ada ${subjek.id.toLowerCase()}.`,
+                    jawaban: "が",
+                    penjelasan: `が menandai subjek yang ada/berada di tempat tersebut.`,
+                    hint: `Petunjuk: Pasangan kata kerja keberadaan.`
+                };
+            }
+        },
+        // Pola 3: [Tempat] で [Benda] を [KataKerja]
+        () => {
+            let tempat = getRandomItem(dictionary.tempat);
+            let benda = getRandomItem(dictionary.benda);
+            let verb = getRandomItem(dictionary.verbTrans);
+
+            return {
+                type: "mcq",
+                soal: `${tempat.kana} ___ ${benda.kana} を ${verb.kana}。`,
+                terjemahan: `${verb.id.charAt(0).toUpperCase() + verb.id.slice(1)} ${benda.id.toLowerCase()} di ${tempat.id.toLowerCase()}.`,
+                options: ["A. に", "B. で", "C. は", "D. も"],
+                jawaban: 1,
+                penjelasan: `で menandai tempat dimana aktivitas dinamis dilakukan.`,
+                hint: `Petunjuk: Menandai tempat dilakukannya sebuah aksi.`
+            };
+        },
+        // Pola 4: [Waktu] に [Tempat] へ [KataKerja Gerak]
+        () => {
+            let waktu = getRandomItem(dictionary.waktu);
+            let tempat = getRandomItem(dictionary.tempat);
+            let verb = getRandomItem(dictionary.verbGerak);
+
+            return {
+                type: "essay",
+                soal: `${waktu.kana}、 ${tempat.kana} ___ ${verb.kana}。`,
+                terjemahan: `${waktu.id}, ${verb.id} ke ${tempat.id.toLowerCase()}.`,
+                jawaban: verb.particle,
+                penjelasan: `${verb.particle} menandai arah atau tujuan perpindahan.`,
+                hint: `Petunjuk: Penanda arah tujuan perpindahan.`
+            };
+        },
+        // Pola 5: [Benda] と [Benda]
+        () => {
+            let b1 = getRandomItem(dictionary.benda);
+            let b2 = getRandomItem(dictionary.benda);
+            while (b1.kana === b2.kana) b2 = getRandomItem(dictionary.benda);
+
+            return {
+                type: "mcq",
+                soal: `${b1.kana} ___ ${b2.kana} を かいます。`,
+                terjemahan: `Membeli ${b1.id.toLowerCase()} dan ${b2.id.toLowerCase()}.`,
+                options: ["A. と", "B. や", "C. も", "D. で"],
+                jawaban: 0,
+                penjelasan: `と digunakan untuk merangkai daftar lengkap benda (dan).`,
+                hint: `Petunjuk: Menghubungkan 2 benda (dan).`
+            };
+        }
+    ];
+
+    for (let i = 0; i < amount; i++) {
+        let patternFunc = getRandomItem(patterns);
+        let q = patternFunc();
+        // If it's an MCQ, randomize options
+        if (q.type === 'mcq') {
+            let correctOpt = q.options[q.jawaban];
+            let rawOptions = q.options.map(o => o.substring(3)); // Remove A., B.
+            // Shuffle
+            for (let j = rawOptions.length - 1; j > 0; j--) {
+                const k = Math.floor(Math.random() * (j + 1));
+                [rawOptions[j], rawOptions[k]] = [rawOptions[k], rawOptions[j]];
+            }
+            // Re-assign A B C D and find new jawban index
+            q.options = rawOptions.map((o, idx) => `${String.fromCharCode(65 + idx)}. ${o}`);
+            let targetLetter = correctOpt.substring(0,1);
+            let targetVal = correctOpt.substring(3);
+            q.jawaban = q.options.findIndex(o => o.substring(3) === targetVal);
+        }
+        generated.push(q);
+    }
+    return generated;
+}
+
 // Data Partikel Dasar
 const partikelData = [
     {
@@ -234,8 +431,8 @@ function saveProgress() {
     localStorage.setItem('gy_jp_particle_progress_data', JSON.stringify(userProgress));
 
     // Calculate total percentage
-    let totalItems = 15 /* dasar */ + 2 /* kontras */ + 2 /* latihan & ujian */;
-    let completed = userProgress.partikelSelesai.length + userProgress.kontrasSelesai.length + (userProgress.latihanSelesai ? 1 : 0) + (userProgress.quizSelesai ? 1 : 0);
+    let totalItems = 15 /* dasar */ + 2 /* kontras */ + 3 /* latihan, puzzle, ujian */;
+    let completed = userProgress.partikelSelesai.length + userProgress.kontrasSelesai.length + (userProgress.latihanSelesai ? 1 : 0) + (userProgress.puzzleSelesai ? 1 : 0) + (userProgress.quizSelesai ? 1 : 0);
     let percentage = Math.round((completed / totalItems) * 100);
 
     localStorage.setItem('gy_jp_particle_progress', percentage);
@@ -244,8 +441,8 @@ function saveProgress() {
 
 // Update UI based on progress
 function updateUIProgress() {
-    let totalItems = 15 + 2 + 2;
-    let completed = userProgress.partikelSelesai.length + userProgress.kontrasSelesai.length + (userProgress.latihanSelesai ? 1 : 0) + (userProgress.quizSelesai ? 1 : 0);
+    let totalItems = 15 + 2 + 3;
+    let completed = userProgress.partikelSelesai.length + userProgress.kontrasSelesai.length + (userProgress.latihanSelesai ? 1 : 0) + (userProgress.puzzleSelesai ? 1 : 0) + (userProgress.quizSelesai ? 1 : 0);
     let percentage = Math.round((completed / totalItems) * 100);
 
     document.getElementById('totalProgressText').innerText = percentage + '%';
@@ -256,8 +453,8 @@ function updateUIProgress() {
 
     let progQuiz = document.getElementById('progQuiz');
     if (progQuiz) {
-        let qCount = (userProgress.latihanSelesai ? 1 : 0) + (userProgress.quizSelesai ? 1 : 0);
-        progQuiz.innerText = qCount + '/2';
+        let qCount = (userProgress.latihanSelesai ? 1 : 0) + (userProgress.puzzleSelesai ? 1 : 0) + (userProgress.quizSelesai ? 1 : 0);
+        progQuiz.innerText = qCount + '/3';
     }
 
     // Update Badge
@@ -773,7 +970,7 @@ function startUjian() {
     ujianHistory = [];
 
     // Ambil 8 soal acak dari bank ujian
-    ujianData = shuffleArray([...ujianBank]);
+    ujianData = generateQuestions(20);
 
     renderUjian();
 }
@@ -1022,7 +1219,7 @@ function startLatihan() {
     latihanScore = 0;
 
     // Ambil 5 soal acak dari bank ujian untuk latihan
-    latihanData = shuffleArray([...ujianBank]).slice(0, 5);
+    latihanData = generateQuestions(10);
 
     renderLatihan();
 }
@@ -1212,3 +1409,182 @@ function showLatihanResult() {
     showToast('Latihan Selesai', `Skor pemanasanmu: ${latihanScore}/100.`);
 }
 // =====================================
+
+
+// =====================================
+// GAME PUZZLE MODE
+// =====================================
+const puzzleBank = [
+    {
+        bg: "from-blue-500/20 to-purple-500/20",
+        emoji: "✈️ 🇯🇵",
+        kalimat: ["にほん", "SLOT", "いきます。"],
+        pilihan: ["へ", "を", "が", "で"],
+        jawaban: "へ",
+        terjemahan: "Saya pergi ke Jepang."
+    },
+    {
+        bg: "from-emerald-500/20 to-teal-500/20",
+        emoji: "🚉 🚃",
+        kalimat: ["えき", "SLOT", "でんしゃ に のります。"],
+        pilihan: ["に", "で", "を", "は"],
+        jawaban: "で",
+        terjemahan: "Naik kereta di stasiun."
+    },
+    {
+        bg: "from-cyan-500/20 to-blue-500/20",
+        emoji: "🌧️ ☔",
+        kalimat: ["あめ", "SLOT", "ふります。"],
+        pilihan: ["が", "を", "で", "に"],
+        jawaban: "が",
+        terjemahan: "Hujan turun."
+    },
+    {
+        bg: "from-orange-500/20 to-red-500/20",
+        emoji: "🍿 🎬",
+        kalimat: ["ともだち", "SLOT", "えいが を みます。"],
+        pilihan: ["と", "や", "も", "へ"],
+        jawaban: "と",
+        terjemahan: "Menonton film bersama teman."
+    },
+    {
+        bg: "from-yellow-500/20 to-orange-500/20",
+        emoji: "🍜 🥢",
+        kalimat: ["ラーメン", "SLOT", "たべます。"],
+        pilihan: ["を", "が", "で", "は"],
+        jawaban: "を",
+        terjemahan: "Makan ramen."
+    }
+];
+
+let currentPuzzleIndex = 0;
+let puzzleScore = 0;
+let activePuzzleData = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btnStartPuzzle = document.getElementById('btnStartPuzzle');
+    if(btnStartPuzzle) {
+        btnStartPuzzle.addEventListener('click', startPuzzle);
+    }
+});
+
+function startPuzzle() {
+    currentPuzzleIndex = 0;
+    puzzleScore = 0;
+    activePuzzleData = shuffleArray([...puzzleBank]).slice(0, 5);
+    renderPuzzle();
+}
+
+function renderPuzzle() {
+    if (currentPuzzleIndex >= activePuzzleData.length) {
+        showPuzzleResult();
+        return;
+    }
+
+    const pz = activePuzzleData[currentPuzzleIndex];
+    const container = document.getElementById('puzzleContainer');
+
+    let kalimatHtml = '';
+    pz.kalimat.forEach(part => {
+        if (part === "SLOT") {
+            kalimatHtml += `<div class="puzzle-slot w-16 h-14 bg-dark-900 border-2 border-dashed border-cyan-500/50 rounded-xl flex items-center justify-center mx-2 text-2xl font-bold font-jp text-cyan-300 transition-all duration-300" id="puzzleTarget">?</div>`;
+        } else {
+            kalimatHtml += `<span class="text-2xl font-jp text-white font-medium">${part}</span>`;
+        }
+    });
+
+    let optionsHtml = '';
+    let shuffledOptions = shuffleArray([...pz.pilihan]);
+    shuffledOptions.forEach(opt => {
+        optionsHtml += `<button class="puzzle-piece w-16 h-14 bg-dark-800 border border-white/10 rounded-xl shadow-lg hover:border-cyan-400 hover:bg-cyan-500/10 text-2xl font-bold font-jp text-white transition-all transform hover:-translate-y-1" onclick="selectPuzzlePiece('${opt}', this)">${opt}</button>`;
+    });
+
+    container.innerHTML = `
+        <div class="flex justify-between items-center mb-6 text-sm text-neutral-400 font-bold uppercase tracking-wider">
+            <span class="text-cyan-400">Puzzle ${currentPuzzleIndex + 1} / ${activePuzzleData.length}</span>
+        </div>
+
+        <div class="relative w-full h-48 md:h-64 rounded-2xl overflow-hidden mb-8 border border-white/10 group bg-gradient-to-br ${pz.bg} flex flex-col items-center justify-center transition-all duration-500">
+            <div class="text-6xl md:text-8xl mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-2xl">
+                ${pz.emoji}
+            </div>
+            <div class="absolute bottom-0 left-0 w-full text-center px-4 pb-4 pt-8 bg-gradient-to-t from-dark-900 to-transparent">
+                <p class="text-white text-lg font-medium drop-shadow-md">${pz.terjemahan}</p>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-center flex-wrap mb-10 bg-white/5 p-6 rounded-2xl border border-white/5">
+            ${kalimatHtml}
+        </div>
+
+        <p class="text-center text-sm text-neutral-400 uppercase tracking-wider mb-4">Pilih partikel yang tepat:</p>
+        <div class="flex items-center justify-center gap-4 flex-wrap" id="puzzlePiecesContainer">
+            ${optionsHtml}
+        </div>
+
+        <div id="puzzleFeedback" class="hidden mt-8 p-4 rounded-xl text-center text-lg font-bold border"></div>
+    `;
+
+    lucide.createIcons();
+}
+
+function selectPuzzlePiece(selectedAnswer, btnElement) {
+    const pz = activePuzzleData[currentPuzzleIndex];
+    const target = document.getElementById('puzzleTarget');
+    const piecesContainer = document.getElementById('puzzlePiecesContainer');
+    const feedback = document.getElementById('puzzleFeedback');
+
+    const allPieces = piecesContainer.querySelectorAll('.puzzle-piece');
+    allPieces.forEach(btn => btn.disabled = true);
+
+    target.innerHTML = selectedAnswer;
+    target.classList.remove('border-dashed', 'border-cyan-500/50');
+    target.classList.add('border-solid', 'bg-cyan-500/20');
+
+    btnElement.style.opacity = '0';
+    btnElement.style.transform = 'scale(0.5)';
+
+    let isCorrect = (selectedAnswer === pz.jawaban);
+
+    setTimeout(() => {
+        if (isCorrect) {
+            target.classList.add('border-emerald-500', 'text-emerald-400', 'bg-emerald-500/20');
+            target.classList.remove('text-cyan-300', 'border-cyan-500/50', 'bg-cyan-500/20');
+            puzzleScore += 20;
+            feedback.className = "mt-8 p-4 rounded-xl text-center text-lg font-bold border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 block animate-pulse-glow";
+            feedback.innerHTML = `<i data-lucide="check-circle" class="w-6 h-6 inline mr-2 -mt-1"></i>Tepat Sekali!`;
+        } else {
+            target.classList.add('border-rose-500', 'text-rose-400', 'bg-rose-500/20');
+            target.classList.remove('text-cyan-300', 'border-cyan-500/50', 'bg-cyan-500/20');
+            feedback.className = "mt-8 p-4 rounded-xl text-center text-lg font-bold border border-rose-500/30 bg-rose-500/10 text-rose-400 block";
+            feedback.innerHTML = `<i data-lucide="x-circle" class="w-6 h-6 inline mr-2 -mt-1"></i>Kurang Tepat. Jawaban: ${pz.jawaban}`;
+        }
+        lucide.createIcons();
+
+        setTimeout(() => {
+            currentPuzzleIndex++;
+            renderPuzzle();
+        }, 1800);
+    }, 400);
+}
+
+function showPuzzleResult() {
+    const container = document.getElementById('puzzleContainer');
+
+    if (!userProgress.puzzleSelesai && puzzleScore >= 80) {
+        userProgress.puzzleSelesai = true;
+        saveProgress();
+    }
+
+    container.innerHTML = `
+        <div class="text-center py-10">
+            <div class="w-24 h-24 rounded-full bg-cyan-500/20 flex items-center justify-center border-4 border-cyan-500 mx-auto mb-6">
+                <span class="text-3xl font-bold text-white">${puzzleScore}</span>
+            </div>
+            <h3 class="text-2xl font-bold mb-2">Puzzle Selesai!</h3>
+            <p class="text-neutral-400 mb-8">Berlatih visual membantumu mengingat konteks lebih baik.</p>
+            <button class="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition" onclick="startPuzzle()">Main Lagi</button>
+        </div>
+    `;
+    showToast('Puzzle Selesai', `Skor game kamu: ${puzzleScore}`);
+}
