@@ -81,3 +81,14 @@
         gap: 1.5rem;
     }
 }
+
+/* Furigana Styling */
+ruby {
+    ruby-align: center;
+}
+rt {
+    font-size: 0.6em;
+    color: #a3a3a3; /* neutral-400 */
+    font-weight: normal;
+    letter-spacing: 0;
+}
