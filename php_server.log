@@ -2,3 +2,6 @@
 [Mon May 18 04:30:25 2026] [::1]:52016 Accepted
 [Mon May 18 04:30:25 2026] [::1]:52016 [200]: GET /Belajar/Bahasa-Jepang/angka.php
 [Mon May 18 04:30:25 2026] [::1]:52016 Closing
+[Mon May 18 04:54:50 2026] [::1]:48658 Accepted
+[Mon May 18 04:54:50 2026] [::1]:48658 [200]: GET /Belajar/Bahasa-Jepang/partikel.php
+[Mon May 18 04:54:50 2026] [::1]:48658 Closing

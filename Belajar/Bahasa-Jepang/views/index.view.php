@@ -449,6 +449,26 @@
             </div>
           </a>
 
+          <!-- Partikel -->
+          <a href="partikel.php" class="block reveal category-card glass-card rounded-2xl p-5 flex items-center gap-5" style="transition-delay:250ms">
+            <div class="cat-icon w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/15 transition-all shrink-0">
+              <span class="text-2xl font-jp font-semibold text-purple-300">助</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 mb-1">
+                <h3 class="text-lg font-semibold text-white">Partikel</h3>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/15">Penanda Kalimat</span>
+              </div>
+              <p class="text-sm text-neutral-400 truncate">Penanda hubungan kata dalam kalimat Jepang: は, が, を, に, で, dll.</p>
+              <div class="mt-2 w-full bg-white/5 rounded-full h-1.5">
+                <div class="bg-gradient-to-r from-purple-400 to-purple-500 h-1.5 rounded-full" style="width:0%"></div>
+              </div>
+            </div>
+            <div class="cat-arrow opacity-50 transition-all shrink-0">
+              <i data-lucide="chevron-right" class="w-5 h-5 text-neutral-500"></i>
+            </div>
+          </a>
+
           <!-- Grammar (Kaiwa) -->
           <a href="kaiwa.php" class="block reveal category-card glass-card rounded-2xl p-5 flex items-center gap-5" style="transition-delay:300ms">
             <div class="cat-icon w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/15 transition-all shrink-0">
@@ -833,6 +853,7 @@
           <ul class="space-y-2.5">
             <li><a href="hiragana.php" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Hiragana</a></li>
             <li><a href="katakana.php" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Katakana</a></li>
+            <li><a href="partikel.php" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Partikel</a></li>
             <li><a href="kanji.php" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Kanji N5</a></li>
             <li><a href="bunpou.php" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Tata Bahasa</a></li>
             <li><a href="angka.php" class="text-sm text-neutral-500 hover:text-sakura-400 transition-colors">Angka (Sūji)</a></li>
