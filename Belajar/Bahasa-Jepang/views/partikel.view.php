@@ -224,9 +224,9 @@
   <!-- Partikel Detail Modal -->
   <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 transition-all duration-300 opacity-0 pointer-events-none" id="partikelModal">
     <div class="absolute inset-0 bg-dark-900/80 backdrop-blur-sm" onclick="closePartikelModal()"></div>
-    <div class="relative w-full max-w-lg glass-card rounded-3xl border border-white/10 p-8 shadow-2xl scale-95 transition-transform duration-300" id="partikelModalCard">
-        <button class="absolute top-4 right-4 text-neutral-400 hover:text-white" onclick="closePartikelModal()">
-            <i data-lucide="x" class="w-6 h-6"></i>
+    <div class="relative w-full max-w-lg glass-card rounded-2xl md:rounded-3xl border border-white/10 p-5 md:p-8 shadow-2xl scale-95 transition-transform duration-300 overflow-hidden flex flex-col" id="partikelModalCard">
+        <button class="absolute top-4 right-4 text-neutral-500 hover:text-rose-400 transition-colors z-10" onclick="closePartikelModal()">
+            <i data-lucide="x" class="w-5 h-5"></i>
         </button>
         <div id="modalContent"></div>
     </div>
@@ -249,7 +249,27 @@
     </div>
   </section>
 
-  <!-- ========== SECTION: UJIAN JLPT PARTIKEL ========== -->
+    <!-- ========== SECTION: GAME PUZZLE ========== -->
+  <section class="py-16 px-6 lg:px-12 bg-dark-800/20 border-t border-white/5" id="sectionPuzzle">
+    <div class="max-w-4xl mx-auto text-center mb-12">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-sm font-semibold mb-6">
+        <i data-lucide="gamepad-2" class="w-4 h-4"></i> Visual Puzzle
+      </div>
+      <h2 class="text-3xl font-bold mb-4">Game Puzzle Partikel</h2>
+      <p class="text-neutral-400">Pilih dan masukkan partikel yang tepat ke dalam slot kalimat rumpang berdasar gambar.</p>
+    </div>
+
+    <div class="max-w-3xl mx-auto glass-card rounded-3xl p-8 border border-white/10" id="puzzleContainer">
+      <div class="text-center py-10" id="puzzleStartMenu">
+          <i data-lucide="puzzle" class="w-16 h-16 text-cyan-400 mx-auto mb-4"></i>
+          <h3 class="text-2xl font-bold mb-2">Mainkan Puzzle</h3>
+          <p class="text-neutral-400 mb-6">Game visual interaktif untuk merangkai kalimat dengan partikel yang tepat.</p>
+          <button id="btnStartPuzzle" class="px-8 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/30 transition">Mulai Main</button>
+      </div>
+    </div>
+  </section>
+
+<!-- ========== SECTION: UJIAN JLPT PARTIKEL ========== -->
   <section class="py-16 px-6 lg:px-12 bg-dark-800/20 border-t border-white/5">
     <div class="max-w-4xl mx-auto text-center mb-12">
       <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-300 text-sm font-semibold mb-6">

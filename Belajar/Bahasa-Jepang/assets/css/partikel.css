@@ -92,3 +92,39 @@ rt {
     font-weight: normal;
     letter-spacing: 0;
 }
+
+
+/* Coding Vibe Modal Enhancements */
+#partikelModalCard {
+    background: #0f111a; /* Dark IDE Theme */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(168, 85, 247, 0.3);
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(168, 85, 247, 0.5);
+}
+
+/* Ensure Furigana still looks good inside IDE Theme */
+ruby {
+    ruby-align: center;
+}
+rt {
+    font-size: 0.55em;
+    color: #94a3b8; /* neutral-400 */
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: normal;
+    letter-spacing: 0;
+    transform: translateY(-0.1em);
+}

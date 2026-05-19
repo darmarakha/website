@@ -1,3 +1,11 @@
+function escapeHtml(unsafe) {
+    return (unsafe || '').toString()
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+}
 
 // =====================================
 // PROCEDURAL QUESTION GENERATOR
@@ -524,53 +532,83 @@ function openPartikelModal(id) {
 
     const content = document.getElementById('modalContent');
     content.innerHTML = `
-        <div class="flex items-center gap-4 mb-6 border-b border-white/10 pb-4">
-            <div class="w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center font-jp ${p.char.length > 1 ? 'text-2xl' : 'text-4xl'} font-bold text-purple-400 border border-purple-500/30">
-                ${p.char}
+        <!-- Fake Window/IDE Header -->
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
+            <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
             </div>
-            <div>
-                <h3 class="text-2xl font-bold text-white">Partikel ${p.char}</h3>
-                <p class="text-neutral-400">Dibaca: <strong class="text-white">${p.romaji}</strong></p>
-            </div>
+            <div class="text-xs font-mono text-neutral-500">particle_${p.id}.ts</div>
+            <div class="w-16"></div> <!-- Spacer for balance -->
         </div>
 
-        <div class="space-y-4 mb-6">
+        <!-- Scrollable Content Area with max height -->
+        <div class="overflow-y-auto max-h-[60vh] md:max-h-[65vh] pr-2 custom-scrollbar space-y-6">
+
+            <!-- Section 1: Declaration -->
             <div>
-                <p class="text-xs text-neutral-500 uppercase tracking-wider mb-1">Fungsi Utama</p>
-                <p class="text-white font-medium bg-white/5 p-3 rounded-lg border border-white/10">${p.fungsi}</p>
+                <p class="text-xs font-mono text-purple-400 mb-2">// 1. Initialize Particle</p>
+                <div class="flex items-center gap-5 bg-dark-900/80 p-4 rounded-xl border border-white/5">
+                    <div class="w-16 h-16 rounded-xl bg-purple-500/20 flex items-center justify-center font-jp text-4xl font-bold text-purple-400 border border-purple-500/30 shrink-0">
+                        ${p.char}
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-1"><span class="text-purple-400">const</span> <span class="text-yellow-200">partikel</span> = '${p.char}';</h3>
+                        <p class="text-sm text-neutral-400 font-mono">readAs: <span class="text-emerald-300">"${p.romaji}"</span></p>
+                    </div>
+                </div>
             </div>
+
+            <!-- Section 2: Function & Formula -->
             <div>
-                <p class="text-xs text-neutral-500 uppercase tracking-wider mb-1">Rumus Dasar</p>
-                <p class="text-purple-300 font-mono bg-purple-500/10 p-3 rounded-lg border border-purple-500/20">${p.rumus}</p>
+                <p class="text-xs font-mono text-blue-400 mb-2">// 2. Syntax Definition</p>
+                <div class="bg-dark-900/80 p-4 rounded-xl border border-white/5 font-mono text-sm">
+                    <p class="text-neutral-400 mb-1">/** ${p.fungsi} */</p>
+                    <p class="text-blue-300 leading-relaxed">${p.rumus.replace(/\[(.*?)\]/g, '<span class="text-yellow-200">[$1]</span>')}</p>
+                </div>
             </div>
+
+            <!-- Section 3: Execution / Examples -->
             <div>
-                <p class="text-xs text-neutral-500 uppercase tracking-wider mb-2">Contoh Kalimat</p>
+                <p class="text-xs font-mono text-emerald-400 mb-2">// 3. Execution Examples</p>
                 <div class="space-y-3">
                     ${p.contoh.map(c => `
-                        <div class="bg-dark-900/50 p-4 rounded-xl border border-white/5">
-                            <p class="text-xl font-jp text-white mb-2 leading-relaxed tracking-wide">${c.jp.replace(p.char, `<span class="text-purple-400 font-bold">${p.char}</span>`)}</p>
-                            <p class="text-sm text-neutral-400">${c.id}</p>
+                        <div class="bg-dark-900/80 p-4 rounded-xl border border-white/5">
+                            <p class="text-lg font-jp text-white mb-2 leading-relaxed tracking-wide">${c.jp.replace(p.char, `<span class="text-purple-400 font-bold bg-purple-500/10 px-1 rounded">${p.char}</span>`)}</p>
+                            <p class="text-xs font-mono text-emerald-400/80 border-t border-white/5 pt-2 mt-2">> ${c.id}</p>
                         </div>
                     `).join('')}
                 </div>
             </div>
-            ${p.perbandingan ? `
-            <div class="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl text-sm">
-                <p class="text-blue-300 font-semibold mb-2 flex items-center gap-2"><i data-lucide="split" class="w-4 h-4"></i> Perbandingan</p>
-                <p class="text-blue-200/90 leading-relaxed">${p.perbandingan}</p>
-            </div>
-            ` : ''}
 
-            <div class="bg-orange-500/10 border border-orange-500/20 p-4 rounded-xl text-sm">
-                <p class="text-orange-300 font-semibold mb-1 flex items-center gap-2"><i data-lucide="alert-triangle" class="w-4 h-4"></i> Catatan & Kesalahan Umum</p>
-                <p class="text-orange-200/80 mb-2">${p.catatan}</p>
-                <p class="text-orange-200/60 text-xs">${p.salah}</p>
+            <!-- Section 4: Debug & Logs -->
+            <div>
+                <p class="text-xs font-mono text-orange-400 mb-2">// 4. Logs & Warnings</p>
+                <div class="space-y-3">
+                    ${p.perbandingan ? `
+                    <div class="bg-blue-900/20 border-l-2 border-blue-400 p-4 text-sm font-mono">
+                        <p class="text-blue-300 mb-2">[INFO] diff_check()</p>
+                        <p class="text-blue-100/80 leading-relaxed">${p.perbandingan.replace(/<b>/g, '<span class="text-blue-300 font-bold">').replace(/<\/b>/g, '</span>').replace(/<i>/g, '<span class="italic">').replace(/<\/i>/g, '</span>')}</p>
+                    </div>
+                    ` : ''}
+
+                    <div class="bg-orange-900/20 border-l-2 border-orange-400 p-4 text-sm font-mono">
+                        <p class="text-orange-300 mb-2">[WARN] common_mistakes()</p>
+                        <p class="text-orange-100/80 mb-2 leading-relaxed">${p.catatan}</p>
+                        <p class="text-rose-300/80 text-xs mt-2 pt-2 border-t border-rose-500/20">Error: ${p.salah}</p>
+                    </div>
+                </div>
             </div>
+
         </div>
 
-        <button class="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl transition" onclick="markPartikelSelesai('${p.id}')">
-            Mengerti & Tandai Selesai
-        </button>
+        <!-- Sticky Bottom Button -->
+        <div class="mt-6 pt-4 border-t border-white/10">
+            <button class="w-full py-3.5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500 text-white font-mono font-bold rounded-xl transition shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2" onclick="markPartikelSelesai('${p.id}')">
+                <i data-lucide="terminal" class="w-5 h-5"></i> compile_and_mark_done()
+            </button>
+        </div>
     `;
 
     document.getElementById('partikelModal').classList.add('active');
@@ -1168,7 +1206,7 @@ function showUjianResult() {
 
                         <div class="bg-white/5 rounded-lg p-3 mb-3 border border-white/5">
                             <span class="text-xs text-neutral-400 uppercase tracking-wider block mb-1">Jawaban Kamu:</span>
-                            <span class="${userAnsClass} font-bold">${item.jawabanUser}</span> ${correctAnsHtml}
+                            <span class="${userAnsClass} font-bold">${escapeHtml(item.jawabanUser)}</span> ${correctAnsHtml}
                         </div>
 
                         <div class="text-sm text-neutral-300">
