@@ -13,53 +13,53 @@ function escapeHtml(unsafe) {
 // Kita siapkan kamus lokal fallback (Full Kana) agar aman tanpa kanji.
 const dictionary = {
     orang: [
-        { kana: 'わたし', id: 'Saya' },
-        { kana: 'あなた', id: 'Kamu' },
-        { kana: 'ともだち', id: 'Teman' },
-        { kana: 'せんせい', id: 'Guru' },
-        { kana: 'がくせい', id: 'Pelajar' },
-        { kana: 'ねこ', id: 'Kucing' },
-        { kana: 'いぬ', id: 'Anjing' }
+        { kana: 'わたし', id: 'Saya', emoji: '🧑' },
+        { kana: 'あなた', id: 'Kamu', emoji: '🫵' },
+        { kana: 'ともだち', id: 'Teman', emoji: '🤝' },
+        { kana: 'せんせい', id: 'Guru', emoji: '👨‍🏫' },
+        { kana: 'がくせい', id: 'Pelajar', emoji: '🎒' },
+        { kana: 'ねこ', id: 'Kucing', emoji: '🐱' },
+        { kana: 'いぬ', id: 'Anjing', emoji: '🐶' }
     ],
     benda: [
-        { kana: 'みず', id: 'Air' },
-        { kana: 'パン', id: 'Roti' },
-        { kana: 'りんご', id: 'Apel' },
-        { kana: 'ほん', id: 'Buku' },
-        { kana: 'てがみ', id: 'Surat' },
-        { kana: 'くるま', id: 'Mobil' },
-        { kana: 'えんぴつ', id: 'Pensil' }
+        { kana: 'みず', id: 'Air', emoji: '💧' },
+        { kana: 'パン', id: 'Roti', emoji: '🍞' },
+        { kana: 'りんご', id: 'Apel', emoji: '🍎' },
+        { kana: 'ほん', id: 'Buku', emoji: '📖' },
+        { kana: 'てがみ', id: 'Surat', emoji: '✉️' },
+        { kana: 'くるま', id: 'Mobil', emoji: '🚗' },
+        { kana: 'えんぴつ', id: 'Pensil', emoji: '✏️' }
     ],
     tempat: [
-        { kana: 'がっこう', id: 'Sekolah' },
-        { kana: 'へや', id: 'Kamar' },
-        { kana: 'うち', id: 'Rumah' },
-        { kana: 'えき', id: 'Stasiun' },
-        { kana: 'こうえん', id: 'Taman' },
-        { kana: 'スーパー', id: 'Supermarket' }
+        { kana: 'がっこう', id: 'Sekolah', emoji: '🏫' },
+        { kana: 'へや', id: 'Kamar', emoji: '🚪' },
+        { kana: 'うち', id: 'Rumah', emoji: '🏠' },
+        { kana: 'えき', id: 'Stasiun', emoji: '🚉' },
+        { kana: 'こうえん', id: 'Taman', emoji: '🏞️' },
+        { kana: 'スーパー', id: 'Supermarket', emoji: '🛒' }
     ],
     waktu: [
-        { kana: 'あした', id: 'Besok' },
-        { kana: 'きのう', id: 'Kemarin' },
-        { kana: 'きょう', id: 'Hari ini' },
-        { kana: 'あさ', id: 'Pagi' },
-        { kana: 'よる', id: 'Malam' }
+        { kana: 'あした', id: 'Besok', emoji: '⏭️' },
+        { kana: 'きのう', id: 'Kemarin', emoji: '⏮️' },
+        { kana: 'きょう', id: 'Hari ini', emoji: '⏬' },
+        { kana: 'あさ', id: 'Pagi', emoji: '🌅' },
+        { kana: 'よる', id: 'Malam', emoji: '🌃' }
     ],
     verbTrans: [
-        { kana: 'のみます', id: 'minum', particle: 'を' },
-        { kana: 'たべます', id: 'makan', particle: 'を' },
-        { kana: 'よみます', id: 'membaca', particle: 'を' },
-        { kana: 'かいます', id: 'membeli', particle: 'を' },
-        { kana: 'かきます', id: 'menulis', particle: 'を' }
+        { kana: 'のみます', id: 'minum', particle: 'を', emoji: '🥤' },
+        { kana: 'たべます', id: 'makan', particle: 'を', emoji: '🍽️' },
+        { kana: 'よみます', id: 'membaca', particle: 'を', emoji: '👀' },
+        { kana: 'かいます', id: 'membeli', particle: 'を', emoji: '🛍️' },
+        { kana: 'かきます', id: 'menulis', particle: 'を', emoji: '✍️' }
     ],
     verbGerak: [
-        { kana: 'いきます', id: 'pergi', particle: 'へ' }, // Atau ni
-        { kana: 'きます', id: 'datang', particle: 'へ' },
-        { kana: 'かえります', id: 'pulang', particle: 'へ' }
+        { kana: 'いきます', id: 'pergi', particle: 'へ', emoji: '🚶' }, // Atau ni
+        { kana: 'きます', id: 'datang', particle: 'へ', emoji: '🏃' },
+        { kana: 'かえります', id: 'pulang', particle: 'へ', emoji: '↩️' }
     ],
     verbAda: [
-        { kana: 'あります', id: 'ada (benda mati)', particle: 'が' },
-        { kana: 'います', id: 'ada (hidup)', particle: 'が' }
+        { kana: 'あります', id: 'ada (benda mati)', particle: 'が', emoji: '📦' },
+        { kana: 'います', id: 'ada (hidup)', particle: 'が', emoji: '🧍' }
     ]
 };
 
@@ -80,11 +80,13 @@ function generateQuestions(amount) {
             let benda = getRandomItem(dictionary.benda);
             let verb = getRandomItem(dictionary.verbTrans);
             let p1 = Math.random() > 0.5 ? 'は' : 'が';
+            let emojiStr = `${orang.emoji} 💭 ${benda.emoji} ${verb.emoji}`;
 
             // Randomly blank out one of the particles
             if (Math.random() > 0.5) {
                 return {
                     type: "mcq",
+                    emoji: emojiStr,
                     soal: `${orang.kana} ___ ${benda.kana} ${verb.particle} ${verb.kana}。`,
                     terjemahan: `${orang.id} ${verb.id} ${benda.id}.`,
                     options: [`A. ${p1}`, `B. に`, `C. で`, `D. へ`],
@@ -95,6 +97,7 @@ function generateQuestions(amount) {
             } else {
                 return {
                     type: "essay",
+                    emoji: emojiStr,
                     soal: `${orang.kana} ${p1} ${benda.kana} ___ ${verb.kana}。`,
                     terjemahan: `${orang.id} ${verb.id} ${benda.id}.`,
                     jawaban: verb.particle,
@@ -109,10 +112,12 @@ function generateQuestions(amount) {
             let isHidup = Math.random() > 0.5;
             let subjek = isHidup ? getRandomItem(dictionary.orang) : getRandomItem(dictionary.benda);
             let verb = isHidup ? dictionary.verbAda[1] : dictionary.verbAda[0];
+            let emojiStr = `${tempat.emoji} 📍 ${subjek.emoji} ${verb.emoji}`;
 
             if (Math.random() > 0.5) {
                 return {
                     type: "mcq",
+                    emoji: emojiStr,
                     soal: `${tempat.kana} ___ ${subjek.kana} が ${verb.kana}。`,
                     terjemahan: `Di ${tempat.id.toLowerCase()} ada ${subjek.id.toLowerCase()}.`,
                     options: ["A. で", "B. に", "C. を", "D. へ"],
@@ -123,6 +128,7 @@ function generateQuestions(amount) {
             } else {
                 return {
                     type: "essay",
+                    emoji: emojiStr,
                     soal: `${tempat.kana} に ${subjek.kana} ___ ${verb.kana}。`,
                     terjemahan: `Di ${tempat.id.toLowerCase()} ada ${subjek.id.toLowerCase()}.`,
                     jawaban: "が",
@@ -136,9 +142,11 @@ function generateQuestions(amount) {
             let tempat = getRandomItem(dictionary.tempat);
             let benda = getRandomItem(dictionary.benda);
             let verb = getRandomItem(dictionary.verbTrans);
+            let emojiStr = `${tempat.emoji} 🛠️ ${benda.emoji} ${verb.emoji}`;
 
             return {
                 type: "mcq",
+                emoji: emojiStr,
                 soal: `${tempat.kana} ___ ${benda.kana} を ${verb.kana}。`,
                 terjemahan: `${verb.id.charAt(0).toUpperCase() + verb.id.slice(1)} ${benda.id.toLowerCase()} di ${tempat.id.toLowerCase()}.`,
                 options: ["A. に", "B. で", "C. は", "D. も"],
@@ -152,9 +160,11 @@ function generateQuestions(amount) {
             let waktu = getRandomItem(dictionary.waktu);
             let tempat = getRandomItem(dictionary.tempat);
             let verb = getRandomItem(dictionary.verbGerak);
+            let emojiStr = `${waktu.emoji} ⏳ ${tempat.emoji} ${verb.emoji}`;
 
             return {
                 type: "essay",
+                emoji: emojiStr,
                 soal: `${waktu.kana}、 ${tempat.kana} ___ ${verb.kana}。`,
                 terjemahan: `${waktu.id}, ${verb.id} ke ${tempat.id.toLowerCase()}.`,
                 jawaban: verb.particle,
@@ -167,9 +177,11 @@ function generateQuestions(amount) {
             let b1 = getRandomItem(dictionary.benda);
             let b2 = getRandomItem(dictionary.benda);
             while (b1.kana === b2.kana) b2 = getRandomItem(dictionary.benda);
+            let emojiStr = `${b1.emoji} ➕ ${b2.emoji} 🛍️`;
 
             return {
                 type: "mcq",
+                emoji: emojiStr,
                 soal: `${b1.kana} ___ ${b2.kana} を かいます。`,
                 terjemahan: `Membeli ${b1.id.toLowerCase()} dan ${b2.id.toLowerCase()}.`,
                 options: ["A. と", "B. や", "C. も", "D. で"],
@@ -489,7 +501,9 @@ function updateUIProgress() {
         const id = btn.getAttribute('data-id');
         if (userProgress.kontrasSelesai.includes(id)) {
             btn.classList.add('completed');
-            btn.innerHTML = `<i data-lucide="check-double" class="w-4 h-4"></i> Selesai`;
+            btn.classList.add('bg-green-500/20');
+            btn.classList.add('text-green-400');
+            btn.innerHTML = `> git push origin main <i data-lucide="check" class="w-4 h-4 inline ml-1"></i>`;
         }
     });
 
@@ -1054,14 +1068,20 @@ function renderUjian() {
         `;
     }
 
+    let emojiDisplayHtml = '';
+    if (q.emoji) {
+        emojiDisplayHtml = `<div class="text-center text-4xl mb-4">${q.emoji}</div>`;
+    }
+
     container.innerHTML = `
         <div class="flex justify-between items-center mb-6 text-sm text-neutral-400 font-bold uppercase tracking-wider">
             <span class="text-orange-400">Soal Ujian ${currentUjianIndex + 1} / ${ujianData.length}</span>
             <span>Tipe: ${q.type === 'mcq' ? 'Pilihan Ganda' : 'Essai (Wanakana)'}</span>
         </div>
-        <div class="bg-white/5 p-6 rounded-2xl border border-white/10 mb-6">
-            <h3 class="text-2xl font-bold font-jp leading-relaxed">${q.soal}</h3>
-            <p class="text-sm text-neutral-400 mt-2"><i data-lucide="languages" class="w-4 h-4 inline mr-1"></i> ${q.terjemahan || 'Arti kalimat di atas.'}</p>
+        <div class="bg-white/5 p-6 rounded-2xl border border-white/10 mb-6 relative">
+            ${emojiDisplayHtml}
+            <h3 class="text-2xl font-bold font-jp leading-relaxed text-center">${q.soal}</h3>
+            <p class="text-sm text-neutral-400 mt-4 text-center"><i data-lucide="languages" class="w-4 h-4 inline mr-1"></i> ${q.terjemahan || 'Arti kalimat di atas.'}</p>
         </div>
         ${contentHtml}
         <div id="ujianFeedback" class="hidden mt-6 p-4 rounded-xl text-sm border"></div>
@@ -1302,6 +1322,11 @@ function renderLatihan() {
         `;
     }
 
+    let emojiDisplayHtml = '';
+    if (q.emoji) {
+        emojiDisplayHtml = `<div class="text-center text-4xl mb-4">${q.emoji}</div>`;
+    }
+
     container.innerHTML = `
         <div class="flex justify-between items-center mb-6 text-sm text-neutral-400 font-bold uppercase tracking-wider">
             <span class="text-purple-400">Soal Latihan ${currentLatihanIndex + 1} / ${latihanData.length}</span>
@@ -1314,9 +1339,10 @@ function renderLatihan() {
             <i data-lucide="info" class="w-4 h-4 inline mr-1"></i> ${q.hint || 'Tidak ada petunjuk spesifik.'}
         </div>
 
-        <div class="bg-white/5 p-6 rounded-2xl border border-white/10 mb-6">
-            <h3 class="text-2xl font-bold font-jp leading-relaxed">${q.soal}</h3>
-            <p class="text-sm text-neutral-400 mt-2"><i data-lucide="languages" class="w-4 h-4 inline mr-1"></i> ${q.terjemahan || 'Arti kalimat di atas.'}</p>
+        <div class="bg-white/5 p-6 rounded-2xl border border-white/10 mb-6 relative">
+            ${emojiDisplayHtml}
+            <h3 class="text-2xl font-bold font-jp leading-relaxed text-center">${q.soal}</h3>
+            <p class="text-sm text-neutral-400 mt-4 text-center"><i data-lucide="languages" class="w-4 h-4 inline mr-1"></i> ${q.terjemahan || 'Arti kalimat di atas.'}</p>
         </div>
         ${contentHtml}
         <div id="latihanFeedback" class="hidden mt-6 p-4 rounded-xl text-sm border"></div>

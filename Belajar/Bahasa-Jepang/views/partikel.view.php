@@ -161,61 +161,145 @@
     </div>
   </section>
 
-  <!-- ========== SECTION: LATIHAN KONTRAS ========== -->
-  <section class="py-16 px-6 lg:px-12 bg-dark-800/30 border-y border-white/5">
+  <!-- ========== SECTION: LATIHAN KONTRAS (CODING VIBE) ========== -->
+  <section class="py-16 px-6 lg:px-12 border-t border-white/5 bg-dark-950">
     <div class="max-w-4xl mx-auto">
       <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold mb-4">Latihan Kontras: Yang Sering Tertukar</h2>
-        <p class="text-neutral-400">Banyak pelajar berhenti belajar karena bingung perbedaan partikel ini. Mari kita bedah!</p>
+        <h2 class="text-3xl font-bold mb-4 flex justify-center items-center gap-3">
+          <i data-lucide="git-compare" class="w-8 h-8 text-cyan-400"></i> Latihan Kontras: Diff Checker
+        </h2>
+        <p class="text-neutral-400">Bedah perbedaan partikel layaknya membandingkan baris kode.</p>
       </div>
 
-      <div class="space-y-8">
-        <!-- Contrast 1 -->
-        <div class="glass-card rounded-3xl p-6 border border-white/10 flex flex-col md:flex-row gap-6 items-center">
-            <div class="w-24 h-24 shrink-0 rounded-2xl bg-gradient-to-br from-sakura-500/20 to-orange-500/20 flex items-center justify-center font-jp text-3xl font-bold text-white border border-white/10">
-                は <span class="text-sm mx-1 text-neutral-500">vs</span> が
+      <div class="space-y-12">
+        <!-- Contrast 1: Wa vs Ga -->
+        <div class="rounded-2xl overflow-hidden border border-white/10 bg-[#0d1117] shadow-2xl">
+            <!-- Mac Window Header -->
+            <div class="bg-[#161b22] px-4 py-3 border-b border-white/5 flex items-center justify-between">
+                <div class="flex gap-2">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                </div>
+                <div class="text-xs text-neutral-400 font-mono tracking-wider flex items-center gap-2">
+                   <i data-lucide="file-code" class="w-4 h-4"></i> wa_vs_ga.jp
+                </div>
+                <div></div> <!-- spacing -->
             </div>
-            <div class="flex-1">
-                <h3 class="text-xl font-bold mb-2">Topik vs Subjek Identifikasi</h3>
-                <p class="text-sm text-neutral-300 mb-4"><strong>は (wa)</strong> adalah topik pembicaraan ("Kalau tentang..."). <strong>が (ga)</strong> adalah subjek atau informasi baru yang ingin diidentifikasi.</p>
-                <div class="grid sm:grid-cols-2 gap-4">
-                    <div class="bg-dark-900/50 p-4 rounded-xl border border-white/5">
-                        <p class="text-sakura-400 font-bold mb-1">わたし は ダルマ です。</p>
-                        <p class="text-xs text-neutral-400">Kalau tentang saya, saya Darma.</p>
+
+            <!-- Code Diff Layout -->
+            <div class="grid md:grid-cols-2 text-sm font-mono leading-relaxed">
+                <!-- Kiri: は -->
+                <div class="p-6 border-b md:border-b-0 md:border-r border-white/5 bg-[#0d1117]/80">
+                    <div class="text-sakura-400 font-bold text-lg mb-4 flex items-center gap-2 border-b border-white/5 pb-2">
+                        <span class="text-3xl font-jp">は</span> <span>(wa) - Topik</span>
+                        <span class="ml-auto text-2xl">🧑</span>
                     </div>
-                    <div class="bg-dark-900/50 p-4 rounded-xl border border-white/5">
-                        <p class="text-orange-400 font-bold mb-1">わたし が ダルマ です。</p>
-                        <p class="text-xs text-neutral-400">Sayalah Darma. (Bukan orang lain)</p>
+                    <div class="flex">
+                        <div class="text-neutral-600 select-none pr-4 text-right">1<br>2<br>3<br>4</div>
+                        <div class="text-neutral-300">
+                            <span class="text-purple-400">const</span> subject = <span class="text-green-400">"Topik Pembicaraan"</span>;<br>
+                            <br>
+                            <span class="text-neutral-500">// Kalau tentang saya...</span><br>
+                            わたし <span class="text-sakura-400 font-bold bg-sakura-500/20 px-1 rounded">は</span> ダルマ です。
+                        </div>
                     </div>
+                    <p class="mt-6 text-xs text-neutral-400 font-sans">Digunakan untuk memperkenalkan topik yang sedang dibicarakan. Fokusnya ada pada informasi <em>setelah</em> partikel は.</p>
+                </div>
+
+                <!-- Kanan: が -->
+                <div class="p-6 bg-[#0d1117]">
+                    <div class="text-orange-400 font-bold text-lg mb-4 flex items-center gap-2 border-b border-white/5 pb-2">
+                        <span class="text-3xl font-jp">が</span> <span>(ga) - Identifikasi</span>
+                        <span class="ml-auto text-2xl">🫵</span>
+                    </div>
+                    <div class="flex">
+                        <div class="text-neutral-600 select-none pr-4 text-right">1<br>2<br>3<br>4</div>
+                        <div class="text-neutral-300">
+                            <span class="text-purple-400">const</span> focus = <span class="text-green-400">"Subjek Penekanan"</span>;<br>
+                            <br>
+                            <span class="text-neutral-500">// Sayalah Darma (Bukan orang lain)</span><br>
+                            わたし <span class="text-orange-400 font-bold bg-orange-500/20 px-1 rounded">が</span> ダルマ です。
+                        </div>
+                    </div>
+                    <p class="mt-6 text-xs text-neutral-400 font-sans">Digunakan untuk mengidentifikasi siapa/apa yang melakukan aksi. Fokusnya ada pada kata <em>sebelum</em> partikel が.</p>
                 </div>
             </div>
-            <button class="btn-mark-contrast w-full md:w-auto px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition text-sm font-semibold flex items-center justify-center gap-2" data-id="kontras_wa_ga">
-                <i data-lucide="check-circle" class="w-4 h-4"></i> Tandai Selesai
-            </button>
+
+            <!-- Terminal Execution Action -->
+            <div class="bg-[#161b22] p-4 border-t border-white/5 flex items-center justify-between font-mono">
+                <div class="text-green-400 text-xs hidden md:block">
+                    $ analyzer compare wa ga --status success
+                </div>
+                <button class="btn-mark-contrast px-5 py-2 rounded bg-white/10 hover:bg-white/20 text-white text-xs transition flex items-center gap-2 border border-white/10 ml-auto" data-id="kontras_wa_ga">
+                    > git commit -m "Memahami は vs が"
+                </button>
+            </div>
         </div>
 
-        <!-- Contrast 2 -->
-        <div class="glass-card rounded-3xl p-6 border border-white/10 flex flex-col md:flex-row gap-6 items-center">
-            <div class="w-24 h-24 shrink-0 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center font-jp text-3xl font-bold text-white border border-white/10">
-                に <span class="text-sm mx-1 text-neutral-500">vs</span> で
+        <!-- Contrast 2: Ni vs De -->
+        <div class="rounded-2xl overflow-hidden border border-white/10 bg-[#0d1117] shadow-2xl">
+            <!-- Mac Window Header -->
+            <div class="bg-[#161b22] px-4 py-3 border-b border-white/5 flex items-center justify-between">
+                <div class="flex gap-2">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                </div>
+                <div class="text-xs text-neutral-400 font-mono tracking-wider flex items-center gap-2">
+                   <i data-lucide="file-code" class="w-4 h-4"></i> ni_vs_de.jp
+                </div>
+                <div></div> <!-- spacing -->
             </div>
-            <div class="flex-1">
-                <h3 class="text-xl font-bold mb-2">Lokasi Keberadaan vs Tempat Aksi</h3>
-                <p class="text-sm text-neutral-300 mb-4"><strong>に (ni)</strong> digunakan dengan kata kerja keberadaan (ada/berada). <strong>で (de)</strong> digunakan untuk tempat terjadinya sebuah aksi (makan, belajar).</p>
-                <div class="grid sm:grid-cols-2 gap-4">
-                    <div class="bg-dark-900/50 p-4 rounded-xl border border-white/5">
-                        <p class="text-cyan-400 font-bold mb-1">がっこう に います。</p>
-                        <p class="text-xs text-neutral-400">Saya berada di sekolah.</p>
+
+            <!-- Code Diff Layout -->
+            <div class="grid md:grid-cols-2 text-sm font-mono leading-relaxed">
+                <!-- Kiri: に -->
+                <div class="p-6 border-b md:border-b-0 md:border-r border-white/5 bg-[#0d1117]/80">
+                    <div class="text-cyan-400 font-bold text-lg mb-4 flex items-center gap-2 border-b border-white/5 pb-2">
+                        <span class="text-3xl font-jp">に</span> <span>(ni) - Lokasi Statis</span>
+                        <span class="ml-auto text-2xl">📍</span>
                     </div>
-                    <div class="bg-dark-900/50 p-4 rounded-xl border border-white/5">
-                        <p class="text-purple-400 font-bold mb-1">がっこう で べんきょうします。</p>
-                        <p class="text-xs text-neutral-400">Saya belajar di sekolah.</p>
+                    <div class="flex">
+                        <div class="text-neutral-600 select-none pr-4 text-right">1<br>2<br>3<br>4</div>
+                        <div class="text-neutral-300">
+                            <span class="text-purple-400">let</span> verb = <span class="text-green-400">"います/あります"</span>;<br>
+                            <br>
+                            <span class="text-neutral-500">// Saya berada di sekolah.</span><br>
+                            がっこう <span class="text-cyan-400 font-bold bg-cyan-500/20 px-1 rounded">に</span> います。
+                        </div>
                     </div>
+                    <p class="mt-6 text-xs text-neutral-400 font-sans">Menunjukkan di mana sesuatu <em>berada/eksis</em>. Selalu berpasangan dengan kata kerja statis seperti います atau あります.</p>
+                </div>
+
+                <!-- Kanan: で -->
+                <div class="p-6 bg-[#0d1117]">
+                    <div class="text-purple-400 font-bold text-lg mb-4 flex items-center gap-2 border-b border-white/5 pb-2">
+                        <span class="text-3xl font-jp">で</span> <span>(de) - Tempat Aksi</span>
+                        <span class="ml-auto text-2xl">🛠️</span>
+                    </div>
+                    <div class="flex">
+                        <div class="text-neutral-600 select-none pr-4 text-right">1<br>2<br>3<br>4</div>
+                        <div class="text-neutral-300">
+                            <span class="text-purple-400">let</span> verb = <span class="text-green-400">"べんきょうします"</span>;<br>
+                            <br>
+                            <span class="text-neutral-500">// Saya belajar di sekolah.</span><br>
+                            がっこう <span class="text-purple-400 font-bold bg-purple-500/20 px-1 rounded">で</span> べんきょうします。
+                        </div>
+                    </div>
+                    <p class="mt-6 text-xs text-neutral-400 font-sans">Menunjukkan di mana sebuah <em>aksi aktif</em> dilakukan (makan, belajar, bermain, dll).</p>
                 </div>
             </div>
-            <button class="btn-mark-contrast w-full md:w-auto px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition text-sm font-semibold flex items-center justify-center gap-2" data-id="kontras_ni_de">
-                <i data-lucide="check-circle" class="w-4 h-4"></i> Tandai Selesai
-            </button>
+
+            <!-- Terminal Execution Action -->
+            <div class="bg-[#161b22] p-4 border-t border-white/5 flex items-center justify-between font-mono">
+                <div class="text-green-400 text-xs hidden md:block">
+                    $ analyzer compare ni de --status success
+                </div>
+                <button class="btn-mark-contrast px-5 py-2 rounded bg-white/10 hover:bg-white/20 text-white text-xs transition flex items-center gap-2 border border-white/10 ml-auto" data-id="kontras_ni_de">
+                    > git commit -m "Memahami に vs で"
+                </button>
+            </div>
         </div>
       </div>
     </div>

@@ -1,0 +1,13 @@
+[Tue May 19 07:41:35 2026] PHP 8.3.6 Development Server (http://localhost:3000) started
+[Tue May 19 07:42:44 2026] [::1]:52116 Accepted
+[Tue May 19 07:42:44 2026] [::1]:52116 [200]: GET /partikel.php
+[Tue May 19 07:42:44 2026] [::1]:52116 Closing
+[Tue May 19 07:42:44 2026] [::1]:52124 Accepted
+[Tue May 19 07:42:44 2026] [::1]:52130 Accepted
+[Tue May 19 07:42:44 2026] [::1]:52136 Accepted
+[Tue May 19 07:42:44 2026] [::1]:52124 [200]: GET /assets/css/style.css
+[Tue May 19 07:42:44 2026] [::1]:52130 [200]: GET /assets/css/partikel.css
+[Tue May 19 07:42:44 2026] [::1]:52124 Closing
+[Tue May 19 07:42:44 2026] [::1]:52130 Closing
+[Tue May 19 07:42:44 2026] [::1]:52136 [200]: GET /assets/js/partikel.js
+[Tue May 19 07:42:44 2026] [::1]:52136 Closing
