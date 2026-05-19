@@ -683,14 +683,55 @@
   }
 
 
-  async function dndApi(action, payload = {}) {
+  const dndBootLog = [];
+  let bootStartedAt = performance.now();
+  let loadAbortController = null;
+
+  function resetBootLog() {
+      dndBootLog.length = 0;
+      bootStartedAt = performance.now();
+      if (document.getElementById('dnd-boot-console-rows')) {
+          document.getElementById('dnd-boot-console-rows').innerHTML = '';
+      }
+  }
+
+  function addBootLog(type, message, meta = {}) {
+      const elapsed = ((performance.now() - bootStartedAt) / 1000).toFixed(3);
+      dndBootLog.push({ elapsed, type, message, meta });
+      renderBootLog();
+  }
+
+  function renderBootLog() {
+      const rowsEl = document.getElementById('dnd-boot-console-rows');
+      if (!rowsEl) return;
+      const html = dndBootLog.map(log => {
+          let extra = '';
+          if (log.meta && Array.isArray(log.meta.debugTiming)) {
+              extra = `<div class="dnd-boot-console__meta" style="margin-left: 7.5rem; font-size: 0.85em; opacity: 0.7;">` +
+                log.meta.debugTiming.map(t => `└─ ${t.step}: ${t.ms}ms`).join('<br>') +
+                `</div>`;
+          }
+          return `<div class="dnd-boot-console__row">
+            <span class="dnd-boot-console__time">[${log.elapsed}s]</span>
+            <span class="dnd-boot-console__type">${String(log.type).padEnd(10, ' ')}</span>
+            <span class="dnd-boot-console__message">${log.message}</span>
+          </div>${extra}`;
+      }).join('');
+      rowsEl.innerHTML = html + `<div class="dnd-boot-console__cursor">_</div>`;
+      rowsEl.scrollTop = rowsEl.scrollHeight;
+  }
+
+  async function dndApi(action, payload = {}, customSignal = null) {
     if (!apiUrl || !syncToken) return { ok: false, message: "SQL sync nonaktif." };
-    const res = await fetch(apiUrl, {
+    const fetchOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
       body: JSON.stringify({ action, token: syncToken, ...payload })
-    });
+    };
+    if (customSignal) fetchOptions.signal = customSignal;
+
+    const res = await fetch(apiUrl, fetchOptions);
     const text = await res.text();
     let data;
     try { data = JSON.parse(text); } catch (error) {
@@ -716,33 +757,136 @@
   }
 
   async function syncLoadFromSql() {
-    if (!apiUrl || !syncToken || !hasWebsiteSession()) return;
+    if (!apiUrl || !syncToken || !hasWebsiteSession()) {
+        const loadingOverlay = document.getElementById("dnd-loading-overlay");
+        if (loadingOverlay) loadingOverlay.style.display = "none";
+        return;
+    }
+
+    resetBootLog();
+    addBootLog('boot', 'Starting DnD table...');
+    addBootLog('session', 'Website session detected: ' + (sessionAccountName || 'Active'));
+
+    // Show loading overlay
+    const loadingOverlay = document.getElementById("dnd-loading-overlay");
+    if (loadingOverlay) {
+        loadingOverlay.style.display = "flex";
+        const contentEl = document.getElementById("dnd-loading-content");
+        if (contentEl) {
+            contentEl.innerHTML = `
+              <div class="dnd-loading-spinner"></div>
+              <p style="margin-top: 15px; font-weight: 500; color: var(--dnd-color-parchment);">Memuat data karakter...</p>
+              <div id="dnd-boot-console" class="dnd-boot-console">
+                <div class="dnd-boot-console__header">◆ DnD Sync Console</div>
+                <div id="dnd-boot-console-rows" class="dnd-boot-console__rows"></div>
+              </div>
+              <div id="dnd-loading-actions" style="margin-top: 15px; display: none; text-align: center;">
+                 <p style="color: var(--dnd-color-danger); margin-bottom: 10px; font-size: 14px;" id="dnd-loading-error-text"></p>
+                 <button class="dnd-btn dnd-btn--primary" onclick="window.dndRetryLoad()">Coba Muat Ulang</button>
+                 <button class="dnd-btn" style="margin-top: 5px;" onclick="window.location.reload()">Refresh Halaman</button>
+              </div>
+            `;
+            renderBootLog();
+        }
+    }
+
     try {
-      toast("Memuat karakter dari MySQL...");
-      const data = await dndApi("load");
+      addBootLog('api', 'Requesting campaign summary...');
+      loadAbortController = new AbortController();
+      const timeoutId = setTimeout(() => loadAbortController.abort(), 10000); // 10s timeout
+
+      const data = await dndApi("load", {}, loadAbortController.signal);
+      clearTimeout(timeoutId);
+
+      addBootLog('api', 'Campaign found.', { debugTiming: data.debugTiming });
+
       if (!data.state) {
         scheduleSqlSave(false);
+        if (loadingOverlay) loadingOverlay.style.display = "none";
         return;
       }
+
       state = mergeState(defaultState(), data.state);
       seedSessionAccount();
       seedSystemAiNotes();
       normalizeStoredCharacters();
       normalizeSqlOnlyIdentity();
 
-      // Attempt to load the active character detail right away if available
-      if (state.activeCharacterId && state.activeCharacterId !== "__new_character__") {
-          await loadFullCharacter(state.activeCharacterId);
+      addBootLog('sql', `${state.characters ? state.characters.length : 0} character summary loaded.`);
+
+      addBootLog('render', 'Interface ready.');
+      render();
+
+      const userIsOwnerOrAdmin = state.accounts && state.accounts.some(acc => acc.id === 'php-session-user' && acc.role === 'owner');
+
+      if (loadingOverlay) {
+          if (userIsOwnerOrAdmin || new URLSearchParams(window.location.search).get('debug') === '1') {
+              // Collapse it
+              loadingOverlay.style.display = "none"; // Instead of hiding overlay, let's keep it clean
+              const consoleEl = document.getElementById("dnd-boot-console");
+              if (consoleEl) {
+                  consoleEl.classList.add('dnd-boot-console--collapsed');
+                  document.body.appendChild(consoleEl); // Move to body corner
+              }
+          } else {
+              loadingOverlay.style.display = "none";
+          }
       }
 
-      render();
-      toast("Data DND dimuat.");
+      // Load full character in background
+      if (state.activeCharacterId && state.activeCharacterId !== "__new_character__") {
+          addBootLog('detail', 'Loading active character sheet...');
+          // Don't await, let it run in background
+          loadFullCharacter(state.activeCharacterId).then(() => {
+              addBootLog('detail', 'Active character sheet loaded.');
+              // minimal toast
+              toast("Sinkronisasi Selesai.");
+          }).catch(err => {
+              addBootLog('error', 'Failed to load character details.');
+          });
+      } else {
+          toast("Data DND dimuat.");
+      }
+
     } catch (error) {
+      if (error.name === 'AbortError') {
+          addBootLog('timeout', 'SQL request timed out.');
+      } else {
+          addBootLog('error', error.message || 'Unknown error');
+      }
+
       if (!syncWarned) console.warn("DND SQL load fallback:", error);
-      toast("Gagal memuat karakter. Coba refresh.");
+      toast("Gagal memuat karakter.");
       syncWarned = true;
+
+      // Show error state in loading UI
+      const actionsEl = document.getElementById("dnd-loading-actions");
+      const errorTextEl = document.getElementById("dnd-loading-error-text");
+      const spinnerEl = document.querySelector(".dnd-loading-spinner");
+      if (actionsEl && errorTextEl) {
+          actionsEl.style.display = "block";
+          if (error.name === 'AbortError') {
+              errorTextEl.textContent = 'Koneksi SQL lambat. Ringkasan karakter belum selesai dimuat.';
+          } else {
+              errorTextEl.textContent = 'Gagal memuat data: ' + error.message;
+          }
+          if (spinnerEl) spinnerEl.style.display = "none";
+      }
     }
   }
+
+  // Make it global so the onclick works
+  window.dndRetryLoad = () => {
+      const actionsEl = document.getElementById("dnd-loading-actions");
+      const spinnerEl = document.querySelector(".dnd-loading-spinner");
+      const errorTextEl = document.getElementById("dnd-loading-error-text");
+      if (actionsEl) actionsEl.style.display = "none";
+      if (spinnerEl) spinnerEl.style.display = "block";
+      if (errorTextEl) errorTextEl.textContent = "";
+
+      addBootLog('retry', 'Retrying load sequence...');
+      syncLoadFromSql();
+  };
 
   async function persistStateToSql(show = false) {
     if (!apiUrl || !syncToken || !hasWebsiteSession() || syncBusy) {

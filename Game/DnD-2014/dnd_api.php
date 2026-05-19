@@ -6,7 +6,26 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
+global $_dnd_timing_logs;
+$_dnd_timing_logs = [];
+
+function dnd_add_timing_log(string $step, float $start_time) {
+    global $_dnd_timing_logs;
+    $ms = round((microtime(true) - $start_time) * 1000, 2);
+    $_dnd_timing_logs[] = ['step' => $step, 'ms' => $ms];
+}
+
 function dnd_json(array $payload, int $code = 200): void {
+    global $_dnd_timing_logs;
+
+    // Add debugTiming if it's safe (Owner or Admin role based on project requirement)
+    $role = strtolower((string)($_SESSION['gy_user_role'] ?? $_SESSION['user_role'] ?? $_SESSION['role'] ?? ''));
+    if (in_array($role, ['owner', 'admin'], true)) {
+        if (!empty($_dnd_timing_logs)) {
+            $payload['debugTiming'] = $_dnd_timing_logs;
+        }
+    }
+
     http_response_code($code);
     echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
@@ -576,44 +595,146 @@ function dnd_state_from_sql(PDO $pdo, int $campaignId, ?int $userId, bool $isOwn
     ];
 }
 try {
+    $request_start = microtime(true);
     $action = (string)($input['action'] ?? '');
+    dnd_add_timing_log('db_connect', $request_start);
+
+    $campaign_lookup_start = microtime(true);
     $campaignId = dnd_get_campaign_id($pdo, $userId, $isOwner);
+    dnd_add_timing_log('campaign_lookup', $campaign_lookup_start);
+
+    $member_sync_start = microtime(true);
     dnd_sync_current_member($pdo, $campaignId, $userId, $userName, $isOwner);
+    dnd_add_timing_log('member_sync', $member_sync_start);
 
     if ($action === 'load') {
-        // dnd_ensure_character_columns removed for performance
-        $stmt = $pdo->prepare('SELECT state_json, created_at FROM dnd_save_snapshots WHERE campaign_id = :cid ORDER BY id DESC LIMIT 1');
-        $stmt->execute([':cid' => $campaignId]);
-        $row = $stmt->fetch();
-        $state = $row ? json_decode($row['state_json'], true) : null;
-        $sqlState = dnd_state_from_sql($pdo, $campaignId, $userId, $isOwner);
-        if (!is_array($state)) {
-            $state = $sqlState;
-        } else {
-            // Akun/role selalu diambil dari tabel member agar timer GM tidak kalah oleh snapshot lama.
-            $state['accounts'] = $sqlState['accounts'] ?? ($state['accounts'] ?? []);
+        $sql_state_build_start = microtime(true);
+        $state = dnd_state_from_sql($pdo, $campaignId, $userId, $isOwner);
+        dnd_add_timing_log('sql_state_build', $sql_state_build_start);
+
+        $saved_at = null;
+        $force_snapshot = !empty($input['force_snapshot']);
+
+        // Fallback or force logic
+        if ($force_snapshot || empty($state['accounts'])) {
+            $snapshot_lookup_start = microtime(true);
+            $stmt = $pdo->prepare('SELECT state_json, created_at FROM dnd_save_snapshots WHERE campaign_id = :cid ORDER BY id DESC LIMIT 1');
+            $stmt->execute([':cid' => $campaignId]);
+            $row = $stmt->fetch();
+            dnd_add_timing_log('snapshot_lookup', $snapshot_lookup_start);
             
-            // Gabungkan karakter dari SQL dan snapshot.
-            // Karakter di SQL adalah sumber kebenaran (source of truth).
-            $sqlChars = $sqlState['characters'] ?? [];
-            $snapChars = $state['characters'] ?? [];
-            $mergedChars = $sqlChars;
-            
-            // Jika ada karakter di snapshot yang tidak ada di SQL (misal baru dibuat tapi belum sinkron), tambahkan.
-            // Namun biasanya dnd_sync_characters sudah menangani ini saat save.
-            // Untuk amannya, kita pastikan semua karakter dari SQL masuk, dan update datanya jika di snapshot lebih baru.
-            // Tapi karena SQL diupdate tiap save, SQL biasanya lebih baru atau sama.
-            $state['characters'] = $mergedChars;
-            if (empty($state['activeCharacterId']) && !empty($sqlState['activeCharacterId'])) {
-                $state['activeCharacterId'] = $sqlState['activeCharacterId'];
+            $snapshot_state = $row ? json_decode($row['state_json'], true) : null;
+            if (is_array($snapshot_state)) {
+                $saved_at = $row['created_at'] ?? null;
+                $snapshot_state['accounts'] = $state['accounts'] ?? ($snapshot_state['accounts'] ?? []);
+                $snapshot_state['characters'] = $state['characters'] ?? [];
+
+                if (empty($snapshot_state['activeCharacterId']) && !empty($state['activeCharacterId'])) {
+                    $snapshot_state['activeCharacterId'] = $state['activeCharacterId'];
+                }
+                $state = $snapshot_state;
+                $state['_snapshot_fallback_used'] = true;
             }
         }
+
+        $response_ready_start = microtime(true);
+        dnd_add_timing_log('response_ready', $response_ready_start);
+
         dnd_json([
             'ok' => true,
             'campaign_id' => $campaignId,
             'state' => $state,
-            'saved_at' => $row['created_at'] ?? null,
+            'saved_at' => $saved_at,
         ]);
+    }
+
+    if ($action === 'load_character') {
+        $character_id = $input['character_id'] ?? '';
+        if (!$character_id) {
+            dnd_json(['ok' => false, 'message' => 'ID karakter tidak valid.'], 400);
+        }
+        $detail_query_start = microtime(true);
+        $stmt = $pdo->prepare('SELECT * FROM dnd_characters WHERE campaign_id = :cid AND (local_character_id = :id OR id = :id_num) LIMIT 1');
+        $stmt->execute([':cid' => $campaignId, ':id' => $character_id, ':id_num' => is_numeric($character_id) ? (int)$character_id : 0]);
+        $row = $stmt->fetch();
+        dnd_add_timing_log('character_detail_query', $detail_query_start);
+
+        if (!$row) {
+            dnd_json(['ok' => false, 'message' => 'Karakter tidak ditemukan.']);
+        }
+
+        $rowUserId = (int)($row['user_id'] ?? 0);
+        $ownerId = ($userId && $rowUserId === $userId) ? 'php-session-user' : ('sql-user-' . $rowUserId);
+
+        $character = [
+            'id' => $row['local_character_id'] ?: ('sql-char-' . (int)$row['id']),
+            'ownerId' => $ownerId,
+            'websiteUserId' => $rowUserId,
+            'name' => $row['name'] ?: 'Nameless Adventurer',
+            'race' => $row['race'] ?: 'human',
+            'subrace' => $row['subrace'] ?: '',
+            'className' => $row['class_name'] ?: 'fighter',
+            'level' => max(1, (int)($row['level'] ?? 1)),
+            'hpMax' => max(1, (int)($row['hp_max'] ?? 1)),
+            'hpCurrent' => max(0, (int)($row['hp_current'] ?? 1)),
+            'ac' => max(1, (int)($row['ac'] ?? 10)),
+            'speed' => max(0, (int)($row['speed'] ?? 30)),
+            'background' => $row['background'] ?: '',
+            'alignment' => $row['alignment'] ?: '',
+            'inspiration' => !empty($row['inspiration']),
+            'hitDice' => $row['hit_dice'] ?: '',
+            'ideal' => $row['ideal'] ?: '',
+            'bond' => $row['bond'] ?: '',
+            'flaw' => $row['flaw'] ?: '',
+            'gold' => (int)($row['gold'] ?? 0),
+            'gmNotes' => $row['gm_notes'] ?: '',
+            'status' => $row['status'] ?: 'active',
+            'languages' => dnd_decode_json_field($row['languages_json'] ?? null, []),
+            'raceTraits' => dnd_decode_json_field($row['race_traits_json'] ?? null, []),
+            'personalityTraits' => dnd_decode_json_field($row['personality_traits_json'] ?? null, []),
+            'abilityScores' => dnd_decode_json_field($row['ability_scores_json'] ?? null, []),
+            'skillProficiencies' => dnd_decode_json_field($row['skill_proficiencies_json'] ?? null, []),
+            'appearance' => dnd_decode_json_field($row['appearance_json'] ?? null, []),
+            'inventory' => dnd_decode_json_field($row['inventory_json'] ?? null, []),
+            'attacks' => dnd_decode_json_field($row['attacks_json'] ?? null, []),
+            'lockedFields' => dnd_decode_json_field($row['locked_fields_json'] ?? null, []),
+            'updatedAt' => $row['updated_at'] ?? date('c'),
+        ];
+
+        $response_ready_start = microtime(true);
+        dnd_add_timing_log('response_ready', $response_ready_start);
+
+        dnd_json(['ok' => true, 'character' => $character]);
+    }
+
+    if ($action === 'save_character') {
+        $character = $input['character'] ?? null;
+        if (!is_array($character)) {
+            dnd_json(['ok' => false, 'message' => 'Data karakter tidak valid.'], 400);
+        }
+        $pdo->beginTransaction();
+        dnd_sync_characters($pdo, $campaignId, ['characters' => [$character]], $userId, $isOwner);
+        $pdo->commit();
+
+        $response_ready_start = microtime(true);
+        dnd_add_timing_log('response_ready', $response_ready_start);
+
+        dnd_json(['ok' => true, 'message' => 'Karakter berhasil disimpan.']);
+    }
+
+    if ($action === 'save_campaign') {
+        $campaign = $input['campaign'] ?? null;
+        if (!is_array($campaign)) {
+            dnd_json(['ok' => false, 'message' => 'Data campaign tidak valid.'], 400);
+        }
+        $pdo->beginTransaction();
+        dnd_save_campaign_settings($pdo, $campaignId, ['campaign' => $campaign]);
+        $pdo->commit();
+
+        $response_ready_start = microtime(true);
+        dnd_add_timing_log('response_ready', $response_ready_start);
+
+        dnd_json(['ok' => true, 'message' => 'Campaign berhasil disimpan.']);
     }
 
     if ($action === 'save') {
