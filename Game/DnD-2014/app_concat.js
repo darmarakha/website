@@ -122,6 +122,7 @@
       languageChoices: [],
       className: "",
       level: 1,
+      inspiration: false,
       background: "",
       alignment: "",
       personalityTraits: ["", ""],
@@ -179,6 +180,8 @@
       }
       if (target.matches("input[name='skills']")) {
         enforceSkillCheckboxLimit(target);
+        state.ui.characterDraft = characterDraftFromForm(qs("#character-form"));
+        render();
       }
       updateCharacterBuilderGuide();
     }
@@ -1229,7 +1232,8 @@
       "gm-send-narration": sendGmNarration,
       "grant-reward": openRewardModal,
       "reward-close": closeRewardModal,
-      "submit-reward": applyReward
+      "submit-reward": applyReward,
+      "toggle-inspiration": toggleInspiration
     };
     if (!actions[action]) return;
     try {
@@ -1448,6 +1452,18 @@
     state.characterPortraitDraftName = "";
     saveState();
     render();
+  }
+
+  function toggleInspiration() {
+    const trigger = state.ui.lastTrigger;
+    if (!trigger) return;
+    const charId = trigger.dataset.characterId;
+    const character = state.characters.find(c => c.id === charId);
+    if (!character) return;
+    character.inspiration = !character.inspiration;
+    saveState(true);
+    render();
+    toast(character.inspiration ? "Inspiration diberikan!" : "Inspiration digunakan.");
   }
 
   function deleteCharacter(id) {
@@ -1768,18 +1784,36 @@
       stealth: "Stealth ",
       survival: "Survival"
     };
-    const features = [
-      `Race Traits: ${raceTraits.join(", ")}`,
-      `Class Features: ${klass.features.join(", ")}`,
-      `Starting Package: ${character.startingChoice?.name || "Belum dipilih"}`
-    ].join("\n");
-    const equipment = [
-      ...(character.inventory || []),
-      character.gold ? `${character.gold} gp` : ""
-    ].filter(Boolean).join(", ");
+    const featureData = {
+      "rage": "Masuk ke kondisi marah untuk mendapat resistance damage fisik dan bonus attack damage.",
+      "unarmored defense": "Mendapat bonus AC dari bonus ability tambahan saat tidak memakai armor.",
+      "spellcasting": "Bisa merapal mantra sesuai level dan slot mantra yang tersedia.",
+      "pact magic": "Sihir unik Warlock yang slotnya kembali penuh setelah short rest.",
+      "bardic inspiration": "Memberi bonus d6/d8 ke teman untuk membantu attack, check, atau save.",
+      "divine sense": "Mendeteksi kehadiran celestial, fiend, atau undead di sekitar.",
+      "lay on hands": "Menyembuhkan HP target dengan poin energi suci.",
+      "sneak attack": "Memberi bonus damage jika menyerang target yang terdistraksi.",
+      "cunning action": "Bisa Dash, Disengage, atau Hide sebagai bonus action.",
+      "second wind": "Memulihkan HP sendiri sebagai bonus action.",
+      "action surge": "Mendapat satu action tambahan dalam satu giliran.",
+      "martial arts": "Bisa menyerang tanpa senjata dengan damage lebih besar dan bonus action attack.",
+      "ki": "Memakai energi internal untuk fitur khusus Monk.",
+      "natural explorer": "Mendapat bonus navigasi dan survival di medan tertentu.",
+      "favored enemy": "Mendapat bonus track dan info tentang tipe musuh tertentu."
+    };
+    const features = [...effectiveRaceTraits(character), ...klass.features].map(t => {
+      const lowT = t.toLowerCase();
+      const detail = featureData[lowT] || DATA.traitDetails[lowT] || "";
+      return `${t}${detail ? ": " + detail : ""}`;
+    }).join("\n");
+    const equipment = (character.inventory || []).map(item => {
+      const contents = getPackContents(item);
+      return `${item}${contents ? " (Isi: " + contents + ")" : ""}`;
+    }).join(", ");
     const profLang = [
-      `Armor: ${klass.armor}`,
-      `Gears: ${klass.weapons}`,
+      `Armor Proficiencies: ${klass.armor}`,
+      `Weapon Proficiencies: ${klass.weapons}`,
+      `Tool Proficiencies: ${klass.tools || "None"}`,
       `Languages: ${languages || "Common"}`
     ].join("\n");
     const attacks = (character.inventory || [])
@@ -1798,6 +1832,7 @@
     setText("Bonds", character.bond || "", 6.5);
     setText("Flaws", character.flaw || "", 6.5);
     setText("XP", Number(character.xp || 0));
+    setText("Inspiration", character.inspiration ? "X" : "");
     setText("ProfBonus", `+${prof}`);
     setText("AC", character.ac);
     setText("Initiative", signed(mod(character.abilities.dex)));
@@ -1812,7 +1847,7 @@
     setText("Features and Traits", features, 5.5);
     setText("Feat+Traits", features, 5.5);
     setText("ProficienciesLang", profLang, 5.5);
-    setText("AttacksSpellcasting", attacks.length ? attacks.map((item) => `${item}: ${signed(prof)} + ability`).join("\n") : "", 6);
+    setText("AttacksSpellcasting", attacks.length ? attacks.map((item) => `${item}: ${calculateAttackBonus(character, item)}`).join("\n") : "", 6);
     setText("Eyes", character.appearance?.eyes || "");
     setText("Skin", character.appearance?.skin || "");
     setText("Hair", character.appearance?.hair || "");
@@ -1917,20 +1952,23 @@
       box(x, statY, statW, 58, a.label, `${val}  (${signed(mod(val))})`);
     });
 
-    section("Combat", 160);
-    box(margin, 174, 70, 42, "HP", `${character.hpCurrent}/${character.hpMax}`);
-    box(margin + 80, 174, 70, 42, "AC", character.ac);
-    box(margin + 160, 174, 70, 42, "Speed", `${character.speed} ft`);
-    box(margin + 240, 174, 90, 42, "Prof Bonus", `+${prof}`);
-    box(margin + 340, 174, 90, 42, "Initiative", signed(mod(character.abilities.dex)));
-    box(margin + 440, 174, 84, 42, "Passive Wis", 10 + skillBonus(character, "perception"));
+    section("Combat & Core", 160);
+    box(margin, 174, 55, 42, "HP", `${character.hpCurrent}/${character.hpMax}`);
+    box(margin + 60, 174, 55, 42, "AC", character.ac);
+    box(margin + 120, 174, 55, 42, "Speed", `${character.speed} ft`);
+    box(margin + 180, 174, 55, 42, "Prof", `+${prof}`);
+    box(margin + 240, 174, 65, 42, "Hit Dice", `${character.level}d${klass.hitDie}`);
+    box(margin + 310, 174, 65, 42, "Inspiration", character.inspiration ? "YES [x]" : "NO [ ]");
+    box(margin + 380, 174, 70, 42, "Initiative", signed(mod(character.abilities.dex)));
+    box(margin + 455, 174, 70, 42, "Passive Wis", 10 + skillBonus(character, "perception"));
 
     section("Skills & Saving Throws", 240);
     let y = 258;
     DATA.skills.forEach((skill, i) => {
       const col = i < 9 ? margin : margin + 260;
       const rowY = i < 9 ? y + i * 15 : y + (i - 9) * 15;
-      const checked = character.skills.includes(skill.id) ? "[x]" : "[ ]";
+      const hasExp = (character.expertise || []).includes("skill:" + skill.id);
+      const checked = hasExp ? "[E]" : (character.skills.includes(skill.id) ? "[x]" : "[ ]");
       doc.setFont("helvetica", character.skills.includes(skill.id) ? "bold" : "normal");
       doc.setFontSize(8);
       doc.text(`${checked} ${signed(skillBonus(character, skill.id))} ${skill.label}`, col, rowY);
@@ -1941,88 +1979,68 @@
       doc.text(`${klass.saves.includes(a.id) ? "[x]" : "[ ]"} ${a.label} Save ${signed(save)}`, margin + 400, 258 + i * 15);
     });
 
-    section("Story", 410);
-    box(margin, 424, 255, 44, "Personality Trait 1", character.personalityTraits?.[0] || "");
-    box(margin + 270, 424, 255, 44, "Personality Trait 2", character.personalityTraits?.[1] || "");
-    box(margin, 476, 165, 44, "Ideal", character.ideal || "");
-    box(margin + 180, 476, 165, 44, "Bond", character.bond || "");
-    box(margin + 360, 476, 165, 44, "Flaw", character.flaw || "");
+    section("Attacks & Spellcasting", 410);
+    const attacks = (character.inventory || [])
+      .filter(item => /sword|dagger|mace|axe|hammer|staff|spear|bow|crossbow|dart|sling/i.test(item))
+      .map(item => `${item}: ${calculateAttackBonus(character, item)} to hit`).join(", ");
+    box(margin, 424, 525, 44, "Weapon Attacks", attacks || "None");
 
-    section("Features, Traits, Languages", 548);
-    const featuresText = [
-      `Race Traits: ${raceTraits.join(", ") || "-"}`,
-      `Class Features: ${(klass.features || []).join(", ") || "-"}`,
-      `Languages: ${languages || "Common"}`,
-      `Starting Package: ${character.startingChoice?.name || "-"}`
-    ].join("\n");
+    section("Story", 480);
+    box(margin, 494, 255, 44, "Personality Trait 1", character.personalityTraits?.[0] || "");
+    box(margin + 270, 494, 255, 44, "Personality Trait 2", character.personalityTraits?.[1] || "");
+    box(margin, 546, 165, 44, "Ideal", character.ideal || "");
+    box(margin + 180, 546, 165, 44, "Bond", character.bond || "");
+    box(margin + 360, 546, 165, 44, "Flaw", character.flaw || "");
+
+    section("Features, Traits, Languages", 610);
+    const featureData = {
+      "rage": "Masuk ke kondisi marah untuk mendapat resistance damage fisik dan bonus attack damage.",
+      "unarmored defense": "Mendapat bonus AC dari bonus ability tambahan saat tidak memakai armor.",
+      "spellcasting": "Bisa merapal mantra sesuai level dan slot mantra yang tersedia.",
+      "pact magic": "Sihir unik Warlock yang slotnya kembali penuh setelah short rest.",
+      "bardic inspiration": "Memberi bonus d6/d8 ke teman untuk membantu attack, check, atau save.",
+      "divine sense": "Mendeteksi kehadiran celestial, fiend, atau undead di sekitar.",
+      "lay on hands": "Menyembuhkan HP target dengan poin energi suci.",
+      "sneak attack": "Memberi bonus damage jika menyerang target yang terdistraksi.",
+      "cunning action": "Bisa Dash, Disengage, atau Hide sebagai bonus action.",
+      "second wind": "Memulihkan HP sendiri sebagai bonus action.",
+      "action surge": "Mendapat satu action tambahan dalam satu giliran.",
+      "martial arts": "Bisa menyerang tanpa senjata dengan damage lebih besar dan bonus action attack.",
+      "ki": "Memakai energi internal untuk fitur khusus Monk.",
+      "natural explorer": "Mendapat bonus navigasi dan survival di medan tertentu.",
+      "favored enemy": "Mendapat bonus track dan info tentang tipe musuh tertentu."
+    };
+    const traitText = [...effectiveRaceTraits(character), ...klass.features].map(t => {
+      const lowT = t.toLowerCase();
+      const detail = featureData[lowT] || DATA.traitDetails[lowT] || "";
+      return `${t}${detail ? ": " + detail : ""}`;
+    }).join("\n");
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.text(doc.splitTextToSize(featuresText, pageW - margin * 2), margin, 565);
+    doc.setFontSize(7);
+    const featuresText = `Languages: ${languages || "Common"}\n${traitText}`;
+    doc.text(doc.splitTextToSize(featuresText, pageW - margin * 2), margin, 627);
 
-    const profY = 645;
-    doc.setDrawColor(40, 40, 40);
-    doc.setLineWidth(1.2);
-    
-    doc.setFont("helvetica", "normal"); doc.setFontSize(8);
-    const toolTxt = "TOOL: " + ((character.inventory || []).filter(i => /tool|kit|set/i.test(i)).join(", ") || "None");
-    const langTxt = "LANGUAGE: " + (languages || "Common");
-    const armTxt = "ARMOR: " + (klass.armor || "None");
-    const wepTxt = "WEAPON: " + (klass.weapons || "Simple weapons");
-    
-    const toolLines = doc.splitTextToSize(toolTxt, pageW - margin*2 - 20);
-    const langLines = doc.splitTextToSize(langTxt, pageW - margin*2 - 20);
-    const armLines = doc.splitTextToSize(armTxt, pageW - margin*2 - 20);
-    const wepLines = doc.splitTextToSize(wepTxt, pageW - margin*2 - 20);
-    
-    let currentY = profY + 12;
-    doc.text(toolLines, margin + 10, currentY);
-    currentY += toolLines.length * 10;
-    line(margin + 5, currentY - 4, pageW - margin - 5, currentY - 4);
-    
-    currentY += 10;
-    doc.text(langLines, margin + 10, currentY);
-    currentY += langLines.length * 10;
-    line(margin + 5, currentY - 4, pageW - margin - 5, currentY - 4);
-    
-    currentY += 10;
-    doc.text(armLines, margin + 10, currentY);
-    currentY += armLines.length * 10;
-    line(margin + 5, currentY - 4, pageW - margin - 5, currentY - 4);
-    
-    currentY += 10;
-    doc.text(wepLines, margin + 10, currentY);
-    currentY += wepLines.length * 10;
-    
-    const boxHeight = currentY - profY + 8;
-    doc.roundedRect(margin, profY, pageW - margin * 2, boxHeight, 4, 4);
-    doc.setLineWidth(1);
-    
-    doc.setFont("helvetica", "bold"); doc.setFontSize(7);
-    doc.text("OTHER PROFICIENCIES & LANGUAGES", margin + (pageW - margin * 2)/2, profY + boxHeight - 6, { align: "center" });
-
-    const equipY = profY + boxHeight + 15;
-    section("Equipment", equipY);
-    doc.setFont("helvetica", "normal"); 
-    doc.setFontSize(8);
-    const eqItems = [`Gold: ${character.gold || 0} gp`, ...(character.inventory || [])];
-    let eqY = equipY + 16;
-    eqItems.slice(0, 5).forEach(item => {
-      const lines = doc.splitTextToSize("• " + item, pageW - margin * 2);
-      doc.text(lines, margin + 5, eqY);
-      eqY += 10 * lines.length;
+    section("Equipment", 740);
+    const eqLines = (character.inventory || []).map(item => {
+      const contents = getPackContents(item);
+      return `- ${item}${contents ? " (Isi: " + contents + ")" : ""}`;
     });
+    const eqText = [`Gold: ${character.gold || 0} gp`, ...eqLines].join("\n");
+    doc.setFontSize(7);
+    doc.text(doc.splitTextToSize(eqText || "-", pageW - margin * 2), margin, 755);
 
-    section("Manual Offline Notes", 730);
-    for (let i = 0; i < 4; i++) line(margin, 748 + i * 18, pageW - margin, 748 + i * 18);
     addFooter();
 
     doc.addPage();
-    section("Printable Manual Area", 42);
+    section("Appearance & Backstory", 42);
     box(margin, 58, 255, 70, "Backstory / Catatan Karakter", character.appearance?.notes || "");
     box(margin + 270, 58, 255, 70, "Appearance", `Hair: ${character.appearance?.hair || "-"}; Eyes: ${character.appearance?.eyes || "-"}; Skin: ${character.appearance?.skin || "-"}; Style: ${character.appearance?.style || "-"}`);
-    section("Inventory Tambahan", 160);
-    for (let i = 0; i < 14; i++) line(margin, 182 + i * 22, pageW - margin, 182 + i * 22);
-    section("Spell / Ability / Attack Notes", 510);
+
+    section("Inventory Detail", 160);
+    doc.setFontSize(8);
+    doc.text(doc.splitTextToSize(eqText, pageW - margin * 2), margin, 180);
+
+    section("Manual Offline Notes", 510);
     for (let i = 0; i < 10; i++) line(margin, 532 + i * 22, pageW - margin, 532 + i * 22);
     addFooter();
 
@@ -2059,8 +2077,9 @@
       }),
       "",
       "Other Proficiencies & Languages",
-      `Armor: ${klass.armor}`,
-      `Gears: ${klass.weapons}`,
+      `Armor Proficiencies: ${klass.armor}`,
+      `Weapon Proficiencies: ${klass.weapons}`,
+      `Tool Proficiencies: ${klass.tools || "None"}`,
       `Languages: ${languages || "Common"}`,
       "",
       "Attacks & Spellcasting",
@@ -2192,10 +2211,65 @@
     animateDice(total, skill.label);
   }
 
+  function rollExpression(expression, label, charName) {
+    if (!canTakeGameAction("roll dice")) return;
+    const str = String(expression || "").replace(/\s+/g, "").toLowerCase();
+    let diceCount = 1;
+    let diceSides = 20;
+    let modifier = 0;
+    let match;
+
+    if (/^[+-]\d+$/.test(str)) {
+      modifier = parseInt(str, 10);
+    } else if ((match = str.match(/^(\d*)d(\d+)([+-]\d+)?$/))) {
+      diceCount = parseInt(match[1] || 1, 10);
+      diceSides = parseInt(match[2], 10);
+      modifier = match[3] ? parseInt(match[3], 10) : 0;
+    } else {
+      toast("Format dadu tidak valid: " + expression);
+      return;
+    }
+
+    let total = 0;
+    let rolls = [];
+    for (let i = 0; i < diceCount; i++) {
+      const r = Math.floor(Math.random() * diceSides) + 1;
+      rolls.push(r);
+      total += r;
+    }
+    total += modifier;
+
+    state.ui.diceResult = total;
+    state.ui.diceLabel = label;
+    state.ui.diceDetail = `${diceCount}d${diceSides}${modifier ? signed(modifier) : ""} [${rolls.join(", ")}]`;
+    state.rollLog.unshift({
+      id: uid("roll"),
+      label: label,
+      total,
+      detail: `${diceCount}d${diceSides}${modifier ? signed(modifier) : ""} = ${total} (${charName || "Karakter"})`,
+      user: currentUser()?.name || "Guest",
+      createdAt: nowIso()
+    });
+    state.rollLog = state.rollLog.slice(0, 80);
+    saveState();
+    animateDice(total, label);
+  }
+
+  function toggleInspiration(charId) {
+    const c = state.characters.find(x => x.id === charId);
+    if (!c) return;
+    c.inspiration = c.inspiration ? 0 : 1;
+    saveState();
+    render();
+  }
+
   function skillBonus(character, skillId) {
     const skill = skillById(skillId);
     if (!skill) return 0;
-    return mod(character.abilities[skill.ability]) + (character.skills.includes(skillId) ? proficiencyBonus(character.level) : 0);
+    let prof = 0;
+    if (character.skills.includes(skillId)) prof = proficiencyBonus(character.level);
+    if ((character.expertise || []).includes("skill:" + skillId)) prof *= 2;
+    return mod(character.abilities[skill.ability]) + prof;
   }
 
   function skillGuideText(skillId) {
@@ -3926,6 +4000,7 @@
       <p>${esc(race?.description || "Belum ada race yang dipilih.")}</p>
       ${!draft.race ? `<p><strong>Subrace:</strong> Pilih race dulu.</p>` : subrace ? `<p><strong>Subrace:</strong> ${esc(subrace.note || subrace.name)}</p>` : `<p><strong>Subrace:</strong> Belum dipilih atau race ini tidak memakai pilihan subrace.</p>`}
       <div class="guide-two-cols">
+        <div><strong>Creature Type</strong><small>${esc(race?.creatureType || "Humanoid")}</small></div>
         <div><strong>Bonus ability</strong><small>${esc(abilityBonusSummary(draft))}</small></div>
         <div><strong>Skill dari ras</strong><small>${esc((raceExtension(draft.race).automaticSkills || []).map((id) => skillById(id)?.label || id).join(", ") || (raceSkillChoiceCount(draft) ? raceSkillChoiceCount(draft) + " skill bebas" : "0 skill"))}</small></div>
         <div><strong>Speed</strong><small>${esc(effectiveRaceSpeed(draft))} ft</small></div>
@@ -3951,8 +4026,10 @@
         <div><strong>Hit Die</strong><small>d${esc(klass.hitDie)}</small></div>
         <div><strong>Primary</strong><small>${esc(klass.primary || "-")}</small></div>
         <div><strong>Saving Throws</strong><small>${esc((klass.saves || []).map(abilityLabel).join(", ") || "-")}</small></div>
-        <div><strong>Armor</strong><small>${esc(klass.armor || "-")}</small></div>
-        <div><strong>Gear</strong><small>${esc(klass.weapons || "-")}</small></div>
+        <div><strong>Armor Proficiencies</strong><small>${esc(klass.armor || "-")}</small></div>
+        <div><strong>Weapon Proficiencies</strong><small>${esc(klass.weapons || "-")}</small></div>
+        <div><strong>Tool Proficiencies</strong><small>${esc(klass.tools || "None")}</small></div>
+        ${klass.expertiseCount ? `<div><strong>Expertise</strong><small>${esc(klass.expertiseCount)} skill/tool (dari skill yang sudah dipilih)</small></div>` : ""}
       </div>
       <strong>Fitur awal</strong>
       ${renderMiniList(klass.features, "Belum ada fitur.")}
@@ -4214,7 +4291,7 @@
               ${renderDatalist("story-ideals-options", bgTemplate.ideals)}
               ${renderDatalist("story-bonds-options", bgTemplate.bonds)}
               ${renderDatalist("story-flaws-options", bgTemplate.flaws)}
-              <h3 style="margin:1rem 0 .6rem">Appearance</h3>
+              <h3 style="margin:1rem 0 .35rem">Appearance</h3>
               <div class="dnd-form-grid">
                 <div class="dnd-field"><label>Rambut</label><input name="hair" value="${esc(draft.appearance?.hair || "")}" placeholder="Hitam, pendek..."></div>
                 <div class="dnd-field"><label>Mata</label><input name="eyes" value="${esc(draft.appearance?.eyes || "")}" placeholder="Coklat, tajam..."></div>
@@ -4225,6 +4302,27 @@
               <h3 style="margin:1rem 0 .35rem">Skill Proficiency</h3>
               <p class="dnd-muted skill-proficiency-note">Pilih skill yang benar-benar dikuasai karakter. Saat dipilih, skill memakai ability modifier + Proficiency Bonus level karakter, dan bonus proficiency hanya dihitung satu kali.</p>
               ${renderClassSkillGrid(draft, canEditStats)}
+
+              ${(() => {
+                const klass = DATA.classes.find(k => k.id === draft.className) || {};
+                const expertiseCount = Number(klass.expertiseCount || 0);
+                if (!expertiseCount) return "";
+                const skillInfo = skillSelectionBreakdown(draft.skills || [], draft);
+                const selectedSkills = DATA.skills.filter(s => skillInfo.all.includes(s.id));
+                const hasTool = klass.tools && klass.tools !== "None";
+                const expertiseOptions = [
+                  ...selectedSkills.map(s => `<option value="skill:${esc(s.id)}" ${(draft.expertise||[]).includes("skill:"+s.id)?"selected":""}>${esc(s.label)}</option>`),
+                  ...(hasTool ? [`<option value="tool:thieves_tools" ${(draft.expertise||[]).includes("tool:thieves_tools")?"selected":""}>Thieves' Tools</option>`] : [])
+                ].join("");
+                return `<h3 style="margin:1rem 0 .35rem">Expertise</h3>
+                <p class="dnd-muted">Pilih ${expertiseCount} skill atau tool untuk mendapat Expertise (double proficiency bonus). Hanya bisa memilih dari 4 skill yang sudah dipilih di atas.</p>
+                <div class="dnd-form-grid">
+                  ${Array.from({length: expertiseCount}, (_, i) => `<div class="dnd-field"><label>Expertise ${i+1}</label><select name="expertise-${i}">
+                    <option value="">— Pilih skill/tool —</option>
+                    ${expertiseOptions}
+                  </select></div>`).join("")}
+                </div>`;
+              })()}
             `)}
 
             ${renderCharacterStepPanel("equipment", activeStep, "Pilih Perlengkapan", "Pilih starting package untuk menentukan barang awal, gold awal, dan ringkasan equipment karakter.", `
@@ -4246,43 +4344,177 @@
     `;
   }
 
+  function getPackContents(packName) {
+    const packs = {
+      "Dungeoneer's Pack": "backpack, crowbar, hammer, 10 pitons, 10 torches, tinderbox, 10 days of rations, waterskin, 50ft hempen rope",
+      "Explorer's Pack": "backpack, bedroll, mess kit, tinderbox, 10 torches, 10 days of rations, waterskin, 50ft hempen rope",
+      "Burglar's Pack": "backpack, 1000 ball bearings, 10ft string, bell, 5 candles, crowbar, hammer, 10 pitons, hooded lantern, 2 flasks of oil, 5 days of rations, tinderbox, waterskin, 50ft hempen rope",
+      "Scholar's Pack": "backpack, book of lore, bottle of ink, ink pen, 10 sheets of parchment, bag of sand, small knife",
+      "Diplomat's Pack": "chest, 2 map cases, fine clothes, bottle of ink, ink pen, lamp, 2 flasks of oil, 5 sheets of parchment, vial of perfume, sealing wax, soap",
+      "Entertainer's Pack": "backpack, bedroll, 2 costumes, 5 candles, 5 days of rations, waterskin, disguise kit",
+      "Priest's Pack": "backpack, blanket, 10 candles, tinderbox, alms box, 2 blocks of incense, censer, vestments, 2 days of rations, waterskin"
+    };
+    return packs[packName] || null;
+  }
+
+  function calculateAttackBonus(c, item) {
+    const prof = proficiencyBonus(c.level);
+    const isMelee = /sword|dagger|mace|axe|hammer|staff|spear/i.test(item);
+    const isFinesse = /dagger|rapier|shortsword/i.test(item);
+    const isRanged = /bow|crossbow|dart|sling/i.test(item);
+
+    let bonus = 0;
+    if (isMelee) {
+      const strMod = mod(c.abilities.str);
+      const dexMod = mod(c.abilities.dex);
+      bonus = isFinesse ? Math.max(strMod, dexMod) : strMod;
+    } else if (isRanged) {
+      bonus = mod(c.abilities.dex);
+    }
+
+    // Assume proficient with weapons in starting equipment
+    return signed(bonus + prof);
+  }
+
   function renderCharacterSheet(c) {
     const race = raceById(c.race);
     const klass = classById(c.className);
     const prof = proficiencyBonus(c.level);
     const languages = languageNames(c.languages || normalizeLanguageSelection(c.race, c.subrace, c.languageChoices || []).all);
+    const hitDice = `${c.level}d${klass.hitDie}`;
+
+    const featureData = {
+      "rage": "Masuk ke kondisi marah untuk mendapat resistance damage fisik dan bonus attack damage.",
+      "unarmored defense": "Mendapat bonus AC dari bonus ability tambahan saat tidak memakai armor.",
+      "spellcasting": "Bisa merapal mantra sesuai level dan slot mantra yang tersedia.",
+      "pact magic": "Sihir unik Warlock yang slotnya kembali penuh setelah short rest.",
+      "bardic inspiration": "Memberi bonus d6/d8 ke teman untuk membantu attack, check, atau save.",
+      "divine sense": "Mendeteksi kehadiran celestial, fiend, atau undead di sekitar.",
+      "lay on hands": "Menyembuhkan HP target dengan poin energi suci.",
+      "sneak attack": "Memberi bonus damage jika menyerang target yang terdistraksi.",
+      "cunning action": "Bisa Dash, Disengage, atau Hide sebagai bonus action.",
+      "second wind": "Memulihkan HP sendiri sebagai bonus action.",
+      "action surge": "Mendapat satu action tambahan dalam satu giliran.",
+      "martial arts": "Bisa menyerang tanpa senjata dengan damage lebih besar dan bonus action attack.",
+      "ki": "Memakai energi internal untuk fitur khusus Monk.",
+      "natural explorer": "Mendapat bonus navigasi dan survival di medan tertentu.",
+      "favored enemy": "Mendapat bonus track dan info tentang tipe musuh tertentu."
+    };
+
+    const traitList = [...effectiveRaceTraits(c), ...klass.features].map(t => {
+      const lowT = t.toLowerCase();
+      const detail = featureData[lowT] || DATA.traitDetails[lowT] || "";
+      return `<div class="trait-item"><strong>${esc(t)}</strong>${detail ? `<p class="dnd-small-muted">${esc(detail)}</p>` : ""}</div>`;
+    }).join("");
+
+    const inventoryList = (c.inventory || []).map(item => {
+      const contents = getPackContents(item);
+      return `<div class="inventory-item"><strong>${esc(item)}</strong>${contents ? `<p class="dnd-small-muted">Isi: ${esc(contents)}</p>` : ""}</div>`;
+    }).join("") || "Kosong";
+
+    const attacks = (c._computedAttacks || (c.inventory || [])
+      .filter(item => /sword|dagger|mace|axe|hammer|staff|spear|bow|crossbow|dart|sling/i.test(item))
+      .map(item => ({ name: item, bonus: calculateAttackBonus(c, item), damage: "1d8+2" })))
+      .map(atk => `
+              <div style="display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 8px; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div style="font-size: 0.85rem; font-weight: 600;">${esc(atk.name)}</div>
+                <div style="font-size: 0.85rem; font-weight: bold; cursor: pointer; color: var(--dnd-highlight);" onclick="rollExpression('${esc(atk.bonus)}', '${esc(atk.name).replace(/'/g, "\\'")} Attack', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik roll attack">${esc(atk.bonus)}</div>
+                <div style="font-size: 0.85rem; cursor: pointer; color: var(--dnd-highlight);" onclick="rollExpression('${esc(atk.damage)}', '${esc(atk.name).replace(/'/g, "\\'")} Damage', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik roll damage">${esc(atk.damage)}</div>
+              </div>
+            `).join("") || "<p class='dnd-muted'>Belum ada senjata di inventory.</p>";
+
     return `
       <div class="sheet-header">
         <div class="avatar-medallion">${esc(initials(c.name))}</div>
         <div>
-          <h2>${esc(c.name)}</h2>
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <h2>${esc(c.name)}</h2>
+            <div class="inspiration-box ${c.inspiration ? "active" : ""}" data-action="toggle-inspiration" data-character-id="${c.id}">
+              <span class="inspiration-star">★</span> <span>INSPIRATION</span>
+            </div>
+          </div>
           <p class="dnd-muted">${esc(effectiveRaceName(c))} ${esc(klass.name)} level ${esc(c.level)} | ${esc(DATA.backgrounds.find(b => b.id === c.background)?.name || c.background)} | ${esc(c.alignment)}</p>
           <div class="dnd-pill-row" style="margin-top:.65rem">
             <span class="dnd-pill good">HP ${esc(c.hpCurrent)}/${esc(c.hpMax)}</span>
+            <span class="dnd-pill ${c.inspiration ? "active-inspiration" : ""}" style="cursor:pointer" onclick="toggleInspiration('${c.id}')" title="Klik untuk toggle">Inspiration: ${c.inspiration ? "YES" : "NO"}</span>
+            <span class="dnd-pill" style="cursor:pointer" onclick="rollExpression('1d${klass.hitDie}', 'Hit Dice', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik untuk roll Hit Dice">Hit Dice: ${esc(c.hitDiceRemaining || c.level)}/d${esc(klass.hitDie)}</span>
             <span class="dnd-pill">AC ${esc(c.ac)}</span>
             <span class="dnd-pill">Speed ${esc(c.speed)}</span>
             <span class="dnd-pill">Prof +${prof}</span>
-            <span class="dnd-pill">Bahasa: ${esc(languages || "Common")}</span>
-            <span class="dnd-pill ${c.startingChoice ? "good" : "warn"}">Start: ${esc(c.startingChoice?.name || "belum dipilih")}</span>
             <span class="dnd-pill">${esc(c.gold || 0)} gp</span>
             ${c.requestedLevel ? `<span class="dnd-pill warn">Pending GM approve: level ${esc(c.requestedLevel)}</span>` : ""}
           </div>
         </div>
       </div>
-      <h3 style="margin:1rem 0 .55rem">Abilities</h3>
-      <div class="stat-grid">
-        ${DATA.abilities.map((a) => `<div class="stat-box"><small>${a.label.slice(0, 3)}</small><strong>${esc(c.abilities[a.id])}</strong><span>${signed(mod(c.abilities[a.id]))}</span></div>`).join("")}
-      </div>
-      <h3 style="margin:1rem 0 .55rem">Skills</h3>
-      <div class="dnd-check-grid">
-        ${DATA.skills.map((s) => `<div class="compact-row"><span><strong>${s.label}</strong><small>${abilityLabel(s.ability)}</small></span><span class="dnd-pill ${c.skills.includes(s.id) ? "good" : ""}">${signed(skillBonus(c, s.id))}</span></div>`).join("")}
-      </div>
+
       <div class="dnd-grid" style="margin-top:1rem">
-        <div class="span-6 dnd-card is-soft"><h3>Traits & Features</h3><p class="dnd-muted">${esc(effectiveRaceTraits(c).join(", "))}</p><p class="dnd-muted">${esc(klass.features.join(", "))}</p></div>
-        <div class="span-6 dnd-card is-soft"><h3>Inventory</h3><p class="dnd-muted">${esc((c.inventory || []).join(", ") || "Kosong")}</p><p class="dnd-muted">Starting: ${esc(c.startingChoice?.name || "Belum dipilih")} | Gold: ${esc(c.gold || 0)} gp</p></div>
-        <div class="span-12 dnd-card is-soft"><h3>Languages</h3><p class="dnd-muted">${esc(languages || "Common")}</p></div>
-        <div class="span-12 dnd-card is-soft"><h3>Personality & Story</h3><p class="dnd-muted"><strong>Traits:</strong> ${esc((c.personalityTraits || []).filter(Boolean).join(" | ") || "Belum diisi")}</p><p class="dnd-muted"><strong>Ideal:</strong> ${esc(c.ideal || "Belum diisi")}</p><p class="dnd-muted"><strong>Bond:</strong> ${esc(c.bond || "Belum diisi")}</p><p class="dnd-muted"><strong>Flaw:</strong> ${esc(c.flaw || "Belum diisi")}</p></div>
-        <div class="span-12 dnd-card is-soft"><h3>Appearance</h3><p class="dnd-muted">${esc([c.appearance?.hair, c.appearance?.eyes, c.appearance?.skin, c.appearance?.style, c.appearance?.notes].filter(Boolean).join("; ") || "Belum diisi")}</p></div>
+        <div class="span-4">
+          <h3 style="margin-bottom:.55rem">Abilities</h3>
+          <div class="stat-grid">
+            ${DATA.abilities.map((a) => `<div class="stat-box" style="cursor:pointer" onclick="rollExpression('1d20${signed(mod(c.abilities[a.id]))}', '${a.label} Check', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik roll ability check"><small>${a.label.slice(0, 3)}</small><strong>${esc(c.abilities[a.id])}</strong><span>${signed(mod(c.abilities[a.id]))}</span></div>`).join("")}
+          </div>
+
+          <h3 style="margin:1.5rem 0 .55rem">Saving Throws</h3>
+          <div class="dnd-check-grid">
+            ${DATA.abilities.map(a => {
+              const isProf = klass.saves.includes(a.id);
+              const bonus = mod(c.abilities[a.id]) + (isProf ? prof : 0);
+              return `<div class="compact-row" style="cursor:pointer" onclick="rollExpression('1d20${signed(bonus)}', '${a.label} Save', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik roll saving throw"><span><strong>${a.label}</strong></span><span class="dnd-pill ${isProf ? "good" : ""}">${signed(bonus)}</span></div>`;
+            }).join("")}
+          </div>
+        </div>
+
+        <div class="span-4">
+          <h3 style="margin-bottom:.55rem">Skills</h3>
+          <div class="dnd-check-grid">
+            ${DATA.skills.map((s) => `<div class="compact-row" style="cursor:pointer" onclick="rollExpression('1d20${signed(skillBonus(c, s.id))}', '${s.label} Check', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik untuk roll skill"><span><strong>${s.label}</strong><small>${abilityLabel(s.ability)}</small></span><span class="dnd-pill ${c.skills.includes(s.id) ? "good" : ""}">${signed(skillBonus(c, s.id))}</span></div>`).join("")}
+          </div>
+        </div>
+
+        <div class="span-4">
+          <h3 style="margin-bottom:.55rem">Attacks & Spellcasting</h3>
+          <div class="dnd-card is-soft" style="margin-bottom:1rem">
+            ${attacks}
+          </div>
+          ${klass.features.includes("Spellcasting") || klass.features.includes("Pact Magic") ? `
+            <div class="dnd-card is-soft">
+              <h4>Spellcasting</h4>
+              <p class="dnd-small-muted">Ability: ${esc(klass.primary)}</p>
+              <p class="dnd-small-muted">Save DC: ${8 + prof + mod(c.abilities[klass.primary.toLowerCase().slice(0,3)])}</p>
+              <p class="dnd-small-muted">Attack Bonus: ${signed(prof + mod(c.abilities[klass.primary.toLowerCase().slice(0,3)]))}</p>
+            </div>
+          ` : ""}
+        </div>
+      </div>
+
+      <div class="dnd-grid" style="margin-top:1.5rem">
+        <div class="span-6 dnd-card is-soft">
+          <h3>Traits & Features</h3>
+              <div class="traits-container">${traitList}</div>
+        </div>
+        <div class="span-6 dnd-card is-soft">
+          <h3>Inventory & Equipment</h3>
+          <div class="inventory-container">${inventoryList}</div>
+          <p class="dnd-muted" style="margin-top:.5rem">Starting: ${esc(c.startingChoice?.name || "Belum dipilih")} | Gold: ${esc(c.gold || 0)} gp</p>
+        </div>
+        <div class="span-6 dnd-card is-soft">
+          <h3>Other Proficiencies & Languages</h3>
+          <p class="dnd-muted"><strong>Armor Proficiencies:</strong> ${esc(klass.armor)}</p>
+          <p class="dnd-muted"><strong>Weapon Proficiencies:</strong> ${esc(klass.weapons)}</p>
+          <p class="dnd-muted" style="cursor:pointer" onclick="rollExpression('+${prof}', 'Tool Check', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik untuk Tool check"><strong>Tool Proficiencies:</strong> ${esc(klass.tools || "None")}</p>
+          <p class="dnd-muted"><strong>Languages:</strong> ${esc(languages || "Common")}</p>
+        </div>
+        <div class="span-6 dnd-card is-soft">
+          <h3>Personality & Story</h3>
+          <p class="dnd-muted"><strong>Traits:</strong> ${esc((c.personalityTraits || []).filter(Boolean).join(" | ") || "Belum diisi")}</p>
+          <p class="dnd-muted"><strong>Ideal:</strong> ${esc(c.ideal || "Belum diisi")}</p>
+          <p class="dnd-muted"><strong>Bond:</strong> ${esc(c.bond || "Belum diisi")}</p>
+          <p class="dnd-muted"><strong>Flaw:</strong> ${esc(c.flaw || "Belum diisi")}</p>
+        </div>
+        <div class="span-12 dnd-card is-soft">
+          <h3>Appearance</h3>
+          <p class="dnd-muted">${esc([c.appearance?.hair, c.appearance?.eyes, c.appearance?.skin, c.appearance?.style, c.appearance?.notes].filter(Boolean).join("; ") || "Belum diisi")}</p>
+        </div>
       </div>
     `;
   }
