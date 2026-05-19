@@ -196,7 +196,7 @@ $userIdRaw = $_SESSION['gy_user_id'] ?? $_SESSION['user_id'] ?? $_SESSION['id_us
 $userId = is_numeric($userIdRaw) ? (int)$userIdRaw : null;
 $userName = trim((string)($_SESSION['gy_nickname'] ?? $_SESSION['gy_user_name'] ?? $_SESSION['user_name'] ?? $_SESSION['nama_panggilan'] ?? $_SESSION['nama_lengkap'] ?? 'Guest Player'));
 $userRole = strtolower((string)($_SESSION['gy_user_role'] ?? $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'member'));
-$isOwner = stripos($userName, 'darma') !== false;
+$isOwner = in_array($userRole, ['owner', 'admin', 'gm'], true);
 
 if (!$userId) {
     dnd_json(['ok' => false, 'message' => 'Login website dulu. Akun DND lokal sudah dimatikan supaya akun dan karakter hanya tersimpan di MySQL.'], 401);
@@ -258,43 +258,8 @@ function dnd_table_has_column(PDO $pdo, string $table, string $column): bool {
     return (bool)$stmt->fetch();
 }
 
-function dnd_ensure_character_columns(PDO $pdo): void {
-    $columns = [
-        'local_character_id' => "ALTER TABLE dnd_characters ADD COLUMN local_character_id varchar(80) DEFAULT NULL AFTER id",
-        'subrace' => "ALTER TABLE dnd_characters ADD COLUMN subrace varchar(80) DEFAULT NULL AFTER race",
-        'languages_json' => "ALTER TABLE dnd_characters ADD COLUMN languages_json longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL AFTER subrace",
-        'race_traits_json' => "ALTER TABLE dnd_characters ADD COLUMN race_traits_json longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL AFTER languages_json",
-        'ability_scores_json' => "ALTER TABLE dnd_characters ADD COLUMN ability_scores_json longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL AFTER alignment",
-        'skill_proficiencies_json' => "ALTER TABLE dnd_characters ADD COLUMN skill_proficiencies_json longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL AFTER ability_scores_json",
-        'gold' => "ALTER TABLE dnd_characters ADD COLUMN gold int(10) UNSIGNED NOT NULL DEFAULT 0 AFTER inventory_json",
-        'attacks_json' => "ALTER TABLE dnd_characters ADD COLUMN attacks_json longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL AFTER gold",
-        'ac' => "ALTER TABLE dnd_characters ADD COLUMN ac tinyint(3) UNSIGNED NOT NULL DEFAULT 10 AFTER hp_current",
-        'status' => "ALTER TABLE dnd_characters ADD COLUMN status enum('active','archived') NOT NULL DEFAULT 'active' AFTER player_notes",
-        'personality_traits_json' => "ALTER TABLE dnd_characters ADD COLUMN personality_traits_json longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL AFTER alignment",
-        'ideal' => "ALTER TABLE dnd_characters ADD COLUMN ideal text DEFAULT NULL AFTER personality_traits_json",
-        'bond' => "ALTER TABLE dnd_characters ADD COLUMN bond text DEFAULT NULL AFTER ideal",
-        'flaw' => "ALTER TABLE dnd_characters ADD COLUMN flaw text DEFAULT NULL AFTER bond",
-    ];
-    foreach ($columns as $column => $sql) {
-        if (!dnd_table_has_column($pdo, 'dnd_characters', $column)) {
-            $pdo->exec($sql);
-        }
-    }
-    try {
-        $pdo->exec('ALTER TABLE dnd_characters ADD UNIQUE KEY uniq_dnd_characters_campaign_local (campaign_id, local_character_id)');
-    } catch (Throwable $e) {
-        // Index may already exist on servers that imported a newer SQL file.
-    }
-}
-
 function dnd_json_value($value): string {
     return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '[]';
-}
-
-function dnd_ensure_member_columns(PDO $pdo): void {
-    if (!dnd_table_has_column($pdo, 'dnd_campaign_members', 'invite_status')) {
-        $pdo->exec("ALTER TABLE dnd_campaign_members ADD COLUMN invite_status enum('pending','accepted','declined') NOT NULL DEFAULT 'accepted' AFTER permissions_json");
-    }
 }
 
 function dnd_gm_timer_active(?string $expiresAt): bool {
@@ -366,8 +331,8 @@ function dnd_sync_accounts(PDO $pdo, int $campaignId, array $state, ?int $ownerU
         $accountId = (string)($account['id'] ?? '');
         $targetUserId = dnd_account_id_to_user_id($accountId, $account);
         if (!$targetUserId) continue;
-        $accountIsOwner = stripos((string)($account['name'] ?? ''), 'darma') !== false || stripos((string)($account['email'] ?? ''), 'darma') !== false;
         $roleRaw = strtolower((string)($account['role'] ?? 'player'));
+        $accountIsOwner = in_array($roleRaw, ['owner', 'admin'], true);
         $expiresAt = trim((string)($account['gmExpiresAt'] ?? ''));
         $gmActive = !$accountIsOwner && $roleRaw === 'gm' && dnd_gm_timer_active($expiresAt);
         $role = $accountIsOwner ? 'gm' : ($gmActive ? 'gm' : 'player');
@@ -421,6 +386,11 @@ function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $user
         } elseif (isset($character['sqlUserId']) && is_numeric($character['sqlUserId'])) {
             $ownerId = (int)$character['sqlUserId'];
         } else {
+            $ownerId = $userId;
+        }
+
+        // If not Owner/Admin/GM, force the saving user's ID
+        if (!$isOwner && $userId) {
             $ownerId = $userId;
         }
 
@@ -664,6 +634,11 @@ try {
         }
 
         $rowUserId = (int)($row['user_id'] ?? 0);
+
+        if (!$isOwner && $rowUserId !== $userId) {
+            dnd_json(['ok' => false, 'message' => 'Tidak boleh membuka karakter ini.'], 403);
+        }
+
         $ownerId = ($userId && $rowUserId === $userId) ? 'php-session-user' : ('sql-user-' . $rowUserId);
 
         $character = [
@@ -712,6 +687,18 @@ try {
         if (!is_array($character)) {
             dnd_json(['ok' => false, 'message' => 'Data karakter tidak valid.'], 400);
         }
+
+        // Add additional spoofing guard here if character exists
+        $localId = trim((string)($character['id'] ?? ''));
+        if (!$isOwner && $localId !== '') {
+            $checkStmt = $pdo->prepare('SELECT user_id FROM dnd_characters WHERE campaign_id = :cid AND local_character_id = :id LIMIT 1');
+            $checkStmt->execute([':cid' => $campaignId, ':id' => $localId]);
+            $existing = $checkStmt->fetchColumn();
+            if ($existing !== false && (int)$existing !== $userId) {
+                dnd_json(['ok' => false, 'message' => 'Tidak boleh mengubah karakter pemain lain.'], 403);
+            }
+        }
+
         $pdo->beginTransaction();
         dnd_sync_characters($pdo, $campaignId, ['characters' => [$character]], $userId, $isOwner);
         $pdo->commit();

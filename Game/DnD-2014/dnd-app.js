@@ -530,8 +530,7 @@
   }
 
   function isSessionOwner() {
-    const haystack = `${sessionName} ${sessionEmail}`.toLowerCase();
-    return sessionRole === "owner" || sessionRole === "admin" || haystack.includes("darma");
+    return sessionRole === "owner" || sessionRole === "admin";
   }
 
   function seedSessionAccount() {
