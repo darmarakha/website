@@ -1,3 +1,4 @@
+/* GemuYokai DnD app bundle: skill proficiency render fix v30 */
 (function () {
   "use strict";
 
@@ -122,7 +123,6 @@
       languageChoices: [],
       className: "",
       level: 1,
-      inspiration: false,
       background: "",
       alignment: "",
       personalityTraits: ["", ""],
@@ -134,6 +134,9 @@
       abilityChoices: [],
       abilityBonuses: {},
       skills: [],
+      inspiration: 0,
+      hitDiceRemaining: 1,
+      attacks: [],
       appearance: { hair: "", eyes: "", skin: "", style: "", notes: "" },
       startingChoice: null,
       gold: 0,
@@ -182,18 +185,33 @@
         enforceSkillCheckboxLimit(target);
         state.ui.characterDraft = characterDraftFromForm(qs("#character-form"));
         render();
+        return;
+      }
+      if (target.matches("select[name='race'], select[name='classNameField']")) {
+        state.ui.characterDraft = characterDraftFromForm(qs("#character-form"));
+        render();
+        return;
       }
       updateCharacterBuilderGuide();
     }
     if (target.id === "active-character-select") {
       state.activeCharacterId = target.value;
-      saveState();
+      if (state.activeCharacterId && state.activeCharacterId !== "__new_character__") {
+          toast("Memuat detail karakter...");
+          loadFullCharacter(state.activeCharacterId).then(() => {
+              render();
+          });
+      }
+      saveState(false, 'character');
       render();
     }
     if (target.id === "active-map-select") {
-      state.activeMapId = target.value;
-      saveState();
-      render();
+      setRoomActiveMap(target.value);
+      return;
+    }
+    if (target.id === "room-active-map-select") {
+      setRoomActiveMap(target.value);
+      return;
     }
     if (target.id === "selected-npc-select") {
       state.ui.selectedNpcId = target.value;
@@ -205,7 +223,18 @@
   document.addEventListener("input", function (event) {
     const target = event.target;
     if (!(target instanceof HTMLElement)) return;
-    if (target.closest("#character-form")) updateCharacterBuilderGuide();
+    if (target.closest("#character-form")) {
+      if (target.matches("input[name^='ability-']")) {
+        if (!userIsOwner(currentUser())) {
+          target.readOnly = true;
+          toast("Input manual skor kemampuan hanya untuk Owner. Gunakan dropdown hasil roll/standard.");
+          return updateCharacterBuilderGuide();
+        }
+        const normalized = normalizeAbilityBaseValue(target.value, true);
+        if (String(target.value) !== String(normalized)) target.value = String(normalized);
+      }
+      updateCharacterBuilderGuide();
+    }
   });
 
   function loadState() {
@@ -482,6 +511,9 @@
       rooms: [],
       accounts: [],
       characters: [],
+      characterDetails: {},
+      dirtyCharacter: false,
+      dirtyCampaign: false,
       maps: [],
       npcs: [],
       customItems: [],
@@ -501,6 +533,7 @@
         startingGold: 10,
         startingCustomName: "GM Custom Choice",
         startingCustomItems: "Healing Potion",
+        announcementText: "Selamat bermain. Owner bisa mengubah pengumuman ini untuk info bug, maintenance, atau jadwal session.",
         lastSaved: ""
       },
       ui: {
@@ -516,6 +549,7 @@
         showImport: false,
         showReward: false,
         showPdfChoice: false,
+        lobbyInsideRoom: false,
         characterStep: "race",
         characterDraft: null,
         abilityRollLog: null,
@@ -531,31 +565,37 @@
 
   function isSessionOwner() {
     const haystack = `${sessionName} ${sessionEmail}`.toLowerCase();
-    return sessionRole === "owner" || sessionRole === "admin" || haystack.includes("darma");
+    // Hanya Darma yang bisa jadi Owner mutlak sesuai permintaan
+    return haystack.includes("darma");
   }
 
   function seedSessionAccount() {
     if (!hasWebsiteSession()) return;
     const owner = isSessionOwner();
-    const role = owner ? "owner" : "player";
+    const existing = state.accounts.find((a) => a.id === "php-session-user") || null;
+    const existingRoles = Array.isArray(existing?.dndRoles) ? existing.dndRoles : [];
+    const existingGmActive = !owner && (existing?.role === "gm" || existingRoles.includes("gm")) && gmTimerIsActive(existing?.gmExpiresAt);
+    const role = owner ? "owner" : (existingGmActive ? "gm" : "player");
     const account = {
+      ...(existing || {}),
       id: "php-session-user",
-      name: sessionName || sessionEmail || "Akun Website",
-      email: sessionEmail || "session@gemuyokai.local",
+      name: sessionName || existing?.name || sessionEmail || "Akun Website",
+      email: sessionEmail || existing?.email || "session@gemuyokai.local",
       role,
-      visibleRole: "player",
-      dndRoles: owner ? ["owner", "player", "gm"] : ["player"],
+      visibleRole: role === "gm" ? "gm" : "player",
+      dndRoles: owner ? ["owner", "player", "gm"] : (existingGmActive ? ["player", "gm"] : ["player"]),
       hiddenGmPower: owner,
+      gmExpiresAt: owner ? "" : (existingGmActive ? (existing?.gmExpiresAt || "") : ""),
       source: "website",
-      websiteUserId: sessionId || "session",
-      createdAt: nowIso(),
+      websiteUserId: sessionId || existing?.websiteUserId || "session",
+      createdAt: existing?.createdAt || nowIso(),
       updatedAt: nowIso()
     };
     const index = state.accounts.findIndex((a) => a.id === account.id);
-    if (index >= 0) state.accounts[index] = { ...state.accounts[index], ...account };
+    if (index >= 0) state.accounts[index] = account;
     else state.accounts.push(account);
     state.currentUserId = account.id;
-    if (!owner && state.ui.tab === "gm") state.ui.tab = "lobby";
+    if (!owner && !existingGmActive && state.ui.tab === "gm") state.ui.tab = "lobby";
     normalizeSqlOnlyIdentity();
     if (!bootingFromSql) saveState(false);
   }
@@ -575,7 +615,7 @@
       {
         id: "system-dnd-login-ui-button-fix",
         marker: "DND login logout UI button fix aktif",
-        text: "DND login/logout fix aktif: akun website dibaca dari session GemuYokai, logout memakai endpoint aman, GM dikunci untuk Owner/Admin, tombol reward/import/delete/voice diperbaiki, dan layout mobile-PC diberi patch anti-tumpang-tindih."
+        text: "Update meja aktif: akun website terbaca otomatis, logout aman, GM dibatasi untuk Owner/Admin, tombol utama dirapikan, dan layout mobile-PC dibuat lebih stabil."
       },
       {
         id: "system-dnd-srd-subrace-language-v10",
@@ -598,15 +638,47 @@
     saveState(false);
   }
 
-  function saveState(show = false) {
+  function saveState(show = false, type = 'character') {
     if (bootingFromSql) return;
     state.campaign.lastSaved = nowIso();
     normalizeSqlOnlyIdentity();
+
+    if (type === 'character') {
+        state.dirtyCharacter = true;
+    } else if (type === 'campaign') {
+        state.dirtyCampaign = true;
+    } else {
+        state.dirtyCharacter = true;
+        state.dirtyCampaign = true;
+    }
+
     if (hasWebsiteSession()) {
       scheduleSqlSave(show);
-      if (show) toast("Autosave dikirim ke MySQL.");
+      if (show) toast("Menyimpan ke MySQL...");
     } else if (show) {
       toast("Login website dulu agar data DND tersimpan ke MySQL.");
+    }
+  }
+
+  async function loadFullCharacter(characterId) {
+    if (!characterId || characterId === "__new_character__") return;
+    if (state.characterDetails && state.characterDetails[characterId]) return; // already loaded
+
+    try {
+        const data = await dndApi("load_character", { character_id: characterId });
+        if (data && data.character) {
+            state.characterDetails = state.characterDetails || {};
+            state.characterDetails[characterId] = data.character;
+
+            // Sync summary
+            const index = state.characters.findIndex(c => c.id === characterId);
+            if (index >= 0) {
+                state.characters[index] = { ...state.characters[index], ...data.character };
+            }
+            render();
+        }
+    } catch (e) {
+        console.warn("Failed to load character details", e);
     }
   }
 
@@ -640,12 +712,13 @@
     if (!apiUrl || !syncToken || !hasWebsiteSession()) return;
     syncPendingShow = syncPendingShow || !!show;
     window.clearTimeout(syncTimer);
-    syncTimer = window.setTimeout(() => persistStateToSql(syncPendingShow), 900);
+    syncTimer = window.setTimeout(() => persistStateToSql(syncPendingShow), 2500);
   }
 
   async function syncLoadFromSql() {
     if (!apiUrl || !syncToken || !hasWebsiteSession()) return;
     try {
+      toast("Memuat karakter dari MySQL...");
       const data = await dndApi("load");
       if (!data.state) {
         scheduleSqlSave(false);
@@ -656,10 +729,17 @@
       seedSystemAiNotes();
       normalizeStoredCharacters();
       normalizeSqlOnlyIdentity();
+
+      // Attempt to load the active character detail right away if available
+      if (state.activeCharacterId && state.activeCharacterId !== "__new_character__") {
+          await loadFullCharacter(state.activeCharacterId);
+      }
+
       render();
-      toast("Data DND dimuat dari MySQL.");
+      toast("Data DND dimuat.");
     } catch (error) {
       if (!syncWarned) console.warn("DND SQL load fallback:", error);
+      toast("Gagal memuat karakter. Coba refresh.");
       syncWarned = true;
     }
   }
@@ -672,8 +752,19 @@
     syncBusy = true;
     syncPendingShow = false;
     try {
-      const data = await dndApi("save", { state: sanitizeStateForSql(state), snapshot_name: "Autosave DND 2014" });
-      if (show) toast(data.message || "DND tersimpan ke SQL.");
+      if (state.dirtyCharacter && state.activeCharacterId) {
+        const char = state.characterDetails[state.activeCharacterId] || state.characters.find(c => c.id === state.activeCharacterId);
+        if (char) {
+            await dndApi("save_character", { character: char });
+        }
+      } else if (state.dirtyCampaign) {
+          await dndApi("save_campaign", { campaign: state.campaign });
+      } else {
+        const data = await dndApi("save", { state: sanitizeStateForSql(state), snapshot_name: "Autosave DND 2014" });
+        if (show) toast(data.message || "DND tersimpan ke SQL.");
+      }
+      state.dirtyCharacter = false;
+      state.dirtyCampaign = false;
       syncWarned = false;
     } catch (error) {
       if (!syncWarned) {
@@ -691,12 +782,32 @@
     }
   }
 
+  const toastQueue = [];
+  let isToasting = false;
+
+  function processToastQueue() {
+      if (toastQueue.length === 0 || isToasting) return;
+      isToasting = true;
+      const msg = toastQueue.shift();
+      if (!toastEl) return;
+      toastEl.innerHTML = '<span>' + esc(msg) + '</span>';
+      toastEl.classList.add("show");
+      window.clearTimeout(toastEl._timer);
+      toastEl._timer = window.setTimeout(() => {
+          toastEl.classList.remove("show");
+          setTimeout(() => {
+              isToasting = false;
+              processToastQueue();
+          }, 300); // Wait for transition
+      }, 2600);
+  }
+
   function toast(message) {
-    if (!toastEl) return;
-    toastEl.textContent = message;
-    toastEl.classList.add("show");
-    window.clearTimeout(toastEl._timer);
-    toastEl._timer = window.setTimeout(() => toastEl.classList.remove("show"), 2600);
+      if (!message) return;
+      // if same message is already showing, don't spam
+      if (toastEl && toastEl.classList.contains("show") && toastEl.textContent === message) return;
+      toastQueue.push(message);
+      processToastQueue();
   }
 
   function currentUser() {
@@ -705,14 +816,63 @@
 
   function userIsOwner(user = currentUser()) {
     if (!user) return false;
-    const roles = Array.isArray(user.dndRoles) ? user.dndRoles : [];
-    return user.role === "owner" || roles.includes("owner") || (user.source === "website" && isSessionOwner());
+    // Jika user adalah session user, gunakan logika isSessionOwner yang sudah diperketat
+    if (user.id === "php-session-user") return isSessionOwner();
+
+    // Untuk akun lain di database, pastikan nama atau email mengandung 'darma'
+    const haystack = `${user.name} ${user.email}`.toLowerCase();
+    return haystack.includes("darma");
+  }
+
+  function gmTimerIsActive(expiresAt) {
+    if (!expiresAt) return true;
+    const time = new Date(expiresAt).getTime();
+    return Number.isFinite(time) && time > Date.now();
+  }
+
+  function gmTimerLabel(expiresAt) {
+    if (!expiresAt) return "permanen/manual";
+    const time = new Date(expiresAt).getTime();
+    if (!Number.isFinite(time)) return "tanggal tidak valid";
+    if (time <= Date.now()) return "expired";
+    return new Date(expiresAt).toLocaleString("id-ID");
+  }
+
+  function traitGuideText(traitName) {
+    const clean = String(traitName || "").replace(/:.*/, "").trim().toLowerCase();
+    const guide = DATA.traitDetails || {};
+    return guide[clean] || "Trait ini adalah fitur bawaan ras/subrace. Cek kondisi pemakaiannya saat adegan atau combat berlangsung.";
+  }
+
+  function pdfClassFeatureGuideText(feature) {
+    const map = {
+      "Rage":"Bonus damage melee berbasis Strength, advantage Strength checks/saves, dan tahan beberapa tipe damage selama rage aktif.",
+      "Unarmored Defense":"AC bisa memakai formula class saat tidak memakai armor tertentu; cocok dicatat agar sheet tidak salah hitung.",
+      "Spellcasting":"Class ini memakai spellcasting ability tertentu untuk spell save DC dan spell attack bonus.",
+      "Bardic Inspiration":"Memberi die bantuan ke sekutu untuk d20 test tertentu sesuai aturan fitur Bard.",
+      "Wild Shape":"Druid bisa berubah bentuk sesuai batas CR dan durasi levelnya.",
+      "Second Wind":"Fighter bisa memulihkan HP sendiri sebagai bonus action sesuai batas rest.",
+      "Action Surge":"Fighter mendapat action tambahan singkat, biasanya pulih setelah rest sesuai level.",
+      "Sneak Attack":"Rogue menambah damage sekali per turn saat syarat advantage atau ally dekat target terpenuhi.",
+      "Expertise":"Bonus proficiency digandakan untuk skill/tool pilihan yang memenuhi syarat.",
+      "Pact Magic":"Warlock memakai slot pact magic yang pulih lebih cepat dan slot level-nya naik bersama level.",
+      "Divine Smite":"Paladin dapat mengubah slot spell menjadi burst radiant damage saat serangan melee kena.",
+      "Favored Enemy":"Ranger mendapat keuntungan naratif/eksplorasi terhadap musuh pilihan sesuai aturan table.",
+      "Ki":"Monk memakai poin Ki untuk teknik khusus seperti Flurry, Dodge, atau Dash sesuai level.",
+      "Sorcerous Origin":"Sumber kekuatan Sorcerer yang membuka fitur tambahan sesuai origin.",
+      "Arcane Recovery":"Wizard memulihkan sebagian slot spell saat short rest sesuai batas level."
+    };
+    return map[feature] || "Fitur class aktif. Baca kondisi penggunaan, durasi, resource, dan kapan pulih agar tidak terpakai dobel.";
   }
 
   function userHasGmPower(user = currentUser()) {
     if (!user) return false;
+    const isOwner = userIsOwner(user);
     const roles = Array.isArray(user.dndRoles) ? user.dndRoles : [];
-    return user.role === "gm" || user.role === "owner" || roles.includes("gm") || roles.includes("owner") || !!user.hiddenGmPower;
+    const wantsGm = user.role === "gm" || isOwner || roles.includes("gm") || roles.includes("owner") || !!user.hiddenGmPower;
+    if (!wantsGm) return false;
+    if (isOwner || !!user.hiddenGmPower) return true;
+    return gmTimerIsActive(user.gmExpiresAt || "");
   }
 
   function isGm() {
@@ -790,6 +950,13 @@
           scheduleNote: room.scheduleNote || "",
           safetyNote: room.safetyNote || "",
           roomCode: room.roomCode || String(room.id).replace(/^room-?/, "").slice(-5).toUpperCase() || "ROOM",
+          activeMapId: room.activeMapId || "",
+          turn: {
+            round: clamp(room.turn?.round || 1, 1, 999),
+            activeCharacterId: room.turn?.activeCharacterId || "",
+            updatedAt: room.turn?.updatedAt || "",
+            updatedBy: room.turn?.updatedBy || ""
+          },
           createdAt: room.createdAt || nowIso(),
           lastActiveAt: room.lastActiveAt || room.createdAt || nowIso()
         };
@@ -821,6 +988,7 @@
   function roomAccessAllowed(room) {
     if (!room) return false;
     if (canManageRooms()) return true;
+
     const user = currentUser();
     if (!user) return !room.hasPassword;
     return !room.hasPassword || (room.playerIds || []).includes(user.id) || (room.playerNames || []).includes(user.name);
@@ -873,15 +1041,19 @@
       scheduleNote: qs("#roomSchedule")?.value.trim() || "",
       safetyNote: qs("#roomNote")?.value.trim() || "",
       roomCode: (qs("#roomCode")?.value.trim() || `${name.slice(0, 3)}-${Math.random().toString(36).slice(2, 6)}`).toUpperCase(),
+      activeMapId: "",
+      turn: { round: 1, activeCharacterId: "", updatedAt: "", updatedBy: "" },
       createdAt: nowIso(),
       lastActiveAt: nowIso()
     };
     state.rooms.unshift(room);
     state.activeRoomId = room.id;
+    state.ui.lobbyInsideRoom = true;
+    state.ui.tab = "lobby";
     state.campaign.name = room.name;
     state.campaign.partyLevel = levelStart;
     state.campaign.playMode = room.playMode;
-    saveState(true);
+    saveState(true, 'campaign');
     render();
     toast("Room campaign dibuat.");
   }
@@ -905,8 +1077,10 @@
     }
     room.lastActiveAt = nowIso();
     state.activeRoomId = room.id;
+    state.ui.lobbyInsideRoom = true;
+    state.ui.tab = "lobby";
     state.campaign.name = room.name;
-    saveState(true);
+    saveState(true, 'campaign');
     render();
     toast("Room aktif.");
   }
@@ -917,8 +1091,11 @@
     if (!user || !room || canManageRooms()) return;
     room.playerIds = (room.playerIds || []).filter((id) => id !== user.id);
     room.playerNames = (room.playerNames || []).filter((name) => name !== user.name);
-    if (state.activeRoomId === roomId) state.activeRoomId = "";
-    saveState(true);
+    if (state.activeRoomId === roomId) {
+      state.activeRoomId = "";
+      state.ui.lobbyInsideRoom = false;
+    }
+    saveState(true, 'campaign');
     render();
     toast("Keluar dari room.");
   }
@@ -932,8 +1109,11 @@
     state.maps = (state.maps || []).filter((item) => item.roomId !== roomId);
     state.npcs = (state.npcs || []).filter((item) => item.roomId !== roomId);
     state.characters = (state.characters || []).map((item) => item.roomId === roomId ? { ...item, roomId: "" } : item);
-    if (state.activeRoomId === roomId) state.activeRoomId = state.rooms[0]?.id || "";
-    saveState(true);
+    if (state.activeRoomId === roomId) {
+      state.activeRoomId = state.rooms[0]?.id || "";
+      state.ui.lobbyInsideRoom = false;
+    }
+    saveState(true, 'campaign');
     render();
     toast("Room dihapus.");
   }
@@ -954,13 +1134,17 @@
       password: "",
       playerIds: user?.id ? [user.id] : [],
       playerNames: user?.name ? [user.name] : [],
+      activeMapId: "",
+      turn: { round: 1, activeCharacterId: "", updatedAt: "", updatedBy: "" },
       createdAt: nowIso(),
       lastActiveAt: nowIso()
     };
     state.rooms.unshift(room);
     state.activeRoomId = room.id;
+    state.ui.lobbyInsideRoom = true;
+    state.ui.tab = "lobby";
     state.campaign.name = room.name;
-    saveState(false);
+    saveState(false, 'campaign');
     if (showToast) toast("Room cepat GM siap untuk map.");
     return true;
   }
@@ -985,13 +1169,11 @@
 
   function activeCharacter() {
     if (state.activeCharacterId === "__new_character__") return null;
+    if (state.activeCharacterId && state.characterDetails && state.characterDetails[state.activeCharacterId]) {
+        return state.characterDetails[state.activeCharacterId];
+    }
     const owned = ownedCharacters();
     return owned.find((c) => c.id === state.activeCharacterId) || owned[0] || null;
-  }
-
-  function activeMap() {
-    const maps = roomMaps(state.activeRoomId);
-    return maps.find((m) => m.id === state.activeMapId) || maps[0] || null;
   }
 
   function combinedItems() {
@@ -1107,7 +1289,30 @@
 
   function describeItemForUi(name) {
     const lookup = normalizedItemLookupName(name);
-    const meta = itemByName(name) || itemByName(lookup) || { type: "Item", abilityRequirement: "Tidak ada syarat khusus", abilityUse: "Tidak mengubah ability score", affects: "Dicatat di inventory karakter", skillSupport: "Tidak memberi skill bawaan" };
+    let meta = itemByName(name) || itemByName(lookup);
+
+    // Penjelasan detail isi pack standar DnD 2014
+    const packDetails = {
+      "dungeoneer's pack": "Backpack, crowbar, hammer, 10 pitons, 10 torches, tinderbox, 10 days rations, waterskin, 50ft hempen rope.",
+      "explorer's pack": "Backpack, bedroll, mess kit, tinderbox, 10 torches, 10 days rations, waterskin, 50ft hempen rope.",
+      "priest's pack": "Backpack, blanket, 10 candles, tinderbox, alms box, 2 blocks of incense, censer, vestments, 2 days rations, waterskin.",
+      "scholar's pack": "Backpack, book of lore, ink pen, 10 sheets of parchment, little bag of sand, small knife.",
+      "burglar's pack": "Backpack, bag of 1000 ball bearings, 10ft string, bell, 5 candles, crowbar, hammer, 10 pitons, hooded lantern, 2 flasks of oil, 5 days rations, tinderbox, waterskin, 50ft hempen rope.",
+      "diplomat's pack": "Chest, 2 cases for maps/scrolls, fine clothes, ink bottle, ink pen, lamp, 2 flasks of oil, 5 sheets of paper, vial of perfume, sealing wax, soap.",
+      "entertainer's pack": "Backpack, bedroll, 2 costumes, 5 candles, 5 days rations, waterskin, disguise kit."
+    };
+
+    const packKey = lookup.toLowerCase();
+    if (packDetails[packKey]) {
+      meta = {
+        ...(meta || {}),
+        notes: (meta?.notes ? meta.notes + " " : "") + "Isi: " + packDetails[packKey]
+      };
+    }
+
+    if (!meta) {
+      meta = { type: "Item", abilityRequirement: "Tidak ada syarat khusus", abilityUse: "Tidak mengubah ability score", affects: "Dicatat di inventory karakter", skillSupport: "Tidak memberi skill bawaan" };
+    }
     return { name, meta };
   }
 
@@ -1186,12 +1391,21 @@
       logout,
       "create-room": createRoomFromForm,
       "enter-room": () => enterRoom(trigger.dataset.roomId),
+      "room-back-lobby": backToLobbyRoomList,
+      "room-turn-set": setRoomTurnFromControl,
+      "room-turn-next": nextRoomTurn,
+      "room-turn-clear": clearRoomTurn,
       "leave-room": () => leaveRoom(trigger.dataset.roomId),
       "delete-room": () => deleteRoom(trigger.dataset.roomId),
       "gm-quick-map": gmQuickMap,
       "campaign-save": saveCampaignSettings,
       "save-campaign": saveCampaignSettings,
       "owner-entry-mode": () => changeOwnerEntryMode(trigger.dataset.mode),
+      "edit-announcement": editAnnouncement,
+      "owner-db-apply-role": () => ownerDatabaseApplyRole(trigger),
+      "owner-db-edit-character": () => ownerDatabaseEditCharacter(trigger.dataset.characterId || trigger.dataset.id),
+      "owner-db-delete-character": () => ownerDatabaseDeleteCharacter(trigger.dataset.characterId || trigger.dataset.id),
+      "owner-db-refresh": ownerDatabaseRefresh,
       "send-room-chat": sendRoomChat,
       "add-room-event": addRoomEventFromLobby,
       "lobby-ai-ask": answerLobbyAiQuestion,
@@ -1202,6 +1416,7 @@
       "ability-roll-array": () => rollAbilityArray(trigger.dataset.mode || "4d6"),
       "delete-character": () => deleteCharacter(trigger.dataset.characterId || trigger.dataset.id),
       "new-character": newCharacterDraft,
+      "clone-character": cloneCharacterDraft,
       "download-pdf": openPdfChoiceModal,
       "pdf-close": closePdfChoiceModal,
       "pdf-download-selected": downloadSelectedCharacterPdf,
@@ -1232,16 +1447,23 @@
       "gm-send-narration": sendGmNarration,
       "grant-reward": openRewardModal,
       "reward-close": closeRewardModal,
-      "submit-reward": applyReward,
-      "toggle-inspiration": toggleInspiration
+      "submit-reward": applyReward
     };
     if (!actions[action]) return;
     try {
       actions[action]();
     } catch (error) {
       console.error("DND action error:", action, error);
-      toast("Tombol gagal diproses: " + action + ". Cek console untuk detail.");
+      toast("Tombol belum berhasil diproses: " + action + ". Coba ulang atau cek koneksi.");
     }
+  }
+
+  function backToLobbyRoomList() {
+    state.ui.lobbyInsideRoom = false;
+    state.ui.tab = "lobby";
+    saveState(false);
+    render();
+    toast("Keluar game. Kembali ke tampilan utama lobby.");
   }
 
   function changeOwnerEntryMode(mode) {
@@ -1250,6 +1472,85 @@
     setOwnerEntryMode(mode === "gm" ? "gm" : "player");
     render();
     toast(mode === "gm" ? "Mode masuk GM aktif di layar ini." : "Mode masuk Player aktif di layar ini.");
+  }
+
+  function editAnnouncement() {
+    if (!userIsOwner(currentUser())) return toast("Hanya Owner yang bisa mengubah announcement.");
+    const current = state.campaign.announcementText || "";
+    const next = prompt("Isi announcement berjalan untuk player:", current);
+    if (next === null) return;
+    state.campaign.announcementText = String(next).trim() || "Selamat bermain. Tidak ada announcement khusus dari owner.";
+    saveState(true, 'campaign');
+    render();
+    toast("Announcement owner diperbarui.");
+  }
+
+  function ownerDatabaseRefresh() {
+    if (!userIsOwner(currentUser())) return toast("Hanya Owner yang bisa membuka database panel.");
+    saveState(true, 'campaign');
+    render();
+    toast("Database panel disinkronkan ke MySQL.");
+  }
+
+  function ownerDatabaseApplyRole(trigger) {
+    if (!userIsOwner(currentUser())) return toast("Hanya Owner yang bisa mengubah role DND.");
+    const row = trigger?.closest?.("[data-owner-account-row]");
+    const accountId = trigger?.dataset?.accountId || row?.dataset?.ownerAccountRow || "";
+    const account = state.accounts.find((item) => item.id === accountId);
+    if (!account) return toast("Akun tidak ditemukan di state DND.");
+    if (userIsOwner(account) && account.id !== currentUser()?.id) return toast("Role Owner tidak diubah dari panel ini.");
+    const role = row?.querySelector("[data-owner-role]")?.value || "player";
+    const daysRaw = Number(row?.querySelector("[data-owner-gm-days]")?.value || 0);
+    const days = Number.isFinite(daysRaw) ? Math.max(0, Math.min(3650, Math.floor(daysRaw))) : 0;
+    if (role === "gm") {
+      account.role = "gm";
+      account.visibleRole = "gm";
+      account.dndRoles = ["player", "gm"];
+      account.gmExpiresAt = days > 0 ? new Date(Date.now() + days * 86400000).toISOString() : "";
+      account.gmGrantedAt = nowIso();
+      account.gmGrantedBy = currentUser()?.id || "owner";
+    } else {
+      account.role = "player";
+      account.visibleRole = "player";
+      account.dndRoles = ["player"];
+      account.gmExpiresAt = "";
+      account.gmGrantedAt = "";
+      account.gmGrantedBy = "";
+    }
+    account.updatedAt = nowIso();
+    saveState(true, 'campaign');
+    render();
+    toast(role === "gm" ? `Role GM aktif${days ? " selama " + days + " hari" : " tanpa timer"}.` : "Role akun dikembalikan menjadi Player.");
+  }
+
+  function ownerDatabaseEditCharacter(characterId) {
+    if (!userIsOwner(currentUser())) return toast("Hanya Owner yang bisa edit karakter dari database panel.");
+    const character = state.characters.find((item) => item.id === characterId);
+    if (!character) return toast("Karakter tidak ditemukan.");
+    state.activeCharacterId = character.id;
+    state.ui.tab = "character";
+    state.ui.characterStep = "race";
+    state.ui.characterDraft = JSON.parse(JSON.stringify(character));
+    state.ui.abilityRollLog = null;
+    state.ui.abilityPickAssignments = {};
+    saveState(false);
+    render();
+    toast("Mode edit Owner dibuka. Detail karakter bisa dikoreksi manual.");
+  }
+
+  function ownerDatabaseDeleteCharacter(characterId) {
+    if (!userIsOwner(currentUser())) return toast("Hanya Owner yang bisa hapus karakter dari database panel.");
+    const character = state.characters.find((item) => item.id === characterId);
+    if (!character) return toast("Karakter tidak ditemukan.");
+    if (!confirm(`Hapus karakter ${character.name || "tanpa nama"} dari campaign?`)) return;
+    state.characters = state.characters.filter((item) => item.id !== character.id);
+    state.maps.forEach((map) => {
+      map.npcs = (map.npcs || []).filter((token) => token.characterId !== character.id);
+    });
+    if (state.activeCharacterId === character.id) state.activeCharacterId = state.characters[0]?.id || "";
+    saveState(true, 'campaign');
+    render();
+    toast("Karakter dihapus dari state dan akan diarsipkan di MySQL saat autosave.");
   }
 
   function sendRoomChat() {
@@ -1263,6 +1564,7 @@
     if (!room) return toast("Pilih room dulu sebelum chat.");
     const text = qs("#room-chat-text")?.value.trim() || "";
     if (!text) return toast("Isi chat dulu.");
+    if (!isGm() && !canTakeGameAction("chat")) return;
     if (!Array.isArray(state.chatLog)) state.chatLog = [];
     state.chatLog.unshift({
       id: uid("chat"),
@@ -1274,7 +1576,7 @@
       createdAt: nowIso()
     });
     state.chatLog = state.chatLog.slice(0, 160);
-    saveState(true);
+    saveState(true, 'campaign');
     render();
   }
 
@@ -1295,7 +1597,7 @@
       createdAt: nowIso()
     });
     state.roomEvents = state.roomEvents.slice(0, 160);
-    saveState(true);
+    saveState(true, 'campaign');
     render();
   }
 
@@ -1318,7 +1620,7 @@
   }
 
   async function postWebsiteAuth(action, payload) {
-    if (!websiteAuthApiUrl) throw new Error("Endpoint auth website tidak ditemukan.");
+    if (!websiteAuthApiUrl) throw new Error("Koneksi login website belum tersedia.");
     const body = new FormData();
     body.append("action", action);
     Object.entries(payload || {}).forEach(([key, value]) => body.append(key, value == null ? "" : String(value)));
@@ -1361,7 +1663,10 @@
   function switchTab(tab) {
     if (!tab) return;
     const user = currentUser();
-    if ((tab === "map" || tab === "dice") && user && !isGm() && !ownedCharacters().some(characterIsReady)) {
+    if (tab === "database" && !userIsOwner(user)) {
+      state.ui.tab = "lobby";
+      toast("Database panel hanya untuk Owner.");
+    } else if ((tab === "map" || tab === "dice") && user && !isGm() && !ownedCharacters().some(characterIsReady)) {
       state.ui.tab = "character";
       toast("Player wajib membuat karakter lengkap dulu sebelum masuk meja permainan.");
     } else {
@@ -1437,7 +1742,7 @@
     state.campaign.startingCustomItems = qs("#campaign-starting-items")?.value.trim() || "Healing Potion";
     const room = currentRoom();
     if (room) { room.name = state.campaign.name; room.lastActiveAt = nowIso(); }
-    saveState(true);
+    saveState(true, 'campaign');
     render();
   }
 
@@ -1454,16 +1759,24 @@
     render();
   }
 
-  function toggleInspiration() {
-    const trigger = state.ui.lastTrigger;
-    if (!trigger) return;
-    const charId = trigger.dataset.characterId;
-    const character = state.characters.find(c => c.id === charId);
-    if (!character) return;
-    character.inspiration = !character.inspiration;
-    saveState(true);
+  function cloneCharacterDraft() {
+    const c = activeCharacter();
+    if (!c) return toast("Tidak ada karakter aktif untuk diclone.");
+    state.activeCharacterId = "__new_character__";
+    state.ui.tab = "character";
+    state.ui.characterStep = "race";
+    const clone = JSON.parse(JSON.stringify(c));
+    delete clone.id;
+    delete clone.localId;
+    clone.name = clone.name ? clone.name + " (Clone)" : "Clone Character";
+    state.ui.characterDraft = clone;
+    state.ui.abilityRollLog = null;
+    state.ui.abilityPickAssignments = {};
+    state.characterPortraitDraft = clone.portrait || "";
+    state.characterPortraitDraftName = clone.portraitName || "";
+    saveState();
     render();
-    toast(character.inspiration ? "Inspiration diberikan!" : "Inspiration digunakan.");
+    toast("Karakter berhasil diduplikat! Jangan lupa klik Simpan Karakter.");
   }
 
   function deleteCharacter(id) {
@@ -1538,8 +1851,13 @@
     const baseAbilityScores = {};
     DATA.abilities.forEach((a) => {
       const input = form.querySelector("[name='ability-" + a.id + "']");
-      baseAbilityScores[a.id] = clamp(input?.value ?? 0, 0, 20);
+      baseAbilityScores[a.id] = normalizeAbilityBaseValue(input?.value ?? 0, userIsOwner(user));
+      if (input && String(input.value) !== String(baseAbilityScores[a.id])) input.value = String(baseAbilityScores[a.id]);
     });
+    const abilityMethodError = validateNonOwnerAbilityMethod(form, baseAbilityScores, !!isExisting, existing);
+    if (abilityMethodError) {
+      return failCharacterValidation(abilityMethodError.message, "abilities", abilityMethodError.selector);
+    }
     const emptyAbility = DATA.abilities.find((a) => Number(baseAbilityScores[a.id] || 0) <= 0);
     if (emptyAbility) {
       return failCharacterValidation("Isi skor " + emptyAbility.label + " dulu di Step 3. Nilai 0 hanya placeholder awal karakter baru.", "abilities", "#character-form [name='ability-" + emptyAbility.id + "']");
@@ -1654,6 +1972,7 @@
       background: backgroundId,
       alignment,
       personalityTraits: [form.personalityTrait1?.value.trim() || "", form.personalityTrait2?.value.trim() || ""],
+
       ideal: form.ideal?.value.trim() || "",
       bond: form.bond?.value.trim() || "",
       flaw: form.flaw?.value.trim() || "",
@@ -1784,36 +2103,18 @@
       stealth: "Stealth ",
       survival: "Survival"
     };
-    const featureData = {
-      "rage": "Masuk ke kondisi marah untuk mendapat resistance damage fisik dan bonus attack damage.",
-      "unarmored defense": "Mendapat bonus AC dari bonus ability tambahan saat tidak memakai armor.",
-      "spellcasting": "Bisa merapal mantra sesuai level dan slot mantra yang tersedia.",
-      "pact magic": "Sihir unik Warlock yang slotnya kembali penuh setelah short rest.",
-      "bardic inspiration": "Memberi bonus d6/d8 ke teman untuk membantu attack, check, atau save.",
-      "divine sense": "Mendeteksi kehadiran celestial, fiend, atau undead di sekitar.",
-      "lay on hands": "Menyembuhkan HP target dengan poin energi suci.",
-      "sneak attack": "Memberi bonus damage jika menyerang target yang terdistraksi.",
-      "cunning action": "Bisa Dash, Disengage, atau Hide sebagai bonus action.",
-      "second wind": "Memulihkan HP sendiri sebagai bonus action.",
-      "action surge": "Mendapat satu action tambahan dalam satu giliran.",
-      "martial arts": "Bisa menyerang tanpa senjata dengan damage lebih besar dan bonus action attack.",
-      "ki": "Memakai energi internal untuk fitur khusus Monk.",
-      "natural explorer": "Mendapat bonus navigasi dan survival di medan tertentu.",
-      "favored enemy": "Mendapat bonus track dan info tentang tipe musuh tertentu."
-    };
-    const features = [...effectiveRaceTraits(character), ...klass.features].map(t => {
-      const lowT = t.toLowerCase();
-      const detail = featureData[lowT] || DATA.traitDetails[lowT] || "";
-      return `${t}${detail ? ": " + detail : ""}`;
-    }).join("\n");
-    const equipment = (character.inventory || []).map(item => {
-      const contents = getPackContents(item);
-      return `${item}${contents ? " (Isi: " + contents + ")" : ""}`;
-    }).join(", ");
+    const features = [
+      `Race Traits: ${raceTraits.join(", ")}`,
+      `Class Features: ${klass.features.join(", ")}`,
+      `Starting Package: ${character.startingChoice?.name || "Belum dipilih"}`
+    ].join("\n");
+    const equipment = [
+      ...(character.inventory || []),
+      character.gold ? `${character.gold} gp` : ""
+    ].filter(Boolean).join(", ");
     const profLang = [
-      `Armor Proficiencies: ${klass.armor}`,
-      `Weapon Proficiencies: ${klass.weapons}`,
-      `Tool Proficiencies: ${klass.tools || "None"}`,
+      `Armor: ${klass.armor}`,
+      `Gears: ${klass.weapons}`,
       `Languages: ${languages || "Common"}`
     ].join("\n");
     const attacks = (character.inventory || [])
@@ -1832,7 +2133,6 @@
     setText("Bonds", character.bond || "", 6.5);
     setText("Flaws", character.flaw || "", 6.5);
     setText("XP", Number(character.xp || 0));
-    setText("Inspiration", character.inspiration ? "X" : "");
     setText("ProfBonus", `+${prof}`);
     setText("AC", character.ac);
     setText("Initiative", signed(mod(character.abilities.dex)));
@@ -1847,7 +2147,7 @@
     setText("Features and Traits", features, 5.5);
     setText("Feat+Traits", features, 5.5);
     setText("ProficienciesLang", profLang, 5.5);
-    setText("AttacksSpellcasting", attacks.length ? attacks.map((item) => `${item}: ${calculateAttackBonus(character, item)}`).join("\n") : "", 6);
+    setText("AttacksSpellcasting", attacks.length ? attacks.map((item) => `${item}: ${signed(prof)} + ability`).join("\n") : "", 6);
     setText("Eyes", character.appearance?.eyes || "");
     setText("Skin", character.appearance?.skin || "");
     setText("Hair", character.appearance?.hair || "");
@@ -1952,18 +2252,47 @@
       box(x, statY, statW, 58, a.label, `${val}  (${signed(mod(val))})`);
     });
 
-    section("Combat & Core", 160);
-    box(margin, 174, 55, 42, "HP", `${character.hpCurrent}/${character.hpMax}`);
-    box(margin + 60, 174, 55, 42, "AC", character.ac);
-    box(margin + 120, 174, 55, 42, "Speed", `${character.speed} ft`);
-    box(margin + 180, 174, 55, 42, "Prof", `+${prof}`);
-    box(margin + 240, 174, 65, 42, "Hit Dice", `${character.level}d${klass.hitDie}`);
-    box(margin + 310, 174, 65, 42, "Inspiration", character.inspiration ? "YES [x]" : "NO [ ]");
-    box(margin + 380, 174, 70, 42, "Initiative", signed(mod(character.abilities.dex)));
-    box(margin + 455, 174, 70, 42, "Passive Wis", 10 + skillBonus(character, "perception"));
+    section("Combat", 160);
+    box(margin, 174, 50, 42, "HP", `${character.hpCurrent}/${character.hpMax}`);
+    box(margin + 58, 174, 50, 42, "AC", character.ac);
+    box(margin + 116, 174, 50, 42, "Speed", `${character.speed} ft`);
+    box(margin + 174, 174, 60, 42, "Prof", `+${prof}`);
+    box(margin + 242, 174, 60, 42, "Init", signed(mod(character.abilities.dex)));
+    box(margin + 310, 174, 60, 42, "Pass Wis", 10 + skillBonus(character, "perception"));
+    box(margin + 378, 174, 70, 42, "Inspiration", character.inspiration ? "YES" : "NO");
+    box(margin + 456, 174, 68, 42, "Hit Dice", `${character.hitDiceRemaining}/d${klass.hitDie}`);
 
-    section("Skills & Saving Throws", 240);
-    let y = 258;
+    const drawPillText = (text, x, y, w, h) => {
+      doc.setFillColor(235, 235, 235);
+      doc.roundedRect(x, y - h + 3, w, h, 3, 3, 'F');
+      doc.text(String(text), x + 4, y);
+    };
+
+    section("Attacks & Spellcasting", 230);
+    const atkY = 244;
+    doc.setDrawColor(40, 40, 40);
+    doc.setLineWidth(1.2);
+    doc.roundedRect(margin, atkY, pageW - margin * 2, 105, 4, 4);
+    doc.setLineWidth(1);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(8);
+    doc.text("NAME", margin + 10, atkY + 14);
+    doc.text("ATK", margin + 150, atkY + 14);
+    doc.text("DAMAGE/TYPE", margin + 210, atkY + 14);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8);
+
+    const atkData = character._computedAttacks || character.attacks || [];
+    for (let i = 0; i < 6; i++) {
+      const rowY = atkY + 28 + (i * 12);
+      const atk = atkData[i] || { name: "", bonus: "", damage: "" };
+      drawPillText(atk.name, margin + 10, rowY, 130, 10);
+      drawPillText(atk.bonus, margin + 150, rowY, 50, 10);
+      drawPillText(atk.damage, margin + 210, rowY, 130, 10);
+    }
+    doc.setFont("helvetica", "bold"); doc.setFontSize(7);
+    doc.text("ATTACKS & SPELLCASTING", margin + (pageW - margin * 2)/2, atkY + 98, { align: "center" });
+
+    section("Skills & Saving Throws", 360);
+    let y = 378;
     DATA.skills.forEach((skill, i) => {
       const col = i < 9 ? margin : margin + 260;
       const rowY = i < 9 ? y + i * 15 : y + (i - 9) * 15;
@@ -1976,71 +2305,141 @@
     doc.setFont("helvetica", "normal");
     DATA.abilities.forEach((a, i) => {
       const save = mod(character.abilities[a.id]) + (klass.saves.includes(a.id) ? prof : 0);
-      doc.text(`${klass.saves.includes(a.id) ? "[x]" : "[ ]"} ${a.label} Save ${signed(save)}`, margin + 400, 258 + i * 15);
+      doc.text(`${klass.saves.includes(a.id) ? "[x]" : "[ ]"} ${a.label} Save ${signed(save)}`, margin + 400, 378 + i * 15);
     });
 
-    section("Attacks & Spellcasting", 410);
-    const attacks = (character.inventory || [])
-      .filter(item => /sword|dagger|mace|axe|hammer|staff|spear|bow|crossbow|dart|sling/i.test(item))
-      .map(item => `${item}: ${calculateAttackBonus(character, item)} to hit`).join(", ");
-    box(margin, 424, 525, 44, "Weapon Attacks", attacks || "None");
+    section("Story", 525);
+    box(margin, 539, 255, 44, "Personality Trait 1", character.personalityTraits?.[0] || "");
+    box(margin + 270, 539, 255, 44, "Personality Trait 2", character.personalityTraits?.[1] || "");
+    box(margin, 591, 165, 44, "Ideal", character.ideal || "");
+    box(margin + 180, 591, 165, 44, "Bond", character.bond || "");
+    box(margin + 360, 591, 165, 44, "Flaw", character.flaw || "");
 
-    section("Story", 480);
-    box(margin, 494, 255, 44, "Personality Trait 1", character.personalityTraits?.[0] || "");
-    box(margin + 270, 494, 255, 44, "Personality Trait 2", character.personalityTraits?.[1] || "");
-    box(margin, 546, 165, 44, "Ideal", character.ideal || "");
-    box(margin + 180, 546, 165, 44, "Bond", character.bond || "");
-    box(margin + 360, 546, 165, 44, "Flaw", character.flaw || "");
+    const profY = 645;
+    doc.setDrawColor(40, 40, 40);
+    doc.setLineWidth(1.2);
 
-    section("Features, Traits, Languages", 610);
-    const featureData = {
-      "rage": "Masuk ke kondisi marah untuk mendapat resistance damage fisik dan bonus attack damage.",
-      "unarmored defense": "Mendapat bonus AC dari bonus ability tambahan saat tidak memakai armor.",
-      "spellcasting": "Bisa merapal mantra sesuai level dan slot mantra yang tersedia.",
-      "pact magic": "Sihir unik Warlock yang slotnya kembali penuh setelah short rest.",
-      "bardic inspiration": "Memberi bonus d6/d8 ke teman untuk membantu attack, check, atau save.",
-      "divine sense": "Mendeteksi kehadiran celestial, fiend, atau undead di sekitar.",
-      "lay on hands": "Menyembuhkan HP target dengan poin energi suci.",
-      "sneak attack": "Memberi bonus damage jika menyerang target yang terdistraksi.",
-      "cunning action": "Bisa Dash, Disengage, atau Hide sebagai bonus action.",
-      "second wind": "Memulihkan HP sendiri sebagai bonus action.",
-      "action surge": "Mendapat satu action tambahan dalam satu giliran.",
-      "martial arts": "Bisa menyerang tanpa senjata dengan damage lebih besar dan bonus action attack.",
-      "ki": "Memakai energi internal untuk fitur khusus Monk.",
-      "natural explorer": "Mendapat bonus navigasi dan survival di medan tertentu.",
-      "favored enemy": "Mendapat bonus track dan info tentang tipe musuh tertentu."
-    };
-    const traitText = [...effectiveRaceTraits(character), ...klass.features].map(t => {
-      const lowT = t.toLowerCase();
-      const detail = featureData[lowT] || DATA.traitDetails[lowT] || "";
-      return `${t}${detail ? ": " + detail : ""}`;
-    }).join("\n");
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8);
+    const toolTxt = "TOOL: " + ((character.inventory || []).filter(i => /tool|kit|set/i.test(i)).join(", ") || "None");
+    const langTxt = "LANGUAGE: " + (languages || "Common");
+    const armTxt = "ARMOR: " + (klass.armor || "None");
+    const wepTxt = "WEAPON: " + (klass.weapons || "Simple weapons");
+
+    const toolLines = doc.splitTextToSize(toolTxt, pageW - margin*2 - 20);
+    const langLines = doc.splitTextToSize(langTxt, pageW - margin*2 - 20);
+    const armLines = doc.splitTextToSize(armTxt, pageW - margin*2 - 20);
+    const wepLines = doc.splitTextToSize(wepTxt, pageW - margin*2 - 20);
+
+    let currentY = profY + 12;
+    doc.text(toolLines, margin + 10, currentY);
+    currentY += toolLines.length * 10;
+    line(margin + 5, currentY - 4, pageW - margin - 5, currentY - 4);
+
+    currentY += 10;
+    doc.text(langLines, margin + 10, currentY);
+    currentY += langLines.length * 10;
+    line(margin + 5, currentY - 4, pageW - margin - 5, currentY - 4);
+
+    currentY += 10;
+    doc.text(armLines, margin + 10, currentY);
+    currentY += armLines.length * 10;
+    line(margin + 5, currentY - 4, pageW - margin - 5, currentY - 4);
+
+    currentY += 10;
+    doc.text(wepLines, margin + 10, currentY);
+    currentY += wepLines.length * 10;
+
+    const boxHeight = currentY - profY + 8;
+    doc.roundedRect(margin, profY, pageW - margin * 2, boxHeight, 4, 4);
+    doc.setLineWidth(1);
+
+    doc.setFont("helvetica", "bold"); doc.setFontSize(7);
+    doc.text("OTHER PROFICIENCIES & LANGUAGES", margin + (pageW - margin * 2)/2, profY + boxHeight - 6, { align: "center" });
+
+    const equipY = profY + boxHeight + 15;
+    section("Equipment", equipY);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    const featuresText = `Languages: ${languages || "Common"}\n${traitText}`;
-    doc.text(doc.splitTextToSize(featuresText, pageW - margin * 2), margin, 627);
-
-    section("Equipment", 740);
-    const eqLines = (character.inventory || []).map(item => {
-      const contents = getPackContents(item);
-      return `- ${item}${contents ? " (Isi: " + contents + ")" : ""}`;
+    doc.setFontSize(8);
+    const eqItems = [`Gold: ${character.gold || 0} gp`, ...(character.inventory || [])];
+    let eqY = equipY + 16;
+    eqItems.slice(0, 5).forEach(item => {
+      const lines = doc.splitTextToSize("• " + item, pageW - margin * 2);
+      doc.text(lines, margin + 5, eqY);
+      eqY += 10 * lines.length;
     });
-    const eqText = [`Gold: ${character.gold || 0} gp`, ...eqLines].join("\n");
-    doc.setFontSize(7);
-    doc.text(doc.splitTextToSize(eqText || "-", pageW - margin * 2), margin, 755);
+    if (eqItems.length > 5) {
+      doc.setFont("helvetica", "italic");
+      doc.text("... (lihat detail inventory di halaman berikutnya)", margin + 5, eqY);
+    }
 
     addFooter();
 
+    const writePair = (title, text, x, yPos, width) => {
+      doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.text(String(title), x, yPos);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8);
+      const lines = doc.splitTextToSize(String(text || "-"), width);
+      doc.text(lines, x, yPos + 12);
+      return yPos + 16 + lines.length * 10;
+    };
+    const nextDetailPage = (title) => { doc.addPage(); section(title, 42); return 64; };
+
+    let detailY = nextDetailPage("Inventory & Equipment Detail");
+    const inventoryRows = [
+      ["Gold", `${Number(character.gold || 0)} gp`],
+      ["Starting Package", character.startingChoice?.name || "None"],
+      ["All Items", (character.inventory || []).map(i => "• " + i).join("\n") || "Kosong"]
+    ];
+    inventoryRows.forEach(([title, text]) => {
+      if (detailY > pageH - 86) { addFooter(); detailY = nextDetailPage("Inventory & Equipment Detail"); }
+      detailY = writePair(title, text, margin, detailY, pageW - margin * 2) + 5;
+    });
+    addFooter();
+
+    detailY = nextDetailPage("Features & Traits Detail");
+    const featureRows = [
+      ...raceTraits.map((trait) => ["Race Trait - " + trait, traitGuideText(trait)]),
+      ...(klass.features || []).map((feature) => ["Class Feature - " + feature, pdfClassFeatureGuideText(feature)]),
+      ["Languages", languages || "Common"]
+    ];
+    featureRows.forEach(([title, text]) => {
+      if (detailY > pageH - 86) { addFooter(); detailY = nextDetailPage("Features & Traits Detail"); }
+      detailY = writePair(title, text, margin, detailY, pageW - margin * 2) + 5;
+    });
+    addFooter();
+
+    detailY = nextDetailPage("Spellcasting & Spells Detail");
+    const spellAbilityId = pdfSpellcastingAbilityId(klass);
+    const spellAbilityScore = Number(character.abilities?.[spellAbilityId] || 10);
+    const spellAbilityName = abilityLabel(spellAbilityId);
+    const spellAbilityMod = mod(spellAbilityScore);
+    const spellSaveDc = 8 + prof + spellAbilityMod;
+    const spellAttackBonus = prof + spellAbilityMod;
+    box(margin, detailY, 128, 46, "Spellcasting Class", klass.name);
+    box(margin + 136, detailY, 118, 46, "Spellcasting Ability", `${spellAbilityName} ${signed(spellAbilityMod)}`);
+    box(margin + 262, detailY, 96, 46, "Spell Save DC", spellSaveDc);
+    box(margin + 366, detailY, 130, 46, "Spell Attack Bonus", signed(spellAttackBonus));
+    detailY += 66;
+    detailY = writePair("Spell Slots / Level", pdfSpellSlotsSummary(klass, Number(character.level || 1)), margin, detailY, pageW - margin * 2) + 8;
+    const exportSpells = pdfSpellsForCharacter(character, klass);
+    if (!exportSpells.length) {
+      detailY = writePair("Spells", "Class ini belum memiliki spell pada data karakter. Tambahkan daftar spell di data karakter jika ingin muncul sebagai spell yang dimiliki.", margin, detailY, pageW - margin * 2);
+    }
+    exportSpells.forEach((spell) => {
+      const d = pdfSpellDetail(spell);
+      const title = `${spell.name} (${Number(spell.level) === 0 ? "Cantrip" : "Level " + spell.level}) - ${spell.school || "Spell"}`;
+      const text = [`Casting Time: ${d.castingTime}`, `Range: ${d.range}`, `Target: ${d.target}`, `Components: ${d.components}`, `Duration: ${d.duration}`, `Description: ${d.description}`, `At Higher Levels: ${d.higher}`].join("\n");
+      if (detailY > pageH - 150) { addFooter(); detailY = nextDetailPage("Spells Detail Continued"); }
+      detailY = writePair(title, text, margin, detailY, pageW - margin * 2) + 9;
+    });
+    addFooter();
+
     doc.addPage();
-    section("Appearance & Backstory", 42);
+    section("Printable Manual Area", 42);
     box(margin, 58, 255, 70, "Backstory / Catatan Karakter", character.appearance?.notes || "");
     box(margin + 270, 58, 255, 70, "Appearance", `Hair: ${character.appearance?.hair || "-"}; Eyes: ${character.appearance?.eyes || "-"}; Skin: ${character.appearance?.skin || "-"}; Style: ${character.appearance?.style || "-"}`);
-
-    section("Inventory Detail", 160);
-    doc.setFontSize(8);
-    doc.text(doc.splitTextToSize(eqText, pageW - margin * 2), margin, 180);
-
-    section("Manual Offline Notes", 510);
+    section("Inventory Tambahan", 160);
+    for (let i = 0; i < 14; i++) line(margin, 182 + i * 22, pageW - margin, 182 + i * 22);
+    section("Spell / Ability / Attack Notes", 510);
     for (let i = 0; i < 10; i++) line(margin, 532 + i * 22, pageW - margin, 532 + i * 22);
     addFooter();
 
@@ -2077,9 +2476,8 @@
       }),
       "",
       "Other Proficiencies & Languages",
-      `Armor Proficiencies: ${klass.armor}`,
-      `Weapon Proficiencies: ${klass.weapons}`,
-      `Tool Proficiencies: ${klass.tools || "None"}`,
+      `Armor: ${klass.armor}`,
+      `Gears: ${klass.weapons}`,
       `Languages: ${languages || "Common"}`,
       "",
       "Attacks & Spellcasting",
@@ -2143,6 +2541,7 @@
   }
 
   function rollDice(sides, label) {
+    if (!canTakeGameAction("roll dice")) return;
     if (sides === 100) {
       rollPercentileDice();
       return;
@@ -2186,6 +2585,7 @@
   }
 
   function rollSkill() {
+    if (!canTakeGameAction("roll skill")) return;
     const character = state.characters.find((c) => c.id === qs("#skill-character")?.value) || activeCharacter();
     const skill = skillById(qs("#skill-select")?.value);
     if (!character || !skill) {
@@ -2279,11 +2679,7 @@
   }
 
 
-  function traitGuideText(traitName) {
-    const clean = String(traitName || "").replace(/:.*/, "").trim().toLowerCase();
-    const guide = DATA.traitDetails || {};
-    return guide[clean] || "Trait ini adalah fitur bawaan ras/subrace. Cek kondisi pemakaiannya saat adegan atau combat berlangsung.";
-  }
+
 
   function alignmentGuideText(alignmentName) {
     const guide = DATA.alignmentDetails || {};
@@ -2307,9 +2703,17 @@
     </div>`;
   }
 
+  function abilityRollLockedForPlayer() {
+    return !!(state.ui.abilityRollLog?.mode === "4d6" && !userIsOwner(currentUser()));
+  }
+
   function rollAbilityArray(mode = "4d6") {
     const form = qs("#character-form");
     if (!form) return;
+    if (abilityRollLockedForPlayer()) {
+      toast("Player hanya bisa menentukan skor kemampuan sekali. Owner tetap bisa roll ulang jika memang perlu koreksi.");
+      return;
+    }
     state.ui.characterDraft = characterDraftFromForm(form);
     const standard = [15, 14, 13, 12, 10, 8];
     let values = [...standard];
@@ -2326,12 +2730,58 @@
     state.ui.abilityRollLog = { mode, values, rolls, details, createdAt: nowIso() };
     state.ui.abilityPickAssignments = {};
     updateCharacterBuilderGuide();
+    saveState(false);
     render();
     toast(mode === "standard" ? "Standard array muncul. Pilih angka untuk tiap stat." : "Hasil dice muncul. Pilih angka untuk STR/DEX/CON/INT/WIS/CHA secara bebas.");
   }
 
   function currentAbilityRollValues() {
     return Array.isArray(state.ui.abilityRollLog?.values) ? state.ui.abilityRollLog.values : [];
+  }
+
+  function normalizeAbilityBaseValue(value, ownerCanManual = false) {
+    const max = ownerCanManual ? 30 : 20;
+    return clamp(value, 0, max);
+  }
+
+  function validateNonOwnerAbilityMethod(form, baseAbilityScores, isExisting, existing) {
+    if (userIsOwner(currentUser())) return null;
+    const changed = DATA.abilities.some((ability) => {
+      const before = Number(existing?.baseAbilities?.[ability.id] ?? existing?.abilities?.[ability.id] ?? 0);
+      const after = Number(baseAbilityScores?.[ability.id] ?? 0);
+      return before !== after;
+    });
+    if (isExisting && !changed) return null;
+    const values = currentAbilityRollValues();
+    const log = state.ui.abilityRollLog || null;
+    if (!log || values.length < DATA.abilities.length) {
+      return {
+        message: "Player/GM wajib memilih metode di Step 3 dulu: Roll 4d6 atau Standard Array. Input manual hanya untuk Owner.",
+        selector: "#character-form .ability-roll-tools"
+      };
+    }
+    const assignments = state.ui.abilityPickAssignments || {};
+    const used = new Set();
+    for (const ability of DATA.abilities) {
+      const rawIndex = assignments[ability.id];
+      if (rawIndex === undefined || rawIndex === null || rawIndex === "") {
+        return { message: `Pilih hasil ${ability.label} dari dropdown Step 3. Player/GM tidak bisa mengetik skor manual.`, selector: `#character-form select[data-ability-pick='${ability.id}']` };
+      }
+      const index = Number(rawIndex);
+      if (!Number.isInteger(index) || index < 0 || index >= values.length || used.has(index)) {
+        return { message: `Pilihan skor ${ability.label} tidak valid atau sudah dipakai ability lain.`, selector: `#character-form select[data-ability-pick='${ability.id}']` };
+      }
+      used.add(index);
+      const expected = Number(values[index]);
+      const actual = Number(baseAbilityScores[ability.id] || 0);
+      if (actual !== expected) {
+        return {
+          message: `Skor ${ability.label} harus sama dengan hasil dropdown (${expected}). Manual edit hanya untuk Owner.`,
+          selector: `#character-form [name='ability-${ability.id}']`
+        };
+      }
+    }
+    return null;
   }
 
   function usedAbilityRollIndexes(exceptAbilityId = "") {
@@ -2357,9 +2807,9 @@
     </div>`;
   }
 
-  function renderAbilityValuePicker(abilityId, canEditStats) {
+  function renderAbilityValuePicker(abilityId, canUsePicker) {
     const values = currentAbilityRollValues();
-    if (!values.length || !canEditStats) return "";
+    if (!values.length || !canUsePicker) return "";
     const assignments = state.ui.abilityPickAssignments || {};
     const selectedIndex = assignments[abilityId];
     const used = new Set(usedAbilityRollIndexes(abilityId));
@@ -2382,7 +2832,7 @@
     } else {
       state.ui.abilityPickAssignments[abilityId] = index;
       const input = qs(`[name="ability-${abilityId}"]`, select.closest("#character-form") || document);
-      if (input && !input.disabled) input.value = String(values[index] || 10);
+      if (input) input.value = String(values[index] || 10);
     }
     updateAbilityPickAvailability(select.closest("#character-form"));
     updateCharacterBuilderGuide();
@@ -2423,7 +2873,7 @@
 
   function renderClassSkillGrid(draft, canEditStats) {
     if (!draft.className) {
-      return `<div class="class-skill-wrap" data-skill-proficiency-root="1"><div class="dnd-check-grid class-skill-grid"><div class="skill-class-note span-12">Belum ada skill yang dipilih. Pilih class dulu agar daftar skill proficiency mengikuti aturan class D&amp;D 2014.</div></div></div>`;
+      return `<div class="dnd-check-grid class-skill-grid"><div class="skill-class-note span-12">Belum ada skill yang dipilih. Pilih class dulu agar daftar skill proficiency mengikuti aturan class D&amp;D 2014.</div></div>`;
     }
     const klass = classById(draft.className);
     const options = classSkillOptions(draft.className);
@@ -2433,7 +2883,7 @@
     const raceCount = breakdown.raceSelected.length;
     const classSelectedSet = new Set(breakdown.classSelected);
     const autoRaceSet = new Set(breakdown.automaticRace);
-    return `<div class="class-skill-wrap" data-skill-proficiency-root="1">
+    return `<div class="class-skill-wrap">
       <div class="skill-limit-banner">
         <strong>Skill proficiency class</strong>
         <span>${esc(klass.name)} wajib pilih ${esc(breakdown.classLimit)} skill dari daftar class. Rogue = 4; class lain mengikuti angka class masing-masing.</span>
@@ -2508,15 +2958,19 @@
       toast("Pilih atau buat room dulu sebelum generate map.");
       return;
     }
-    const type = qs("#map-type")?.value || "wilderness";
+    const type = qs("#map-type")?.value || "town";
     const size = clamp(qs("#map-size")?.value || 28, 16, 48);
     const detail = qs("#map-detail")?.value || "balanced";
     const name = qs("#map-name")?.value.trim() || DATA.mapTypes.find((m) => m.id === type)?.name || "Map";
     const seed = qs("#map-seed")?.value.trim() || Math.random().toString(36).slice(2, 8);
     const map = createProceduralMap({ type, size, detail, name, seed });
     map.roomId = state.activeRoomId || "";
+    map.visualStyleId = qs("#mapVisualStyle")?.value || "";
+    map.imageAspectRatio = qs("#map-aspect")?.value || "3:4";
+    map.notes = qs("#map-notes")?.value.trim() || "";
     state.maps.unshift(map);
     state.activeMapId = map.id;
+    if (currentRoom()) currentRoom().activeMapId = map.id;
     saveState(true);
     toast("Map detail dibuat dan disimpan.");
     render();
@@ -2529,39 +2983,23 @@
     const styleId = qs("#mapVisualStyle")?.value || (DATA.mapVisualStyles || [])[0]?.id || "town-square";
     const style = (DATA.mapVisualStyles || []).find((item) => item.id === styleId) || (DATA.mapVisualStyles || [])[0] || {};
     const seed = qs("#map-seed")?.value.trim() || "market, bridge, fountain, central plaza";
-    const notes = qs("#map-notes")?.value.trim() || "clear paths, good cover, landmark points, encounter ready";
+    const notes = qs("#map-notes")?.value.trim() || "large readable buildings, clear roads, cover, doors, chokepoints, landmark points";
     const aspect = qs("#map-aspect")?.value || "3:4";
-    const detailGuide = {
-      low: "clean simple battlemap, fewer props, fast readability",
-      balanced: "balanced prop density, readable movement space, clear cover",
-      high: "rich hand-drawn detail, readable architecture, textured surfaces",
-      cinematic: "beautiful illustrated battle map, atmospheric lighting, strong landmarks, encounter ready"
-    };
-    const typeGuide = {
-      town: "medieval fantasy town district with central plaza, fountain, market stalls, surrounding buildings, bridges, walls, alleys, and open encounter space",
-      forest: "fantasy forest battlemap with paths, ruins or stones, tree clusters, cover, clearings, and tactical movement lanes",
-      dungeon: "dungeon battlemap with stone rooms, corridors, doors, pillars, stair access, cover, and clear tactical zones",
-      river: "river crossing battlemap with bridge, banks, shallow water, carts or crates, side paths, and ambush positions",
-      tavern: "tavern or inn battlemap with tables, kitchen, hearth, stairs, side rooms, entrances, and indoor encounter paths",
-      uploaded: "battle-ready fantasy map"
-    };
-    const baseQuality = [
-      "top-down orthographic fantasy Dungeons & Dragons 5e battle map",
-      "illustrated printable battlemat style",
-      "subtle square grid overlay integrated into the art",
-      "clear walkable zones, chokepoints, entrances, and cover",
-      "no labels, no text, no title, no watermark, no UI",
-      "detailed but readable for tabletop play"
-    ];
+    const director = window.DND2014_MAP_AI;
+    if (director && typeof director.buildPrompt === "function") {
+      return director.buildPrompt({ type, detail, size, style, seed, notes, aspect });
+    }
     return [
-      style.prompt || "top-down fantasy battle map",
-      typeGuide[type] || "fantasy battlemap",
-      detailGuide[detail] || detailGuide.high,
+      "Generate one top-down orthographic fantasy Dungeons & Dragons 2014 battle map image",
+      "readable tabletop scale, not tiny, not a city satellite view",
+      "large clear rooms/buildings/roads, big landmark zones, visible paths, cover, entrances, and chokepoints",
+      "gridless base art, NO grid lines, NO square marks; the app will add a precise VTT grid overlay",
+      style.prompt || "hand-drawn parchment fantasy battlemap style",
+      `map type: ${type}`,
       `scene focus: ${seed}`,
       `gm notes: ${notes}`,
-      `preferred aspect ratio: ${aspect}`,
-      `grid target around ${size} by ${size} squares`,
-      ...baseQuality
+      `aspect ratio: ${aspect}`,
+      `target grid around ${size} by ${size} squares`
     ].filter(Boolean).join(". ");
   }
 
@@ -2575,7 +3013,7 @@
       return;
     }
     if (!imageApiUrl) {
-      toast("Endpoint gambar belum tersedia.");
+      toast("Fitur gambar AI belum siap.");
       return;
     }
 
@@ -2597,31 +3035,41 @@
       if (!response.ok || !data.ok || !data.image) {
         throw new Error(data.error || data.detail || "Generate gambar map gagal.");
       }
+      const type = qs("#map-type")?.value || "town";
+      const size = clamp(Number(qs("#map-size")?.value || 32), 16, 48);
+      const seed = qs("#map-seed")?.value.trim() || "ai";
+      const detail = qs("#map-detail")?.value || "high";
+      const logicLayer = createProceduralMap({ type, size, detail: detail === "cinematic" ? "balanced" : detail, name, seed });
       const map = {
         id: uid("map"),
+
         roomId: state.activeRoomId,
         name,
-        type: qs("#map-type")?.value || "town",
-        size: clamp(Number(qs("#map-size")?.value || 32), 16, 48),
-        seed: qs("#map-seed")?.value.trim() || "ai",
-        detail: qs("#map-detail")?.value || "high",
+        type,
+        size,
+        seed,
+        detail,
         image: data.image,
-        features: [],
+        tiles: logicLayer.tiles || [],
+        features: logicLayer.features || [],
         npcs: [],
-        notes: qs("#map-notes")?.value.trim() || "Map AI untuk encounter. Gunakan area penting, cover, pintu, dan landmark sebagai panduan GM.",
+        notes: qs("#map-notes")?.value.trim() || "Map AI gridless dengan VTT grid presisi. Collision layer dibuat dari Map Director agar token tidak ditempatkan di area blokir.",
         imagePrompt: prompt,
         imageAspectRatio: qs("#map-aspect")?.value || "3:4",
+        visualStyleId: qs("#mapVisualStyle")?.value || "",
         imageModel: data.model || "",
+        collisionSource: "map-director-procedural-layer",
         createdAt: nowIso()
       };
       state.maps.unshift(map);
       state.activeMapId = map.id;
+      if (currentRoom()) currentRoom().activeMapId = map.id;
       saveState(true);
       toast("Gambar map AI berhasil dibuat.");
       render();
     } catch (error) {
       console.error("DND image map error:", error);
-      toast("Generate gambar AI gagal: " + (error?.message || "cek console."));
+      toast("Generate gambar AI gagal: " + (error?.message || "coba ulang."));
     }
   }
 
@@ -2700,9 +3148,10 @@
       seed: "upload",
       detail: "uploaded",
       roomId: state.activeRoomId || "",
-      tiles: [],
+      tiles: Array.from({ length: 32 }, () => Array.from({ length: 32 }, () => "floor")),
       features: [],
       npcs: [],
+      collisionSource: "upload-open-layer",
       image: state.mapUploadDraft,
       imageName: state.mapUploadDraftName || "uploaded-map",
       notes: qs("#map-notes")?.value.trim() || "Map upload GM.",
@@ -2711,6 +3160,7 @@
     };
     state.maps.unshift(map);
     state.activeMapId = map.id;
+    if (currentRoom()) currentRoom().activeMapId = map.id;
     state.mapUploadDraft = "";
     state.mapUploadDraftName = "";
     saveState(true);
@@ -2950,6 +3400,7 @@
     if (!confirm("Hapus map " + map.name + "?")) return;
     state.maps = state.maps.filter((m) => m.id !== map.id);
     state.activeMapId = roomMaps(state.activeRoomId)[0]?.id || "";
+    if (currentRoom()) currentRoom().activeMapId = state.activeMapId;
     saveState(true);
     render();
   }
@@ -2972,6 +3423,7 @@
     const voiceOn = !!state.campaign.voiceExternal;
     const text = qs("#session-dialogue-text")?.value.trim() || "";
     const speaker = qs("#session-speaker")?.value.trim() || (isGm() ? "GM / NPC" : activeCharacter()?.name || user.name);
+    if (!isGm() && !canTakeGameAction("dialog")) return;
     if (mode === "offline") {
       toast("Mode offline tidak wajib input dialog. Ubah ke online kalau ingin log narasi.");
       return;
@@ -3036,10 +3488,48 @@
       toast("Pilih NPC dulu sebelum klik map.");
       return;
     }
+    if (mapCellBlocked(map, Number(tileX), Number(tileY))) {
+      toast("Tile ini tertutup collision layer (tembok/batu/air/pohon besar). Pilih tile kosong agar token tidak menembus objek.");
+      return;
+    }
     map.npcs = map.npcs || [];
     map.npcs.push({ id: uid("pos"), npcId: npc.id, x: tileX, y: tileY });
     saveState(true);
     render();
+  }
+
+
+
+  function placeOwnCharacterOnMap(tileX, tileY) {
+    if (isGm()) return false;
+    if (!canTakeGameAction("move token")) return false;
+    const map = activeMap();
+    const character = activeCharacter();
+    if (!map || !character) {
+      toast("Pilih karakter aktif dulu sebelum menggerakkan token.");
+      return false;
+    }
+    if (!characterBelongsToUser(character)) {
+      toast("Player hanya boleh menggerakkan karakter miliknya sendiri.");
+      return false;
+    }
+    if (mapCellBlocked(map, Number(tileX), Number(tileY))) {
+      toast("Tile ini terhalang collision layer. Pilih area kosong.");
+      return false;
+    }
+    map.characters = Array.isArray(map.characters) ? map.characters : [];
+    const existing = map.characters.find((token) => token.characterId === character.id);
+    if (existing) {
+      existing.x = Number(tileX);
+      existing.y = Number(tileY);
+      existing.updatedAt = nowIso();
+    } else {
+      map.characters.push({ id: uid("charpos"), characterId: character.id, x: Number(tileX), y: Number(tileY), updatedAt: nowIso() });
+    }
+    saveState(true);
+    render();
+    toast("Token karakter dipindahkan.");
+    return true;
   }
 
   function gmAdjustCharacter(characterId) {
@@ -3174,7 +3664,7 @@
       return "NPC sebaiknya punya fungsi cerita: pemberi quest, saksi, penjaga, pedagang, rival, atau penyimpan rahasia. Catat motivasi, informasi yang diketahui, dan hubungan NPC dengan room campaign.";
     }
     if (q.includes("map") || q.includes("gambar")) {
-      return "Map bisa dibuat dengan grid prosedural, upload gambar GM, atau endpoint gambar AI jika server dipasang API key. Untuk offline table, pastikan layout punya grid jelas, area masuk, penghalang, titik interaksi, dan catatan GM.";
+      return "Map bisa dibuat dari grid, upload gambar GM, atau gambar AI. Pastikan layout punya grid jelas, area masuk, penghalang, titik interaksi, dan catatan GM.";
     }
     if (q.includes("combat") || q.includes("serang") || q.includes("attack") || q.includes("inisiatif") || q.includes("initiative")) {
       return "Combat SRD 5.1: round sekitar 6 detik, giliran berisi movement, action, bonus action jika tersedia, reaction jika trigger muncul, dan interaksi ringan. Attack roll adalah d20 + modifier + proficiency jika proficient; kena jika total mencapai AC target.";
@@ -3248,15 +3738,29 @@
   }
 
   function render() {
+    if (bootingFromSql) {
+        app.innerHTML = `
+            <div class="dnd-panel glass-card p-6" style="margin: 40px auto; max-width: 800px; text-align: center;">
+                <h2 style="margin-bottom: 20px;">Memuat data karakter...</h2>
+                <div class="loading-skeleton" style="height: 120px; border-radius: 8px; margin-bottom: 16px;"></div>
+                <div class="loading-skeleton" style="height: 80px; border-radius: 8px; margin-bottom: 16px;"></div>
+                <div class="loading-skeleton" style="height: 200px; border-radius: 8px;"></div>
+            </div>
+        `;
+        return;
+    }
+
     enforcePlayerStartLocation();
     const user = currentUser();
     const char = activeCharacter();
+    const insideGame = !!(state.ui.lobbyInsideRoom && currentRoom());
     const tabs = [
       ["lobby", "Lobby"],
       ["character", "Character"],
       ["map", "Map"],
       ["dice", "Dice"],
       ["gm", "GM Screen"],
+      ...(userIsOwner(user) ? [["database", "Database"]] : []),
       ["compendium", "Compendium"],
       ["ai", "Rule AI"]
     ];
@@ -3268,25 +3772,28 @@
       </section>
 
       <section class="dnd-app-grid">
-        <div class="dnd-appbar">
+        <div class="dnd-appbar ${insideGame ? "is-in-game" : ""}">
           <div>
-            <strong>${esc(state.campaign.name)}</strong>
+            <strong>${esc(insideGame ? (currentRoom()?.name || state.campaign.name) : state.campaign.name)}</strong>
             <small>${user ? esc(user.name) + " sebagai " + esc(displayGameRole(user)) : "Belum login"} | Last save: ${state.campaign.lastSaved ? new Date(state.campaign.lastSaved).toLocaleString("id-ID") : "baru"}</small>
           </div>
           <div class="dnd-actions">
+            ${insideGame ? `<button class="dnd-btn danger" data-action="room-back-lobby">Keluar Game</button>` : ""}
             ${user ? `<button class="dnd-btn" data-action="website-logout">Logout website</button>` : `<button class="dnd-btn primary" data-action="website-login">Login Website</button><button class="dnd-btn" data-action="website-register">Daftar</button>`}
             ${!user ? `` : `<span class="dnd-pill ${displayGameRole(user) === "GM" ? "good" : "warn"}">${esc(displayGameRole(user))} aktif</span>`}
-            <button class="dnd-btn" data-action="export-save">Export save</button>
-            <button class="dnd-btn" data-action="import-save">Import</button>
+            ${!insideGame && userIsOwner(user) ? `<button class="dnd-btn owner-db-btn" data-action="tab" data-tab="database">Database</button>` : ""}
+            ${!insideGame ? `<button class="dnd-btn" data-action="export-save">Export save</button><button class="dnd-btn" data-action="import-save">Import</button>` : ""}
           </div>
         </div>
 
-        <nav class="dnd-tabs" aria-label="DnD table tabs">
+        ${renderAnnouncementBar(user)}
+
+        ${insideGame ? `<div class="in-game-nav-hidden-note"><span>Mode permainan aktif</span><small>Menu utama disembunyikan. Gunakan Keluar Game untuk kembali ke tampilan utama.</small></div>` : `<nav class="dnd-tabs" aria-label="DnD table tabs">
           ${tabs.map(([id, label]) => {
             const disabled = user && !isGm() && (id === "map" || id === "dice") && !characterIsReady(char);
             return `<button class="dnd-tab ${state.ui.tab === id ? "is-active" : ""}" ${disabled ? "disabled" : ""} data-action="tab" data-tab="${id}">${label}</button>`;
           }).join("")}
-        </nav>
+        </nav>`}
 
         <section class="dnd-panel">
           ${renderTab()}
@@ -3300,15 +3807,80 @@
     afterRender();
   }
 
+  function renderAnnouncementBar(user) {
+    const text = String(state.campaign.announcementText || "Selamat bermain. Owner bisa menulis info bug, jadwal, atau maintenance di sini.").trim();
+    return `<div class="dnd-announcement-strip" aria-label="Announcement owner">
+      <span class="announcement-label">Announcement</span>
+      <div class="announcement-viewport"><div class="announcement-track"><span>${esc(text)}</span><span>${esc(text)}</span></div></div>
+      ${userIsOwner(user) ? `<button class="dnd-btn mini" data-action="edit-announcement">Edit Owner</button>` : ""}
+    </div>`;
+  }
+
   function renderTab() {
     const tab = state.ui.tab || "lobby";
     if (tab === "character") return renderCharacterTab();
     if (tab === "map") return renderMapTab();
     if (tab === "dice") return renderDiceTab();
     if (tab === "gm") return renderGmTab();
+    if (tab === "database") return renderOwnerDatabaseTab();
     if (tab === "compendium") return renderCompendiumTab();
     if (tab === "ai") return renderAiTab();
     return renderLobbyTab();
+  }
+
+  function renderOwnerDatabaseTab() {
+    const user = currentUser();
+    if (!userIsOwner(user)) {
+      return `<div class="map-empty"><div><h2>Database Owner</h2><p>Panel ini hanya bisa dibuka Owner.</p></div></div>`;
+    }
+    const accounts = (state.accounts || []).filter((account) => account?.source === "website");
+    const characters = state.characters || [];
+    const accountCards = accounts.length ? accounts.map((account) => {
+      const owned = characters.filter((character) => character.ownerId === account.id || String(character.websiteUserId || "") === String(account.websiteUserId || ""));
+      const activeGm = userHasGmPower(account) && !userIsOwner(account);
+      const selectedRole = userIsOwner(account) ? "owner" : (activeGm ? "gm" : "player");
+      return `<article class="owner-db-row" data-owner-account-row="${esc(account.id)}">
+        <div class="owner-db-main">
+          <strong>${esc(account.name || "Akun")}</strong>
+          <small>${esc(account.email || "-")} • ID website: ${esc(account.websiteUserId || "-")} • Karakter: ${esc(owned.length)}</small>
+          <span class="dnd-pill ${activeGm || userIsOwner(account) ? "good" : ""}">${esc(userIsOwner(account) ? "Owner" : selectedRole.toUpperCase())}${selectedRole === "gm" ? " • sampai " + esc(gmTimerLabel(account.gmExpiresAt || "")) : ""}</span>
+        </div>
+        <div class="owner-db-controls">
+          <label>Role</label>
+          <select data-owner-role ${userIsOwner(account) ? "disabled" : ""}>
+            <option value="player" ${selectedRole === "player" ? "selected" : ""}>Player</option>
+            <option value="gm" ${selectedRole === "gm" ? "selected" : ""}>GM</option>
+          </select>
+          <label>Timer GM / hari</label>
+          <input type="number" min="0" max="3650" value="0" data-owner-gm-days placeholder="0 = tanpa timer" ${userIsOwner(account) ? "disabled" : ""}>
+          <button class="dnd-btn primary" data-action="owner-db-apply-role" data-account-id="${esc(account.id)}" ${userIsOwner(account) ? "disabled" : ""}>Simpan Role</button>
+        </div>
+      </article>`;
+    }).join("") : `<p class="dnd-muted">Belum ada akun website tersinkron di campaign ini.</p>`;
+
+    const characterCards = characters.length ? characters.map((character) => {
+      const owner = accounts.find((account) => account.id === character.ownerId || String(account.websiteUserId || "") === String(character.websiteUserId || ""));
+      return `<article class="owner-db-character">
+        <div>
+          <strong>${esc(character.name || "Tanpa nama")}</strong>
+          <small>${esc(effectiveRaceName(character))} • ${esc(classById(character.className).name)} Lv ${esc(character.level || 1)} • Owner: ${esc(owner?.name || character.ownerId || "Unknown")}</small>
+          <span>HP ${esc(character.hpCurrent || 0)}/${esc(character.hpMax || 0)} • AC ${esc(character.ac || 10)} • Skill: ${esc((character.skills || []).length)}</span>
+        </div>
+        <div class="owner-db-character-actions">
+          <button class="dnd-btn primary" data-action="owner-db-edit-character" data-character-id="${esc(character.id)}">Edit Detail</button>
+          <button class="dnd-btn danger" data-action="owner-db-delete-character" data-character-id="${esc(character.id)}">Hapus</button>
+        </div>
+      </article>`;
+    }).join("") : `<p class="dnd-muted">Belum ada karakter tersimpan.</p>`;
+
+    return `<div class="dnd-section-title owner-db-title">
+      <div><h2>Database Owner</h2><p>Lihat akun player, karakter milik mereka, edit/hapus karakter, dan ubah role Player ↔ GM dengan timer opsional.</p></div>
+      <div class="dnd-actions"><button class="dnd-btn" data-action="owner-db-refresh">Sync Database</button></div>
+    </div>
+    <div class="owner-db-grid">
+      <section class="dnd-card owner-db-card"><h3>Akun Player / GM</h3>${accountCards}</section>
+      <section class="dnd-card owner-db-card"><h3>Karakter Campaign</h3>${characterCards}</section>
+    </div>`;
   }
 
   function roomScopedEntries(listName) {
@@ -3394,7 +3966,7 @@
       <section class="dnd-card dashboard-main-card">
         <div class="dashboard-title-row">
           <div><span class="lobby-kicker">Player View</span><h3>Meja Karakter</h3></div>
-          <button class="dnd-btn primary" data-action="tab" data-tab="character">Buat / Edit Karakter</button>
+          <span class="dnd-pill warn">Sheet read-only saat di dalam game</span>
         </div>
         ${char ? `<div class="player-sheet-preview">
           <div class="char-avatar big">${esc(initials(char.name))}</div>
@@ -3420,6 +3992,195 @@
     </div>`;
   }
 
+  function activeRoomMap(room = currentRoom()) {
+    const maps = roomMaps(room?.id || state.activeRoomId);
+    const preferredId = room?.activeMapId || state.activeMapId || "";
+    const map = maps.find((item) => item.id === preferredId) || maps[0] || null;
+    if (map) {
+      state.activeMapId = map.id;
+      if (room) room.activeMapId = map.id;
+    }
+    return map;
+  }
+
+  function setRoomActiveMap(mapId) {
+    const room = currentRoom();
+    const map = roomMaps(room?.id || state.activeRoomId).find((item) => item.id === mapId);
+    if (!map) return toast("Map tidak ditemukan di room ini.");
+    if (!isGm()) return toast("Hanya GM yang memilih map aktif untuk semua player.");
+    state.activeMapId = map.id;
+    if (room) {
+      room.activeMapId = map.id;
+      room.lastActiveAt = nowIso();
+    }
+    saveState(true);
+    render();
+    toast("Map aktif room diperbarui untuk GM dan Player.");
+  }
+
+  function activeMap() {
+    return activeRoomMap(currentRoom());
+  }
+
+  function currentTurnCharacter(room = currentRoom()) {
+    if (!room?.turn?.activeCharacterId) return null;
+    return roomCharacters(room.id).find((character) => character.id === room.turn.activeCharacterId) || null;
+  }
+
+  function characterBelongsToUser(character, user = currentUser()) {
+    if (!character || !user) return false;
+    return character.ownerId === user.id
+      || character.ownerName === user.name
+      || String(character.websiteUserId || "") === String(user.websiteUserId || "");
+  }
+
+  function playerHasCurrentTurn() {
+    if (isGm()) return true;
+    const room = currentRoom();
+    const active = currentTurnCharacter(room);
+    return !!active && characterBelongsToUser(active);
+  }
+
+  function canTakeGameAction(label = "aksi") {
+    if (isGm()) return true;
+    const room = currentRoom();
+    if (!room) {
+      toast("Masuk room dulu sebelum melakukan aksi permainan.");
+      return false;
+    }
+    const active = currentTurnCharacter(room);
+    if (!active) {
+      toast("Belum ada giliran aktif. Tunggu GM menentukan giliran terlebih dahulu.");
+      return false;
+    }
+    if (!characterBelongsToUser(active)) {
+      toast(`Belum giliranmu. Giliran aktif: ${active.name || "karakter lain"}.`);
+      return false;
+    }
+    return true;
+  }
+
+  function setRoomTurnFromControl() {
+    if (!isGm()) return toast("Hanya GM yang mengatur giliran.");
+    const room = currentRoom();
+    if (!room) return toast("Pilih room dulu.");
+    const characterId = qs("#room-turn-character")?.value || "";
+    if (!room.turn) room.turn = { round: 1, activeCharacterId: "" };
+    room.turn.activeCharacterId = characterId;
+    room.turn.updatedAt = nowIso();
+    room.turn.updatedBy = currentUser()?.name || "GM";
+    room.lastActiveAt = nowIso();
+    saveState(true);
+    render();
+    toast(characterId ? "Giliran aktif diperbarui." : "Giliran dikosongkan. Player tidak bisa melakukan aksi.");
+  }
+
+  function nextRoomTurn() {
+    if (!isGm()) return toast("Hanya GM yang mengatur giliran.");
+    const room = currentRoom();
+    if (!room) return toast("Pilih room dulu.");
+    const chars = roomCharacters(room.id).filter(characterIsReady);
+    if (!chars.length) return toast("Belum ada karakter siap di room ini.");
+    if (!room.turn) room.turn = { round: 1, activeCharacterId: "" };
+    const index = chars.findIndex((item) => item.id === room.turn.activeCharacterId);
+    const nextIndex = index >= 0 ? (index + 1) % chars.length : 0;
+    if (index >= 0 && nextIndex === 0) room.turn.round = clamp((room.turn.round || 1) + 1, 1, 999);
+    room.turn.activeCharacterId = chars[nextIndex].id;
+    room.turn.updatedAt = nowIso();
+    room.turn.updatedBy = currentUser()?.name || "GM";
+    room.lastActiveAt = nowIso();
+    saveState(true);
+    render();
+    toast(`Giliran: ${chars[nextIndex].name}.`);
+  }
+
+  function clearRoomTurn() {
+    if (!isGm()) return toast("Hanya GM yang mengatur giliran.");
+    const room = currentRoom();
+    if (!room) return toast("Pilih room dulu.");
+    room.turn = { round: room.turn?.round || 1, activeCharacterId: "", updatedAt: nowIso(), updatedBy: currentUser()?.name || "GM" };
+    room.lastActiveAt = nowIso();
+    saveState(true);
+    render();
+    toast("Giliran dikunci. Player hanya bisa melihat sheet/stat/item.");
+  }
+
+
+
+
+  function renderInGameActionLockBanner() {
+    if (isGm()) return "";
+    const room = currentRoom();
+    const active = currentTurnCharacter(room);
+    const ownTurn = playerHasCurrentTurn();
+    const message = !active
+      ? "Menunggu GM menentukan giliran. Player hanya bisa melihat sheet, stat, item, map, dan log."
+      : ownTurn
+        ? `Giliranmu aktif: ${active.name}. Kamu boleh roll dice, skill, dialog aksi, dan menggerakkan token sendiri.`
+        : `Bukan giliranmu. Giliran aktif: ${active.name}. Kamu hanya bisa melihat data karakter, item, map, dan log.`;
+    return `<section class="turn-lock-banner ${ownTurn ? "can-act" : "is-locked"}"><strong>${ownTurn ? "Giliranmu" : "Action terkunci"}</strong><span>${esc(message)}</span></section>`;
+  }
+
+  function renderRoomTurnPanel(gmView) {
+    const room = currentRoom();
+    if (!room) return "";
+    const chars = roomCharacters(room.id).filter(characterIsReady);
+    const active = currentTurnCharacter(room);
+    const round = room.turn?.round || 1;
+    const options = chars.map((character) => `<option value="${esc(character.id)}" ${active?.id === character.id ? "selected" : ""}>${esc(character.name)} — ${esc(character.ownerName || "Player")}</option>`).join("");
+    if (gmView) {
+      return `<section class="dnd-card turn-panel gm-turn-panel">
+        <div class="dnd-section-title compact-title"><div><h3>Turn Controller 5e</h3><p>GM menentukan siapa yang boleh action. Player lain otomatis terkunci.</p></div><span class="dnd-pill good">Round ${esc(round)}</span></div>
+        <div class="turn-control-grid">
+          <label>Giliran aktif<select id="room-turn-character"><option value="">-- Kunci semua player --</option>${options}</select></label>
+          <button class="dnd-btn primary" data-action="room-turn-set">Set Giliran</button>
+          <button class="dnd-btn good" data-action="room-turn-next">Next Turn</button>
+          <button class="dnd-btn danger" data-action="room-turn-clear">Kunci Action</button>
+        </div>
+        <p class="dnd-muted">Sesuai alur D&amp;D 2014/5e: saat combat, tiap karakter hanya beraksi pada gilirannya. Di luar giliran, player tetap boleh melihat sheet/stat/item.</p>
+      </section>`;
+    }
+    return `<section class="dnd-card turn-panel player-turn-panel">
+      <div class="dnd-section-title compact-title"><div><h3>Giliran Saat Ini</h3><p>${active ? esc(active.name) : "GM belum memilih giliran."}</p></div><span class="dnd-pill ${playerHasCurrentTurn() ? "good" : "warn"}">${playerHasCurrentTurn() ? "Boleh action" : "Read-only"}</span></div>
+      <p class="dnd-muted">${active ? `Round ${esc(round)} • dikontrol GM.` : "Saat belum ada giliran aktif, semua aksi player dikunci."}</p>
+    </section>`;
+  }
+
+  function renderRoomMapPanel(gmView) {
+    const room = currentRoom();
+    if (!room) return "";
+    const maps = roomMaps(room.id);
+    const map = activeRoomMap(room);
+    const mapBody = map?.image
+      ? renderImageMapBody(map)
+      : map
+        ? `<canvas id="dnd-map-canvas" width="960" height="960" aria-label="DnD room map canvas"></canvas><div class="map-help">${gmView ? "GM bisa menaruh NPC. Player hanya bisa memindahkan token miliknya saat giliran aktif." : "Map pilihan GM. Token player hanya bisa bergerak saat giliran aktif."}</div>`
+        : `<div class="map-empty"><div><h3>Belum ada map aktif</h3><p>GM perlu generate/upload map, lalu pilih sebagai map aktif room.</p></div></div>`;
+    const selector = gmView ? `<select id="room-active-map-select" class="dnd-btn">${maps.map((m) => `<option value="${esc(m.id)}" ${map?.id === m.id ? "selected" : ""}>${esc(m.name)}</option>`).join("")}</select>` : `<span class="dnd-pill warn">Map GM: ${esc(map?.name || "belum dipilih")}</span>`;
+    return `<section class="dnd-card in-game-map-card">
+      <div class="dnd-section-title compact-title"><div><h3>Map Aktif Room</h3><p>${gmView ? "GM memilih satu map; pilihan ini tampil di semua layar player dan GM." : "Map mengikuti pilihan GM dan sinkron ke semua player."}</p></div><div class="dnd-actions">${selector}</div></div>
+      <div class="map-frame in-room-map-frame">${mapBody}</div>
+      ${gmView ? `<details class="compact-details in-game-map-tools"><summary>Generate / Upload / NPC Map</summary>${renderMapControls(map)}</details>` : ""}
+    </section>`;
+  }
+
+  function renderRoomDicePanel(gmView) {
+    const dice = [2, 3, 4, 6, 8, 10, 12, 20, 100];
+    const charOptions = ownedCharacters().map((c) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
+    const locked = !gmView && !playerHasCurrentTurn();
+    return `<section class="dnd-card in-game-dice-card ${locked ? "is-locked" : ""}">
+      <div class="dnd-section-title compact-title"><div><h3>Dadu Lengkap</h3><p>d2, d3, d4, d6, d8, d10, d12, d20, dan d100 percentile.</p></div><span class="dnd-pill ${locked ? "warn" : "good"}">${locked ? "Terkunci" : "Siap roll"}</span></div>
+      <div class="dice-stage compact-dice"><div><div id="dice-face" class="dice-face">${esc(state.ui.diceResult || 20)}</div><p id="dice-label" class="dnd-muted" style="text-align:center;margin:.75rem 0 0">${esc(state.ui.diceLabel || "d20")}</p><p id="dice-detail" class="dice-detail">${esc(state.ui.diceDetail || "single die")}</p></div></div>
+      <div class="dnd-actions dice-all-buttons">${dice.map((sides) => `<button class="dnd-btn primary" data-action="roll-dice" data-sides="${sides}" data-label="d${sides}" ${locked ? "disabled" : ""}>d${sides}</button>`).join("")}</div>
+      <div class="dnd-form-grid in-game-skill-roll">
+        <div class="dnd-field"><label>Character</label><select id="skill-character" ${locked ? "disabled" : ""}>${charOptions}</select></div>
+        <div class="dnd-field"><label>Skill</label><select id="skill-select" ${locked ? "disabled" : ""}>${DATA.skills.map((skill) => `<option value="${esc(skill.id)}">${esc(skill.label)}</option>`).join("")}</select></div>
+      </div>
+      <button class="dnd-btn good" data-action="roll-skill" ${locked ? "disabled" : ""}>Roll skill</button>
+      <div class="roll-log in-game-roll-log">${state.rollLog.slice(0, 6).map((r) => `<div class="log-row"><span><strong>${esc(r.label)}</strong><small>${esc(r.detail)} | ${esc(r.user)}</small></span><span class="dnd-pill good">${esc(r.total)}</span></div>`).join("") || `<p class="dnd-muted">Belum ada roll.</p>`}</div>
+    </section>`;
+  }
+
   function renderGmRoomDashboard() {
     const maps = roomMaps(state.activeRoomId);
     const npcs = roomNpcs(state.activeRoomId);
@@ -3430,17 +4191,19 @@
         <div class="dashboard-title-row">
           <div><span class="lobby-kicker">GM View</span><h3>Control Room</h3></div>
           <div class="dashboard-actions">
-            <button class="dnd-btn good" data-action="gm-quick-map">Map Dadakan</button>
-            <button class="dnd-btn" data-action="tab" data-tab="gm">GM Screen</button>
+            <span class="dnd-pill good">GM bebas mengatur room</span>
           </div>
         </div>
         <div class="gm-control-grid">
-          <button class="gm-control-card" data-action="tab" data-tab="map"><b>Setting Map</b><span>${esc(maps.length)} map aktif/tersimpan</span></button>
-          <button class="gm-control-card" data-action="tab" data-tab="gm"><b>NPC & Monster</b><span>${esc(npcs.length)} token/NPC room</span></button>
-          <button class="gm-control-card" data-action="tab" data-tab="gm"><b>Setting Item</b><span>${esc(items.length)} item dasar + custom</span></button>
-          <button class="gm-control-card" data-action="tab" data-tab="dice"><b>Dice & Check</b><span>Roll cepat untuk event</span></button>
+          <div class="gm-control-card"><b>Map Room</b><span>${esc(maps.length)} map aktif/tersimpan</span></div>
+          <div class="gm-control-card"><b>NPC & Monster</b><span>${esc(npcs.length)} token/NPC room</span></div>
+          <div class="gm-control-card"><b>Setting Item</b><span>${esc(items.length)} item dasar + custom</span></div>
+          <div class="gm-control-card"><b>Dice & Check</b><span>Dadu lengkap + skill check</span></div>
         </div>
       </section>
+      ${renderRoomTurnPanel(true)}
+      ${renderRoomMapPanel(true)}
+      ${renderRoomDicePanel(true)}
       <section class="dnd-card"><h3>Karakter di Room</h3>${characterSummaryCards(chars)}</section>
       ${renderEventLogPanel(true)}
       ${renderLobbyAiBox("AI Asisten GM")}
@@ -3461,12 +4224,60 @@
     </section>`;
   }
 
+
+  function renderRoomInsideTab(room, viewMode, user) {
+    const gmView = viewMode === "gm";
+    const charCount = roomCharacters(room.id).length;
+    const mapCount = roomMaps(room.id).length;
+    const npcCount = roomNpcs(room.id).length;
+    const playerNames = (room.playerNames || []).slice(0, 10);
+    const roomDashboard = gmView ? renderGmRoomDashboard() : renderPlayerRoomDashboard();
+    return `<section class="dnd-panel dungeon-room-inside-shell ${gmView ? "is-gm-room" : "is-player-room"}">
+      <div class="room-inside-head">
+        <button class="dnd-btn" data-action="room-back-lobby">← Kembali ke List Lobby</button>
+        <span class="dnd-pill ${gmView ? "good" : "warn"}">${esc(gmView ? "Tampilan GM" : "Tampilan Player")}</span>
+      </div>
+      ${renderOwnerEntrySwitcher(viewMode)}
+      ${renderInGameActionLockBanner()}
+      <section class="room-inside-hero">
+        <div>
+          <span class="lobby-kicker">Di Dalam Room</span>
+          <h2>${esc(room.name || "Campaign Room")}</h2>
+          <p>${esc(room.description || "Room campaign DnD 2014. Tampilan di dalam room dipisahkan dari daftar lobby supaya player dan GM tidak tercampur.")}</p>
+          <div class="room-inside-actions">
+            <button class="dnd-btn danger" data-action="room-back-lobby">Keluar Game</button>
+            <span class="dnd-pill ${gmView ? "good" : "warn"}">${gmView ? "GM mengatur sesi" : "Player mengikuti giliran"}</span>
+          </div>
+        </div>
+        <div class="room-inside-stat-grid">
+          <div><strong>${esc((room.playerNames || []).length)}/${esc(room.maxPlayers || 5)}</strong><span>Player</span></div>
+          <div><strong>${esc(charCount)}</strong><span>Karakter</span></div>
+          <div><strong>${esc(mapCount)}</strong><span>Map</span></div>
+          <div><strong>${esc(npcCount)}</strong><span>NPC</span></div>
+        </div>
+      </section>
+      <section class="dnd-card room-inside-info">
+        <div><b>GM</b><span>${esc(room.gmName || "GM")}</span></div>
+        <div><b>Mode</b><span>${esc(room.playMode || "offline")}</span></div>
+        <div><b>Level</b><span>${esc(room.partyLevelStart || 1)}-${esc(room.partyLevelEnd || room.partyLevelStart || 1)}</span></div>
+        <div><b>Kode</b><span>${esc(room.roomCode || "ROOM")}</span></div>
+        <div class="span-all"><b>Player masuk</b><span>${playerNames.length ? esc(playerNames.join(", ")) : "Belum ada player"}</span></div>
+        ${room.scheduleNote ? `<div class="span-all"><b>Jadwal</b><span>${esc(room.scheduleNote)}</span></div>` : ""}
+        ${room.safetyNote ? `<div class="span-all"><b>Catatan GM</b><span>${esc(room.safetyNote)}</span></div>` : ""}
+      </section>
+      ${roomDashboard}
+      ${gmView ? "" : `${renderRoomTurnPanel(false)}${renderRoomMapPanel(false)}${renderRoomDicePanel(false)}`}
+    </section>`;
+  }
+
   function renderLobbyTab() {
     normalizeRooms();
     const gm = canManageRooms();
     const active = currentRoom();
     const viewMode = visibleTableMode();
     const user = currentUser();
+    if (state.ui.lobbyInsideRoom && active) return renderRoomInsideTab(active, viewMode, user);
+    if (state.ui.lobbyInsideRoom && !active) state.ui.lobbyInsideRoom = false;
     const roomsHtml = state.rooms.length
       ? state.rooms.map((room) => {
           const joined = roomAccessAllowed(room);
@@ -3501,7 +4312,7 @@
               </div>
               <div class="room-actions">
                 ${room.hasPassword && !joined ? `<input id="roomPass-${room.id}" type="password" placeholder="Password room">` : ""}
-                <button class="dnd-btn primary" data-action="enter-room" data-room-id="${room.id}">${joined ? (selected ? "Sedang aktif" : "Masuk Lobby") : "Join Room"}</button>
+                <button class="dnd-btn primary room-play-btn" data-action="enter-room" data-room-id="${room.id}">▶ ${joined ? "Masuk / Enter / Play" : "Join & Play"}</button>
                 ${joined && !gm ? `<button class="dnd-btn" data-action="leave-room" data-room-id="${room.id}">Keluar</button>` : ""}
                 ${gm ? `<button class="dnd-btn danger" data-action="delete-room" data-room-id="${room.id}">Hapus</button>` : ""}
               </div>
@@ -3569,7 +4380,8 @@
         <strong>${esc(active.name)}</strong>
         <small>${esc(active.description || "Tidak ada deskripsi.")}</small>
         <div class="room-mini-actions">
-          <button class="dnd-btn primary" data-action="tab" data-tab="character">Karakter</button>
+          <button class="dnd-btn primary" data-action="enter-room" data-room-id="${active.id}">Masuk / Enter / Play</button>
+          <button class="dnd-btn" data-action="tab" data-tab="character">Karakter</button>
           <button class="dnd-btn" data-action="${gm ? "gm-quick-map" : "tab"}" ${gm ? "" : "data-tab=\"map\""}>Map</button>
         </div>
       </div>` : `<div class="dnd-current-room muted dungeon-current-room"><span>Room aktif</span><strong>Belum memilih room</strong><small>${gm ? "Buat room atau pilih room sebelum membuka pintu campaign." : "Pilih room agar karakter, map, NPC, chat, dan log tersimpan pada campaign yang benar."}</small></div>`;
@@ -3717,12 +4529,37 @@
     DATA.abilities.forEach((a) => {
       const input = form.querySelector(`[name="ability-${a.id}"]`);
       const fallback = abilityScoreValue(draft.baseAbilities, a.id, 0);
-      draft.baseAbilities[a.id] = clamp(input?.value ?? fallback, 0, 20);
+      draft.baseAbilities[a.id] = normalizeAbilityBaseValue(input?.value ?? fallback, userIsOwner(currentUser()));
     });
     draft.abilityChoices = qsa("select[name='abilityChoices']", form).map((el) => el.value).filter(Boolean);
     draft.abilityBonuses = effectiveAbilityBonuses(draft);
     draft.abilities = finalAbilityScores(draft.baseAbilities, draft);
     draft.skills = collectSkillSelectionsFromForm(form, draft);
+    draft.inspiration = Number(form.inspiration?.value || draft.inspiration || 0);
+    draft.hitDiceRemaining = Number(form.hitDiceRemaining?.value || draft.hitDiceRemaining || 1);
+
+    // Parse expertise
+    const expertise = [];
+    qsa("select[name^='expertise-']", form).forEach((el) => {
+      if (el.value) expertise.push(el.value);
+    });
+    draft.expertise = expertise;
+
+    // Parse attacks
+    const attacks = [];
+    const attackRows = qsa(".attack-row", form);
+    attackRows.forEach(row => {
+      const name = row.querySelector("[name='attack-name']")?.value.trim();
+      if (name) {
+        attacks.push({
+          name,
+          bonus: row.querySelector("[name='attack-bonus']")?.value || "+0",
+          damage: row.querySelector("[name='attack-damage']")?.value || "1d4"
+        });
+      }
+    });
+    draft.attacks = attacks.length ? attacks : (draft.attacks || []);
+
     draft.appearance = {
       hair: form.hair?.value || "",
       eyes: form.eyes?.value || "",
@@ -4000,7 +4837,6 @@
       <p>${esc(race?.description || "Belum ada race yang dipilih.")}</p>
       ${!draft.race ? `<p><strong>Subrace:</strong> Pilih race dulu.</p>` : subrace ? `<p><strong>Subrace:</strong> ${esc(subrace.note || subrace.name)}</p>` : `<p><strong>Subrace:</strong> Belum dipilih atau race ini tidak memakai pilihan subrace.</p>`}
       <div class="guide-two-cols">
-        <div><strong>Creature Type</strong><small>${esc(race?.creatureType || "Humanoid")}</small></div>
         <div><strong>Bonus ability</strong><small>${esc(abilityBonusSummary(draft))}</small></div>
         <div><strong>Skill dari ras</strong><small>${esc((raceExtension(draft.race).automaticSkills || []).map((id) => skillById(id)?.label || id).join(", ") || (raceSkillChoiceCount(draft) ? raceSkillChoiceCount(draft) + " skill bebas" : "0 skill"))}</small></div>
         <div><strong>Speed</strong><small>${esc(effectiveRaceSpeed(draft))} ft</small></div>
@@ -4026,10 +4862,8 @@
         <div><strong>Hit Die</strong><small>d${esc(klass.hitDie)}</small></div>
         <div><strong>Primary</strong><small>${esc(klass.primary || "-")}</small></div>
         <div><strong>Saving Throws</strong><small>${esc((klass.saves || []).map(abilityLabel).join(", ") || "-")}</small></div>
-        <div><strong>Armor Proficiencies</strong><small>${esc(klass.armor || "-")}</small></div>
-        <div><strong>Weapon Proficiencies</strong><small>${esc(klass.weapons || "-")}</small></div>
-        <div><strong>Tool Proficiencies</strong><small>${esc(klass.tools || "None")}</small></div>
-        ${klass.expertiseCount ? `<div><strong>Expertise</strong><small>${esc(klass.expertiseCount)} skill/tool (dari skill yang sudah dipilih)</small></div>` : ""}
+        <div><strong>Armor</strong><small>${esc(klass.armor || "-")}</small></div>
+        <div><strong>Gear</strong><small>${esc(klass.weapons || "-")}</small></div>
       </div>
       <strong>Fitur awal</strong>
       ${renderMiniList(klass.features, "Belum ada fitur.")}
@@ -4048,7 +4882,7 @@
         <div><strong>AC Preview</strong><small>${esc(computeAc(draft.inventory || [], draft.abilities || {}))}</small></div>
         <div><strong>Speed</strong><small>${esc(effectiveRaceSpeed(draft))} ft</small></div>
       </div>
-      <p><strong>Metode D&D 5E:</strong> standard array, roll 4d6 buang angka terendah, atau point buy. Tombol di kiri bisa langsung mengisi standard array atau me-roll 4d6 drop lowest, lalu angka tetap bisa diedit manual jika GM mengizinkan.</p>
+      <p><strong>Metode D&D 5E:</strong> player/GM memilih Standard Array atau Roll 4d6 drop lowest, lalu memasang hasilnya lewat dropdown. Input manual dikunci untuk player/GM; hanya Owner yang bisa koreksi manual.</p>
       <p><strong>Catatan:</strong> angka input adalah skor dasar. Bonus ras/subrace dihitung ke skor final, jadi jangan masukkan bonus dua kali.</p>
     </article>`;
 
@@ -4122,12 +4956,8 @@
     const draft = characterDraftFromForm(form);
     syncRaceDependentFields(form, draft);
     const canEditStats = form.dataset.canEditStats !== "0";
-    const skillHtml = renderClassSkillGrid(draft, canEditStats);
-    const skillRoot = qs("[data-skill-proficiency-root]", form) || qs(".class-skill-wrap", form) || qs(".class-skill-grid", form);
-    if (skillRoot) {
-      skillRoot.outerHTML = skillHtml;
-      qsa("[data-skill-proficiency-root], .class-skill-wrap", form).slice(1).forEach((node) => node.remove());
-    }
+    const skillWrap = qs(".class-skill-wrap", form) || qs(".class-skill-grid", form);
+    if (skillWrap) skillWrap.outerHTML = renderClassSkillGrid(draft, canEditStats);
     const selectedPackage = selectedStartingPackageFromList(packages, selectedStartId);
     const choiceArea = qs(".starting-equipment-choice-area", form);
     if (choiceArea) choiceArea.outerHTML = renderEquipmentChoiceControls(selectedPackage, draft.startingChoice?.choices || {}, !!form.startingPackage?.disabled);
@@ -4210,6 +5040,8 @@
       ? { ...baseDraft, ...state.ui.characterDraft, abilities: { ...(baseDraft.abilities || {}), ...(state.ui.characterDraft.abilities || {}) }, appearance: { ...(baseDraft.appearance || {}), ...(state.ui.characterDraft.appearance || {}) }, personalityTraits: [state.ui.characterDraft.personalityTraits?.[0] ?? baseDraft.personalityTraits?.[0] ?? "", state.ui.characterDraft.personalityTraits?.[1] ?? baseDraft.personalityTraits?.[1] ?? ""] }
       : baseDraft;
     const canEditStats = !c || isGm();
+    const canManualAbilityInput = userIsOwner(user);
+    const canUseAbilityPicker = !c || c?.ownerId === user.id || isGm() || canManualAbilityInput;
     const canEditStarting = !c || isGm() || c?.ownerId === user.id;
     const activeStep = currentCharacterStep();
     const startPackages = startingPackagesForClass(draft.className);
@@ -4223,6 +5055,7 @@
           <p>Buat karakter berurutan: Ras → Kelas → Ability Score → Deskripsi → Equipment. Panel kanan menjelaskan efek pilihan aktif.</p>
         </div>
         <div class="dnd-actions">
+          ${c ? `<button class="dnd-btn" data-action="clone-character">Clone Karakter</button>` : ""}
           <button class="dnd-btn" data-action="new-character">Karakter baru</button>
           <button class="dnd-btn primary" data-action="download-pdf">Download PDF</button>
         </div>
@@ -4246,14 +5079,16 @@
               <div class="dnd-form-grid">
                 <div class="dnd-field"><label>Class</label><select name="classNameField"><option value="" ${!draft.className ? "selected" : ""}>None — pilih class</option>${DATA.classes.map((k) => `<option value="${k.id}" ${draft.className === k.id ? "selected" : ""}>${k.name}</option>`).join("")}</select></div>
                 <div class="dnd-field"><label>Level</label><input name="level" type="number" min="1" max="20" value="${esc(draft.level)}"></div>
+
               </div>
             `)}
 
             ${renderCharacterStepPanel("abilities", activeStep, "Tentukan Skor Kemampuan", "Isi STR, DEX, CON, INT, WIS, dan CHA. Karakter baru mulai dari 0 sampai player memilih metode.", `
-              <p class="dnd-muted step-helper-text">Karakter baru dimulai dari 0. Pilih metode bersama GM: standard array, roll 4d6 buang angka terendah, atau point buy. Setelah skor dasar diisi, bonus ras/subrace masuk ke skor final.</p>
-              <div class="ability-roll-tools">
-                <button type="button" class="dnd-btn primary" data-action="ability-roll-array" data-mode="4d6">Roll 4d6 drop lowest</button>
-                <button type="button" class="dnd-btn" data-action="ability-roll-array" data-mode="standard">Tampilkan standard array</button>
+              <p class="dnd-muted step-helper-text">Karakter baru dimulai dari 0. Player/GM wajib memilih Standard Array atau Roll 4d6, lalu memasang skor lewat dropdown. Kotak angka dikunci agar tidak ada input manual; Owner tetap bebas koreksi manual.</p>
+              <div class="ability-roll-tools ${abilityRollLockedForPlayer() ? "is-locked" : ""}">
+                <button type="button" class="dnd-btn primary" data-action="ability-roll-array" data-mode="4d6" ${abilityRollLockedForPlayer() ? "disabled" : ""}>Roll 4d6 drop lowest</button>
+                <button type="button" class="dnd-btn" data-action="ability-roll-array" data-mode="standard" ${abilityRollLockedForPlayer() ? "disabled" : ""}>Tampilkan standard array</button>
+                ${abilityRollLockedForPlayer() ? `<small class="ability-roll-lock-note">Skor kemampuan sudah ditentukan. Player tidak bisa roll ulang; Owner tetap bisa melakukan koreksi dari akun Owner.</small>` : ""}
                 ${renderAbilityRollPool()}
               </div>
               <div class="stat-grid ability-assign-grid">
@@ -4261,7 +5096,9 @@
                   const baseValue = abilityScoreValue(draft.baseAbilities, a.id, abilityScoreValue(draft.abilities, a.id, 0));
                   const bonus = Number(effectiveAbilityBonuses(draft)[a.id] || 0);
                   const finalValue = previewAbilityScore(baseValue, bonus);
-                  return `<div class="dnd-field ability-assign-field"><label>${esc(a.label)} <span>skor dasar</span></label><input name="ability-${a.id}" type="number" min="0" max="20" value="${esc(baseValue)}" ${canEditStats ? "" : "disabled"}>${renderAbilityValuePicker(a.id, canEditStats)}<small class="ability-final-hint">${esc(abilityLiveDetailText(baseValue, bonus))}</small><small class="ability-purpose">${esc(abilityShortText(a.id))}</small></div>`;
+                  const maxScore = canManualAbilityInput ? 30 : 20;
+                  const manualAttr = canManualAbilityInput ? "" : "readonly data-ability-locked='1'";
+                  return `<div class="dnd-field ability-assign-field"><label>${esc(a.label)} <span>skor dasar</span></label><input name="ability-${a.id}" type="number" min="0" max="${maxScore}" inputmode="numeric" value="${esc(baseValue)}" ${manualAttr}>${renderAbilityValuePicker(a.id, canUseAbilityPicker)}<small class="ability-final-hint">${esc(abilityLiveDetailText(baseValue, bonus))}</small><small class="ability-purpose">${esc(abilityShortText(a.id))}</small></div>`;
                 }).join("")}
               </div>
             `)}
@@ -4270,6 +5107,8 @@
               <div class="dnd-form-grid">
                 <div class="dnd-field"><label>Background</label><select name="background"><option value="" ${!draft.background ? "selected" : ""}>None — pilih background</option>${DATA.backgrounds.map((b) => `<option value="${b.id}" ${draft.background === b.id ? "selected" : ""}>${esc(b.name)}</option>`).join("")}</select></div>
                 <div class="dnd-field"><label>Alignment</label><select name="alignment"><option value="" ${!draft.alignment ? "selected" : ""}>None — pilih alignment</option>${DATA.alignments.map((a) => `<option value="${a}" ${draft.alignment === a ? "selected" : ""}>${a}</option>`).join("")}</select></div>
+                <div class="dnd-field"><label>Inspiration</label><select name="inspiration"><option value="0" ${!draft.inspiration ? "selected" : ""}>No</option><option value="1" ${draft.inspiration ? "selected" : ""}>Yes</option></select></div>
+                <div class="dnd-field"><label>Hit Dice Sisa</label><input type="number" name="hitDiceRemaining" value="${esc(draft.hitDiceRemaining || 1)}" min="0" max="${esc(draft.level || 1)}"></div>
                 <div class="dnd-field span-12 character-photo-field">
                   <label>Foto karakter <span class="dnd-small-muted">JPG/PNG/JPEG · player max 5 MB · owner bebas sesuai limit server</span></label>
                   <div class="character-photo-row">
@@ -4291,7 +5130,7 @@
               ${renderDatalist("story-ideals-options", bgTemplate.ideals)}
               ${renderDatalist("story-bonds-options", bgTemplate.bonds)}
               ${renderDatalist("story-flaws-options", bgTemplate.flaws)}
-              <h3 style="margin:1rem 0 .35rem">Appearance</h3>
+              <h3 style="margin:1rem 0 .6rem">Appearance</h3>
               <div class="dnd-form-grid">
                 <div class="dnd-field"><label>Rambut</label><input name="hair" value="${esc(draft.appearance?.hair || "")}" placeholder="Hitam, pendek..."></div>
                 <div class="dnd-field"><label>Mata</label><input name="eyes" value="${esc(draft.appearance?.eyes || "")}" placeholder="Coklat, tajam..."></div>
@@ -4332,6 +5171,8 @@
               </div>
             `)}
             ${renderCharacterStepActions(activeStep)}
+
+
           </form>
         </div>
         <aside class="dnd-card character-builder-guide" id="character-builder-guide">
@@ -4344,179 +5185,231 @@
     `;
   }
 
-  function getPackContents(packName) {
-    const packs = {
-      "Dungeoneer's Pack": "backpack, crowbar, hammer, 10 pitons, 10 torches, tinderbox, 10 days of rations, waterskin, 50ft hempen rope",
-      "Explorer's Pack": "backpack, bedroll, mess kit, tinderbox, 10 torches, 10 days of rations, waterskin, 50ft hempen rope",
-      "Burglar's Pack": "backpack, 1000 ball bearings, 10ft string, bell, 5 candles, crowbar, hammer, 10 pitons, hooded lantern, 2 flasks of oil, 5 days of rations, tinderbox, waterskin, 50ft hempen rope",
-      "Scholar's Pack": "backpack, book of lore, bottle of ink, ink pen, 10 sheets of parchment, bag of sand, small knife",
-      "Diplomat's Pack": "chest, 2 map cases, fine clothes, bottle of ink, ink pen, lamp, 2 flasks of oil, 5 sheets of parchment, vial of perfume, sealing wax, soap",
-      "Entertainer's Pack": "backpack, bedroll, 2 costumes, 5 candles, 5 days of rations, waterskin, disguise kit",
-      "Priest's Pack": "backpack, blanket, 10 candles, tinderbox, alms box, 2 blocks of incense, censer, vestments, 2 days of rations, waterskin"
-    };
-    return packs[packName] || null;
-  }
-
-  function calculateAttackBonus(c, item) {
-    const prof = proficiencyBonus(c.level);
-    const isMelee = /sword|dagger|mace|axe|hammer|staff|spear/i.test(item);
-    const isFinesse = /dagger|rapier|shortsword/i.test(item);
-    const isRanged = /bow|crossbow|dart|sling/i.test(item);
-
-    let bonus = 0;
-    if (isMelee) {
-      const strMod = mod(c.abilities.str);
-      const dexMod = mod(c.abilities.dex);
-      bonus = isFinesse ? Math.max(strMod, dexMod) : strMod;
-    } else if (isRanged) {
-      bonus = mod(c.abilities.dex);
-    }
-
-    // Assume proficient with weapons in starting equipment
-    return signed(bonus + prof);
-  }
-
   function renderCharacterSheet(c) {
     const race = raceById(c.race);
     const klass = classById(c.className);
     const prof = proficiencyBonus(c.level);
     const languages = languageNames(c.languages || normalizeLanguageSelection(c.race, c.subrace, c.languageChoices || []).all);
-    const hitDice = `${c.level}d${klass.hitDie}`;
-
-    const featureData = {
-      "rage": "Masuk ke kondisi marah untuk mendapat resistance damage fisik dan bonus attack damage.",
-      "unarmored defense": "Mendapat bonus AC dari bonus ability tambahan saat tidak memakai armor.",
-      "spellcasting": "Bisa merapal mantra sesuai level dan slot mantra yang tersedia.",
-      "pact magic": "Sihir unik Warlock yang slotnya kembali penuh setelah short rest.",
-      "bardic inspiration": "Memberi bonus d6/d8 ke teman untuk membantu attack, check, atau save.",
-      "divine sense": "Mendeteksi kehadiran celestial, fiend, atau undead di sekitar.",
-      "lay on hands": "Menyembuhkan HP target dengan poin energi suci.",
-      "sneak attack": "Memberi bonus damage jika menyerang target yang terdistraksi.",
-      "cunning action": "Bisa Dash, Disengage, atau Hide sebagai bonus action.",
-      "second wind": "Memulihkan HP sendiri sebagai bonus action.",
-      "action surge": "Mendapat satu action tambahan dalam satu giliran.",
-      "martial arts": "Bisa menyerang tanpa senjata dengan damage lebih besar dan bonus action attack.",
-      "ki": "Memakai energi internal untuk fitur khusus Monk.",
-      "natural explorer": "Mendapat bonus navigasi dan survival di medan tertentu.",
-      "favored enemy": "Mendapat bonus track dan info tentang tipe musuh tertentu."
-    };
-
-    const traitList = [...effectiveRaceTraits(c), ...klass.features].map(t => {
-      const lowT = t.toLowerCase();
-      const detail = featureData[lowT] || DATA.traitDetails[lowT] || "";
-      return `<div class="trait-item"><strong>${esc(t)}</strong>${detail ? `<p class="dnd-small-muted">${esc(detail)}</p>` : ""}</div>`;
-    }).join("");
-
-    const inventoryList = (c.inventory || []).map(item => {
-      const contents = getPackContents(item);
-      return `<div class="inventory-item"><strong>${esc(item)}</strong>${contents ? `<p class="dnd-small-muted">Isi: ${esc(contents)}</p>` : ""}</div>`;
-    }).join("") || "Kosong";
-
-    const attacks = (c._computedAttacks || (c.inventory || [])
-      .filter(item => /sword|dagger|mace|axe|hammer|staff|spear|bow|crossbow|dart|sling/i.test(item))
-      .map(item => ({ name: item, bonus: calculateAttackBonus(c, item), damage: "1d8+2" })))
-      .map(atk => `
-              <div style="display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 8px; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <div style="font-size: 0.85rem; font-weight: 600;">${esc(atk.name)}</div>
-                <div style="font-size: 0.85rem; font-weight: bold; cursor: pointer; color: var(--dnd-highlight);" onclick="rollExpression('${esc(atk.bonus)}', '${esc(atk.name).replace(/'/g, "\\'")} Attack', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik roll attack">${esc(atk.bonus)}</div>
-                <div style="font-size: 0.85rem; cursor: pointer; color: var(--dnd-highlight);" onclick="rollExpression('${esc(atk.damage)}', '${esc(atk.name).replace(/'/g, "\\'")} Damage', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik roll damage">${esc(atk.damage)}</div>
-              </div>
-            `).join("") || "<p class='dnd-muted'>Belum ada senjata di inventory.</p>";
-
     return `
       <div class="sheet-header">
         <div class="avatar-medallion">${esc(initials(c.name))}</div>
         <div>
-          <div style="display:flex; justify-content:space-between; align-items:center">
-            <h2>${esc(c.name)}</h2>
-            <div class="inspiration-box ${c.inspiration ? "active" : ""}" data-action="toggle-inspiration" data-character-id="${c.id}">
-              <span class="inspiration-star">★</span> <span>INSPIRATION</span>
-            </div>
-          </div>
+          <h2>${esc(c.name)}</h2>
           <p class="dnd-muted">${esc(effectiveRaceName(c))} ${esc(klass.name)} level ${esc(c.level)} | ${esc(DATA.backgrounds.find(b => b.id === c.background)?.name || c.background)} | ${esc(c.alignment)}</p>
-          <div class="dnd-pill-row" style="margin-top:.65rem">
+      <div class="dnd-pill-row" style="margin-top:.65rem">
             <span class="dnd-pill good">HP ${esc(c.hpCurrent)}/${esc(c.hpMax)}</span>
             <span class="dnd-pill ${c.inspiration ? "active-inspiration" : ""}" style="cursor:pointer" onclick="toggleInspiration('${c.id}')" title="Klik untuk toggle">Inspiration: ${c.inspiration ? "YES" : "NO"}</span>
-            <span class="dnd-pill" style="cursor:pointer" onclick="rollExpression('1d${klass.hitDie}', 'Hit Dice', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik untuk roll Hit Dice">Hit Dice: ${esc(c.hitDiceRemaining || c.level)}/d${esc(klass.hitDie)}</span>
+            <span class="dnd-pill" style="cursor:pointer" onclick="rollExpression('1d${klass.hitDie}', 'Hit Dice', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik untuk roll Hit Dice">Hit Dice: ${esc(c.hitDiceRemaining)}/d${esc(klass.hitDie)}</span>
             <span class="dnd-pill">AC ${esc(c.ac)}</span>
             <span class="dnd-pill">Speed ${esc(c.speed)}</span>
             <span class="dnd-pill">Prof +${prof}</span>
+            <span class="dnd-pill">Bahasa: ${esc(languages || "Common")}</span>
+            <span class="dnd-pill ${c.startingChoice ? "good" : "warn"}">Start: ${esc(c.startingChoice?.name || "belum dipilih")}</span>
             <span class="dnd-pill">${esc(c.gold || 0)} gp</span>
             ${c.requestedLevel ? `<span class="dnd-pill warn">Pending GM approve: level ${esc(c.requestedLevel)}</span>` : ""}
           </div>
         </div>
       </div>
-
-      <div class="dnd-grid" style="margin-top:1rem">
-        <div class="span-4">
-          <h3 style="margin-bottom:.55rem">Abilities</h3>
-          <div class="stat-grid">
-            ${DATA.abilities.map((a) => `<div class="stat-box" style="cursor:pointer" onclick="rollExpression('1d20${signed(mod(c.abilities[a.id]))}', '${a.label} Check', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik roll ability check"><small>${a.label.slice(0, 3)}</small><strong>${esc(c.abilities[a.id])}</strong><span>${signed(mod(c.abilities[a.id]))}</span></div>`).join("")}
-          </div>
-
-          <h3 style="margin:1.5rem 0 .55rem">Saving Throws</h3>
-          <div class="dnd-check-grid">
-            ${DATA.abilities.map(a => {
-              const isProf = klass.saves.includes(a.id);
-              const bonus = mod(c.abilities[a.id]) + (isProf ? prof : 0);
-              return `<div class="compact-row" style="cursor:pointer" onclick="rollExpression('1d20${signed(bonus)}', '${a.label} Save', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik roll saving throw"><span><strong>${a.label}</strong></span><span class="dnd-pill ${isProf ? "good" : ""}">${signed(bonus)}</span></div>`;
-            }).join("")}
-          </div>
-        </div>
-
-        <div class="span-4">
-          <h3 style="margin-bottom:.55rem">Skills</h3>
-          <div class="dnd-check-grid">
-            ${DATA.skills.map((s) => `<div class="compact-row" style="cursor:pointer" onclick="rollExpression('1d20${signed(skillBonus(c, s.id))}', '${s.label} Check', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik untuk roll skill"><span><strong>${s.label}</strong><small>${abilityLabel(s.ability)}</small></span><span class="dnd-pill ${c.skills.includes(s.id) ? "good" : ""}">${signed(skillBonus(c, s.id))}</span></div>`).join("")}
-          </div>
-        </div>
-
-        <div class="span-4">
-          <h3 style="margin-bottom:.55rem">Attacks & Spellcasting</h3>
-          <div class="dnd-card is-soft" style="margin-bottom:1rem">
-            ${attacks}
-          </div>
-          ${klass.features.includes("Spellcasting") || klass.features.includes("Pact Magic") ? `
-            <div class="dnd-card is-soft">
-              <h4>Spellcasting</h4>
-              <p class="dnd-small-muted">Ability: ${esc(klass.primary)}</p>
-              <p class="dnd-small-muted">Save DC: ${8 + prof + mod(c.abilities[klass.primary.toLowerCase().slice(0,3)])}</p>
-              <p class="dnd-small-muted">Attack Bonus: ${signed(prof + mod(c.abilities[klass.primary.toLowerCase().slice(0,3)]))}</p>
-            </div>
-          ` : ""}
-        </div>
+      <h3 style="margin:1rem 0 .55rem">Abilities</h3>
+      <div class="stat-grid">
+        ${DATA.abilities.map((a) => `<div class="stat-box"><small>${a.label.slice(0, 3)}</small><strong>${esc(c.abilities[a.id])}</strong><span>${signed(mod(c.abilities[a.id]))}</span></div>`).join("")}
       </div>
+      <h3 style="margin:1rem 0 .55rem">Skills</h3>
+      <div class="dnd-check-grid">
+        ${DATA.skills.map((s) => `<div class="compact-row" style="cursor:pointer" onclick="rollExpression('${signed(skillBonus(c, s.id))}', '${s.label} Check', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik untuk roll skill"><span><strong>${s.label}</strong><small>${abilityLabel(s.ability)}</small></span><span class="dnd-pill ${c.skills.includes(s.id) ? "good" : ""}">${signed(skillBonus(c, s.id))}</span></div>`).join("")}
+      </div>
+      <div class="dnd-card is-soft attacks-box" style="padding: 1rem; border: 2px solid var(--dnd-border, #ccc); border-radius: 8px;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 8px; text-align: center;">
+          <div style="font-size: 0.75rem; font-weight: bold; opacity: 0.8;">NAME</div>
+          <div style="font-size: 0.75rem; font-weight: bold; opacity: 0.8;">ATK</div>
+          <div style="font-size: 0.75rem; font-weight: bold; opacity: 0.8;">DAMAGE/TYPE</div>
+          ${(function() {
+            const DND_WEAPONS = {
+              "dagger": { dice: "1d4", type: "piercing", finesse: true, thrown: true, category: "simple" },
+              "longsword": { dice: "1d8", type: "slashing", versatile: "1d10", category: "martial" },
+              "shortsword": { dice: "1d6", type: "piercing", finesse: true, category: "martial" },
+              "rapier": { dice: "1d8", type: "piercing", finesse: true, category: "martial" },
+              "shortbow": { dice: "1d6", type: "piercing", ranged: true, category: "simple" },
+              "longbow": { dice: "1d8", type: "piercing", ranged: true, category: "martial" },
+              "hand crossbow": { dice: "1d6", type: "piercing", ranged: true, category: "martial" },
+              "light crossbow": { dice: "1d8", type: "piercing", ranged: true, category: "simple" },
+              "heavy crossbow": { dice: "1d10", type: "piercing", ranged: true, category: "martial" },
+              "mace": { dice: "1d6", type: "bludgeoning", category: "simple" },
+              "warhammer": { dice: "1d8", type: "bludgeoning", versatile: "1d10", category: "martial" },
+              "greatsword": { dice: "2d6", type: "slashing", category: "martial" },
+              "greataxe": { dice: "1d12", type: "slashing", category: "martial" },
+              "handaxe": { dice: "1d6", type: "slashing", light: true, thrown: true, category: "simple" },
+              "javelin": { dice: "1d6", type: "piercing", thrown: true, category: "simple" },
+              "spear": { dice: "1d6", type: "piercing", thrown: true, versatile: "1d8", category: "simple" },
+              "quarterstaff": { dice: "1d6", type: "bludgeoning", versatile: "1d8", category: "simple" },
+              "scimitar": { dice: "1d6", type: "slashing", finesse: true, light: true, category: "martial" }
+            };
+            const attacks = [...(c.attacks || [])];
+            const existingNames = new Set(attacks.map(a => a.name.toLowerCase()));
+            const prof = proficiencyBonus(c.level);
+            const strMod = mod(c.abilities.str);
+            const dexMod = mod(c.abilities.dex);
+            const wStr = (klass.weapons || "").toLowerCase();
+            const isProficient = (cat, name) => wStr.includes("all weapons") || wStr.includes("martial weapons") || (wStr.includes("simple weapons") && cat === "simple") || wStr.includes(cat) || wStr.includes(name);
 
-      <div class="dnd-grid" style="margin-top:1.5rem">
+            (c.inventory || []).forEach(item => {
+              const name = item.replace(/x\d+$/, "").trim().toLowerCase();
+              const wpn = DND_WEAPONS[name];
+              if (wpn && !existingNames.has(name)) {
+                let useDex = wpn.ranged || (wpn.finesse && dexMod > strMod);
+                let statMod = useDex ? dexMod : strMod;
+                let atkBonus = statMod + (isProficient(wpn.category, name) ? prof : 0);
+                attacks.push({
+                  name: name.charAt(0).toUpperCase() + name.slice(1),
+                  bonus: signed(atkBonus),
+                  damage: wpn.dice + (statMod !== 0 ? signed(statMod) : "") + " " + wpn.type
+                });
+                existingNames.add(name);
+              }
+            });
+            c._computedAttacks = attacks; // Simpan sementara untuk dipakai di PDF generator nantinya jika perlu, atau PDF generator panggil ulang logika ini.
+            return attacks;
+          })().map(atk => `
+            <div style="background: rgba(255,255,255,0.08); padding: 6px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; box-shadow: 1px 1px 2px rgba(0,0,0,0.2);">${esc(atk.name)}</div>
+            <div style="background: rgba(255,255,255,0.08); padding: 6px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; box-shadow: 1px 1px 2px rgba(0,0,0,0.2);">${esc(atk.bonus)}</div>
+            <div style="background: rgba(255,255,255,0.08); padding: 6px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; box-shadow: 1px 1px 2px rgba(0,0,0,0.2);">${esc(atk.damage)}</div>
+          `).join("")}
+          ${!(c._computedAttacks || c.attacks || []).length ? `<div style="grid-column: span 3; font-size: 0.85rem; opacity: 0.6; padding: 10px;">Belum ada serangan diinput atau terdeteksi.</div>` : ""}
+        </div>
+        <div style="text-align: center; margin-top: 12px; font-weight: bold; font-size: 0.85rem; letter-spacing: 1px; color: var(--dnd-highlight, #e6c27a);">ATTACKS & SPELLCASTING</div>
+      </div>
+      <div class="dnd-grid" style="margin-top:1rem">
         <div class="span-6 dnd-card is-soft">
           <h3>Traits & Features</h3>
-              <div class="traits-container">${traitList}</div>
+          <div class="traits-container" style="font-size:0.8rem; margin-top:0.5rem">
+            ${effectiveRaceTraits(c).map(t => `<div class="trait-item"><strong>${esc(t)}:</strong> <span class="dnd-muted">${esc(traitGuideText(t))}</span></div>`).join("")}
+            ${klass.features.map(f => `<div class="trait-item"><strong>${esc(f)}:</strong> <span class="dnd-muted">${esc(pdfClassFeatureGuideText(f))}</span></div>`).join("")}
+          </div>
         </div>
         <div class="span-6 dnd-card is-soft">
-          <h3>Inventory & Equipment</h3>
-          <div class="inventory-container">${inventoryList}</div>
-          <p class="dnd-muted" style="margin-top:.5rem">Starting: ${esc(c.startingChoice?.name || "Belum dipilih")} | Gold: ${esc(c.gold || 0)} gp</p>
+          <h3>Inventory</h3>
+          <div class="inventory-container" style="font-size:0.8rem; margin-top:0.5rem">
+            <p class="dnd-muted">${esc((c.inventory || []).join(", ") || "Kosong")}</p>
+            <p class="dnd-muted" style="margin-top:0.5rem; font-weight:bold">Starting: ${esc(c.startingChoice?.name || "Belum dipilih")} | Gold: ${esc(c.gold || 0)} gp</p>
+          </div>
         </div>
-        <div class="span-6 dnd-card is-soft">
-          <h3>Other Proficiencies & Languages</h3>
-          <p class="dnd-muted"><strong>Armor Proficiencies:</strong> ${esc(klass.armor)}</p>
-          <p class="dnd-muted"><strong>Weapon Proficiencies:</strong> ${esc(klass.weapons)}</p>
-          <p class="dnd-muted" style="cursor:pointer" onclick="rollExpression('+${prof}', 'Tool Check', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik untuk Tool check"><strong>Tool Proficiencies:</strong> ${esc(klass.tools || "None")}</p>
-          <p class="dnd-muted"><strong>Languages:</strong> ${esc(languages || "Common")}</p>
+        <div class="span-12" style="border: 2px solid var(--dnd-border, #555); border-radius: 8px; padding: 12px; box-shadow: 2px 2px 5px rgba(0,0,0,0.2);">
+          <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem; cursor: pointer;" onclick="rollExpression('+${prof}', 'Tool Check', '${esc(c.name).replace(/'/g, "\\'")}')" title="Klik untuk Tool check"><strong>TOOL:</strong> ${esc((c.inventory || []).filter(i => /tool|kit|set/i.test(i)).join(", ") || "-")}</div>
+          <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem;"><strong>LANGUAGE:</strong> ${esc(languages || "Common")}</div>
+          <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem;"><strong>ARMOR PROFICIENCIES:</strong> ${esc(klass.armor || "None")}</div>
+          <div style="border-bottom: 1px solid var(--dnd-border, #555); padding: 6px 0; font-size: 0.85rem;"><strong>WEAPON PROFICIENCIES:</strong> ${esc(klass.weapons || "Simple weapons")}</div>
+          <div style="padding: 6px 0; font-size: 0.85rem;"><strong>TOOL PROFICIENCIES:</strong> ${esc(klass.tools || "None")}</div>
+          <div style="text-align: center; margin-top: 12px; font-weight: bold; font-size: 0.85rem; letter-spacing: 1px; color: var(--dnd-highlight, #e6c27a);">OTHER PROFICIENCIES & LANGUAGES</div>
         </div>
-        <div class="span-6 dnd-card is-soft">
-          <h3>Personality & Story</h3>
-          <p class="dnd-muted"><strong>Traits:</strong> ${esc((c.personalityTraits || []).filter(Boolean).join(" | ") || "Belum diisi")}</p>
-          <p class="dnd-muted"><strong>Ideal:</strong> ${esc(c.ideal || "Belum diisi")}</p>
-          <p class="dnd-muted"><strong>Bond:</strong> ${esc(c.bond || "Belum diisi")}</p>
-          <p class="dnd-muted"><strong>Flaw:</strong> ${esc(c.flaw || "Belum diisi")}</p>
-        </div>
-        <div class="span-12 dnd-card is-soft">
-          <h3>Appearance</h3>
-          <p class="dnd-muted">${esc([c.appearance?.hair, c.appearance?.eyes, c.appearance?.skin, c.appearance?.style, c.appearance?.notes].filter(Boolean).join("; ") || "Belum diisi")}</p>
-        </div>
+        <div class="span-12 dnd-card is-soft"><h3>Personality & Story</h3><p class="dnd-muted"><strong>Traits:</strong> ${esc((c.personalityTraits || []).filter(Boolean).join(" | ") || "Belum diisi")}</p><p class="dnd-muted"><strong>Ideal:</strong> ${esc(c.ideal || "Belum diisi")}</p><p class="dnd-muted"><strong>Bond:</strong> ${esc(c.bond || "Belum diisi")}</p><p class="dnd-muted"><strong>Flaw:</strong> ${esc(c.flaw || "Belum diisi")}</p></div>
+        <div class="span-12 dnd-card is-soft"><h3>Appearance</h3><p class="dnd-muted">${esc([c.appearance?.hair, c.appearance?.eyes, c.appearance?.skin, c.appearance?.style, c.appearance?.notes].filter(Boolean).join("; ") || "Belum diisi")}</p></div>
       </div>
     `;
+  }
+
+
+
+  function pdfSpellcastingAbilityId(klass) {
+    const id = String(klass?.id || "").toLowerCase();
+    if (["bard","paladin","sorcerer","warlock"].includes(id)) return "cha";
+    if (["cleric","druid","ranger"].includes(id)) return "wis";
+    if (id === "wizard") return "int";
+    return (klass?.primary || "").toLowerCase().includes("charisma") ? "cha" : (klass?.primary || "").toLowerCase().includes("wisdom") ? "wis" : "int";
+  }
+
+  function pdfSpellSlotsSummary(klass, level) {
+    const id = String(klass?.id || "").toLowerCase();
+    const full = {1:[2],2:[3],3:[4,2],4:[4,3],5:[4,3,2],6:[4,3,3],7:[4,3,3,1],8:[4,3,3,2],9:[4,3,3,3,1],10:[4,3,3,3,2],11:[4,3,3,3,2,1],12:[4,3,3,3,2,1],13:[4,3,3,3,2,1,1],14:[4,3,3,3,2,1,1],15:[4,3,3,3,2,1,1,1],16:[4,3,3,3,2,1,1,1],17:[4,3,3,3,2,1,1,1,1],18:[4,3,3,3,3,1,1,1,1],19:[4,3,3,3,3,2,1,1,1],20:[4,3,3,3,3,2,2,1,1]};
+    const half = {2:[2],3:[3],4:[3],5:[4,2],6:[4,2],7:[4,3],8:[4,3],9:[4,3,2],10:[4,3,2],11:[4,3,3],12:[4,3,3],13:[4,3,3,1],14:[4,3,3,1],15:[4,3,3,2],16:[4,3,3,2],17:[4,3,3,3,1],18:[4,3,3,3,1],19:[4,3,3,3,2],20:[4,3,3,3,2]};
+    const pact = {1:[1,1],2:[2,1],3:[2,2],4:[2,2],5:[2,3],6:[2,3],7:[2,4],8:[2,4],9:[2,5],10:[2,5],11:[3,5],12:[3,5],13:[3,5],14:[3,5],15:[3,5],16:[3,5],17:[4,5],18:[4,5],19:[4,5],20:[4,5]};
+    let slots = [];
+    if (id === "warlock") return pact[level] ? `Pact Slots: ${pact[level][0]} slot level ${pact[level][1]} (pulih sesuai pact magic)` : "Tidak ada pact slot level ini.";
+    if (["paladin","ranger"].includes(id)) slots = half[level] || [];
+    else if ((klass?.features || []).some((f) => /spellcasting/i.test(f))) slots = full[level] || [];
+    return slots.length ? slots.map((n, i) => `Lv ${i + 1}: ${n}`).join(" | ") : "Tidak ada slot spell dari class utama pada level ini.";
+  }
+
+  function pdfSpellDetail(spell) {
+    const key = String(spell?.name || "").toLowerCase();
+    const base = { castingTime:"Action", range:"Self/varies", target:"Lihat deskripsi spell", components:"V/S/M sesuai spell", duration:"Instantaneous/varies", description: spell?.notes || "Spell tercatat di daftar class.", higher:"Gunakan slot lebih tinggi hanya jika spell menuliskan efek tambahan." };
+    const map = {
+      "fire bolt":{castingTime:"1 action",range:"120 feet",target:"1 creature or object",components:"V, S",duration:"Instantaneous",description:"Ranged spell attack yang memberi fire damage pada target yang kena.",higher:"Damage naik pada level karakter tertentu."},
+      "mage hand":{castingTime:"1 action",range:"30 feet",target:"Point within range",components:"V, S",duration:"1 minute",description:"Membuat tangan spektral untuk memanipulasi objek ringan dari jarak aman.",higher:"Tidak ada scaling slot."},
+      "cure wounds":{castingTime:"1 action",range:"Touch",target:"1 creature touched",components:"V, S",duration:"Instantaneous",description:"Memulihkan HP target berdasarkan die spell dan spellcasting ability.",higher:"Tambah die healing untuk tiap slot di atas level 1."},
+      "magic missile":{castingTime:"1 action",range:"120 feet",target:"One or more creatures",components:"V, S",duration:"Instantaneous",description:"Membuat dart force yang otomatis mengenai target sesuai pembagian dart.",higher:"Tambah satu dart untuk tiap slot di atas level 1."},
+      "shield":{castingTime:"1 reaction",range:"Self",target:"Self",components:"V, S",duration:"1 round",description:"Menaikkan AC sementara sampai awal giliran berikutnya dan menahan magic missile.",higher:"Tidak ada scaling slot."},
+      "bless":{castingTime:"1 action",range:"30 feet",target:"Up to 3 creatures",components:"V, S, M",duration:"Concentration, up to 1 minute",description:"Target menambah d4 ke attack roll dan saving throw selama efek aktif.",higher:"Tambah target untuk tiap slot di atas level 1."},
+      "hunter's mark":{castingTime:"1 bonus action",range:"90 feet",target:"1 creature",components:"V",duration:"Concentration, up to 1 hour",description:"Menandai target untuk damage tambahan dan membantu pelacakan target.",higher:"Durasi meningkat pada slot tertentu."},
+      "eldritch blast":{castingTime:"1 action",range:"120 feet",target:"1 creature",components:"V, S",duration:"Instantaneous",description:"Ranged spell attack force; jumlah beam naik bersama level karakter.",higher:"Scaling mengikuti level karakter, bukan slot."},
+      "fireball":{castingTime:"1 action",range:"150 feet",target:"Point within range",components:"V, S, M",duration:"Instantaneous",description:"Ledakan area; target biasanya melakukan Dexterity save untuk mengurangi fire damage.",higher:"Damage bertambah saat memakai slot lebih tinggi."},
+      "counterspell":{castingTime:"1 reaction",range:"60 feet",target:"Creature casting a spell",components:"S",duration:"Instantaneous",description:"Mencoba menghentikan spell yang sedang dirapalkan; spell level tinggi dapat butuh ability check.",higher:"Slot lebih tinggi otomatis menghentikan spell sampai level slot tersebut."}
+    };
+    return { ...base, ...(map[key] || {}) };
+  }
+
+  function pdfSpellsForCharacter(character, klass) {
+    const own = Array.isArray(character?.spells) ? character.spells : [];
+    const byOwn = own.map((name) => DATA.spells.find((s) => String(s.name).toLowerCase() === String(name).toLowerCase()) || { name, level:"?", school:"Custom", classes:klass?.name || "", notes:"Spell custom dari karakter." });
+    if (byOwn.length) return byOwn;
+    return DATA.spells.filter((spell) => String(spell.classes || "").toLowerCase().includes(String(klass?.name || "").toLowerCase())).slice(0, 16);
+  }
+
+  function mapBlockedTileTypes() {
+    return new Set(["wall", "house", "castle", "ruins", "mountain", "deepWater", "water", "tree", "ancientTree", "boulder", "altar", "trap"]);
+  }
+
+  function mapCellBlocked(map, x, y) {
+    const size = Number(map?.size || 32);
+    if (!map || x < 0 || y < 0 || x >= size || y >= size) return true;
+    const tile = map.tiles?.[y]?.[x];
+    if (mapBlockedTileTypes().has(tile)) return true;
+    return (map.features || []).some((feature) => Number(feature.x) === x && Number(feature.y) === y && mapBlockedTileTypes().has(feature.kind));
+  }
+
+  function renderMapTokenLayer(map) {
+    const size = Number(map?.size || 32);
+    const npcTokens = (map?.npcs || []).map((pos) => {
+      const npc = state.npcs.find((n) => n.id === pos.npcId) || roomNpcs(state.activeRoomId).find((n) => n.id === pos.npcId);
+      const left = ((Number(pos.x || 0) + .5) / size) * 100;
+      const top = ((Number(pos.y || 0) + .5) / size) * 100;
+      return `<span class="map-image-token npc-token" style="left:${left}%;top:${top}%" title="${esc(npc?.name || "NPC")}">${esc((npc?.name || "N").slice(0, 2).toUpperCase())}</span>`;
+    });
+    const charTokens = (map?.characters || []).map((pos) => {
+      const character = state.characters.find((c) => c.id === pos.characterId);
+      if (!character) return "";
+      const left = ((Number(pos.x || 0) + .5) / size) * 100;
+      const top = ((Number(pos.y || 0) + .5) / size) * 100;
+      const mine = characterBelongsToUser(character);
+      return `<span class="map-image-token character-token ${mine ? "is-mine" : ""}" style="left:${left}%;top:${top}%" title="${esc(character.name || "Character")}">${esc((character.name || "C").slice(0, 2).toUpperCase())}</span>`;
+    });
+    return npcTokens.concat(charTokens).join("");
+  }
+
+  function renderMapCollisionCells(map) {
+    if (!isGm() || !Array.isArray(map?.tiles) || !map.tiles.length) return "";
+    const size = Number(map.size || 32);
+    const cells = [];
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        if (mapCellBlocked(map, x, y)) cells.push(`<span class="map-collision-cell" style="left:${(x / size) * 100}%;top:${(y / size) * 100}%;width:${100 / size}%;height:${100 / size}%"></span>`);
+      }
+    }
+    return cells.slice(0, 900).join("");
+  }
+
+  function renderImageMapBody(map) {
+    const size = Number(map?.size || 32);
+    const collisionInfo = map?.collisionSource ? `Collision: ${map.collisionSource}` : "Collision: layer terbuka";
+    return `<div class="uploaded-map-wrap ai-grid-map" style="--map-size:${esc(size)}">
+      <div class="uploaded-map-stage">
+        <img src="${map.image}" alt="${esc(map.name)}">
+        <div class="map-vtt-grid" aria-hidden="true"></div>
+        <div class="map-collision-layer" aria-hidden="true">${renderMapCollisionCells(map)}</div>
+        <div class="map-token-layer" aria-hidden="true">${renderMapTokenLayer(map)}</div>
+        <button type="button" id="dnd-image-map-hitbox" class="map-image-hitbox" aria-label="Klik map untuk token room"></button>
+      </div>
+      <div class="map-help">${isGm() ? "Grid digambar oleh aplikasi, bukan oleh AI. GM klik tile untuk NPC; player klik hanya token miliknya saat giliran aktif." : "Player bisa memindahkan token sendiri hanya saat giliran aktif dari GM."} <small>${esc(collisionInfo)}</small></div>
+    </div>`;
   }
 
   function renderMapTab() {
@@ -4533,7 +5426,7 @@
     }
     const map = activeMap();
     const mapBody = map?.image
-      ? `<div class="uploaded-map-wrap"><img src="${map.image}" alt="${esc(map.name)}"><div class="map-help">${isGm() ? "Map upload/AI aktif. Token NPC tetap bisa dicatat di panel kanan." : "Mode player: map read-only."}</div></div>`
+      ? renderImageMapBody(map)
       : map
         ? `<canvas id="dnd-map-canvas" width="960" height="960" aria-label="DnD map canvas"></canvas><div class="map-help">${isGm() ? "Pilih NPC lalu klik tile untuk menaruh token." : "Mode player: map read-only."}</div>`
         : `<div class="map-empty"><div><h3>Belum ada map</h3><p>GM perlu generate atau upload map dulu.</p></div></div>`;
@@ -4541,7 +5434,7 @@
       <div class="dnd-section-title">
         <div>
           <h2>Battle Map</h2>
-          <p>GM bisa generate standar grid, upload map sendiri, atau memakai endpoint gambar AI opsional.</p>
+          <p>Generate map siap pakai token, upload gambar sendiri, dan kelola NPC/monster dalam panel ringkas.</p>
         </div>
         <div class="dnd-actions">
           <select id="active-map-select" class="dnd-btn">${maps.map((m) => `<option value="${m.id}" ${map?.id === m.id ? "selected" : ""}>${esc(m.name)}</option>`).join("")}</select>
@@ -4556,60 +5449,81 @@
   }
 
   function renderMapControls(map) {
-    const selectedStyle = map?.imagePrompt ? (qs("#mapVisualStyle")?.value || "") : (map?.type || "town-square");
+    const selectedStyle = map?.visualStyleId || qs("#mapVisualStyle")?.value || (DATA.mapVisualStyles || [])[0]?.id || "town-square";
     const styleOptions = (DATA.mapVisualStyles || []).map((style) => `<option value="${style.id}" ${selectedStyle === style.id ? "selected" : ""}>${esc(style.name)}</option>`).join("");
     const npcOptions = (DATA.npcTemplates || []).map((npc) => `<option value="${npc.name}">${esc(npc.name)} — ${esc(npc.role || "NPC")}</option>`).join("");
-    const roleGuide = (DATA.npcGuideRoles || []).slice(0, 10).map((row) => `<li><strong>${esc(row.role)}</strong><span>${esc(row.use)}</span></li>`).join("");
-    const monsterList = (DATA.monsters || []).slice(0, 16).map((monster) => `<li><strong>${esc(monster.name)}</strong><span>${esc(monster.type)} · CR ${esc(monster.cr)} · ${esc(monster.habitat)}</span></li>`).join("");
-    const roomNpcList = roomNpcs(state.activeRoomId).map((npc) => `<div class="npc-row"><strong>${esc(npc.name)}</strong><small>${esc(npc.role || "NPC")} · ${esc(npc.note || "Catatan belum diisi")}</small></div>`).join("") || `<p>Belum ada NPC di room ini.</p>`;
+    const roleGuide = (DATA.npcGuideRoles || []).slice(0, 8).map((row) => `<li><strong>${esc(row.role)}</strong><span>${esc(row.use)}</span></li>`).join("");
+    const monsterList = (DATA.monsters || []).slice(0, 14).map((monster) => `<li><strong>${esc(monster.name)}</strong><span>${esc(monster.type)} · CR ${esc(monster.cr)} · ${esc(monster.habitat)}</span></li>`).join("");
+    const roomNpcList = roomNpcs(state.activeRoomId).map((npc) => `<div class="npc-row"><strong>${esc(npc.name)}</strong><small>${esc(npc.role || "NPC")} · ${esc(npc.note || "Catatan belum diisi")}</small></div>`).join("") || `<p class="dnd-muted">Belum ada NPC di room ini.</p>`;
     const prompt = mapImagePromptFromForm();
     const currentType = map?.type || "town";
     const currentDetail = map?.detail || "high";
     const currentSize = clamp(Number(map?.size || 32), 16, 48);
     const currentAspect = map?.imageAspectRatio || "3:4";
+    const currentStyle = (DATA.mapVisualStyles || []).find((item) => item.id === selectedStyle) || (DATA.mapVisualStyles || [])[0] || {};
+    const director = window.DND2014_MAP_AI?.preview?.({
+      type: currentType,
+      detail: currentDetail,
+      size: currentSize,
+      aspect: currentAspect,
+      style: currentStyle,
+      seed: map?.seed || "",
+      notes: map?.notes || ""
+    }) || { score: 85, chips: ["top-down", "gridless base", "VTT grid", "collision-ready"], warning: "Prompt diarahkan agar map lebih besar, gridless, dan jelas.", zones: [], landmarks: [] };
 
     return `
       ${isGm() ? `
-      <div class="map-control-group featured">
-        <h3>Generate / Upload Map</h3>
-        <p class="map-design-tip">Standar map DnD yang enak dipakai: top-down, grid jelas, bangunan/terrain mudah dibaca, tanpa label, dan ada ruang encounter yang cukup.</p>
-        <label>Nama map<input id="map-name" value="${esc(map?.name || "Town Square")}"></label>
+      <div class="map-control-group featured map-generator-card">
+        <div class="map-tool-head">
+          <div>
+            <span class="lobby-kicker">Map Director</span>
+            <h3>Generate / Upload Map</h3>
+          </div>
+          <span class="map-score">${esc(director.score)}%</span>
+        </div>
+        <div class="map-ai-director">
+          <div class="map-ai-chips">${(director.chips || []).map((chip) => `<span>${esc(chip)}</span>`).join("")}</div>
+          <p>${esc(director.warning || "Prompt map siap dipakai.")}</p>
+        </div>
+        <label>Nama map<input id="map-name" value="${esc(map?.name || "Town Square")}" placeholder="Contoh: Raven Gate Plaza"></label>
         <div class="form-grid two compact-map-grid">
-          <label>Tipe grid<select id="map-type"><option value="town" ${currentType === "town" ? "selected" : ""}>Town</option><option value="forest" ${currentType === "forest" ? "selected" : ""}>Forest</option><option value="dungeon" ${currentType === "dungeon" ? "selected" : ""}>Dungeon</option><option value="river" ${currentType === "river" ? "selected" : ""}>River</option><option value="tavern" ${currentType === "tavern" ? "selected" : ""}>Tavern</option></select></label>
-          <label>Style gambar AI<select id="mapVisualStyle">${styleOptions}</select></label>
+          <label>Tipe<select id="map-type"><option value="town" ${currentType === "town" ? "selected" : ""}>Town</option><option value="forest" ${currentType === "forest" ? "selected" : ""}>Forest</option><option value="dungeon" ${currentType === "dungeon" ? "selected" : ""}>Dungeon</option><option value="river" ${currentType === "river" ? "selected" : ""}>River</option><option value="tavern" ${currentType === "tavern" ? "selected" : ""}>Tavern</option></select></label>
+          <label>Style AI<select id="mapVisualStyle">${styleOptions}</select></label>
         </div>
         <div class="form-grid three compact-map-grid">
-          <label>Detail<select id="map-detail"><option value="low" ${currentDetail === "low" ? "selected" : ""}>Low</option><option value="balanced" ${currentDetail === "balanced" ? "selected" : ""}>Balanced</option><option value="high" ${currentDetail === "high" ? "selected" : ""}>High</option><option value="cinematic" ${currentDetail === "cinematic" ? "selected" : ""}>Cinematic</option></select></label>
-          <label>Ukuran grid<select id="map-size">${[24,28,32,36,40].map((n) => `<option value="${n}" ${currentSize === n ? "selected" : ""}>${n} x ${n}</option>`).join("")}</select></label>
-          <label>Rasio gambar<select id="map-aspect"><option value="1:1" ${currentAspect === "1:1" ? "selected" : ""}>1:1 Kotak</option><option value="3:4" ${currentAspect === "3:4" ? "selected" : ""}>3:4 Portrait</option><option value="4:3" ${currentAspect === "4:3" ? "selected" : ""}>4:3 Landscape</option><option value="9:16" ${currentAspect === "9:16" ? "selected" : ""}>9:16 Tall</option><option value="16:9" ${currentAspect === "16:9" ? "selected" : ""}>16:9 Wide</option></select></label>
+          <label>Detail<select id="map-detail"><option value="balanced" ${currentDetail === "balanced" ? "selected" : ""}>Balanced</option><option value="high" ${currentDetail === "high" ? "selected" : ""}>High</option><option value="cinematic" ${currentDetail === "cinematic" ? "selected" : ""}>Cinematic</option><option value="low" ${currentDetail === "low" ? "selected" : ""}>Low</option></select></label>
+          <label>Grid<select id="map-size">${[24,28,32,36,40].map((n) => `<option value="${n}" ${currentSize === n ? "selected" : ""}>${n} x ${n}</option>`).join("")}</select></label>
+          <label>Rasio<select id="map-aspect"><option value="1:1" ${currentAspect === "1:1" ? "selected" : ""}>1:1</option><option value="3:4" ${currentAspect === "3:4" ? "selected" : ""}>3:4</option><option value="4:3" ${currentAspect === "4:3" ? "selected" : ""}>4:3</option><option value="9:16" ${currentAspect === "9:16" ? "selected" : ""}>9:16</option><option value="16:9" ${currentAspect === "16:9" ? "selected" : ""}>16:9</option></select></label>
         </div>
-        <label>Seed / kata kunci map<input id="map-seed" value="${esc(map?.seed || "")}" placeholder="contoh: market, bridge, fountain, night"></label>
-        <label>Catatan map<textarea id="map-notes" rows="4" placeholder="Jelaskan detail ruangan, pintu, area aman, cover, choke point, dan titik penting.">${esc(map?.notes || "")}</textarea></label>
-        <div class="dnd-actions wrap">
+        <label>Fokus scene<input id="map-seed" value="${esc(map?.seed || "")}" placeholder="market, bridge, fountain, night"></label>
+        <label>Catatan taktis<textarea id="map-notes" rows="3" placeholder="Pintu, cover, choke point, jalur aman, landmark penting.">${esc(map?.notes || "")}</textarea></label>
+        <div class="dnd-actions wrap map-action-row">
           <button class="dnd-btn primary" data-action="generate-map">Generate Grid</button>
           <button class="dnd-btn" data-action="generate-map-image">Generate Gambar AI</button>
         </div>
-        <label class="upload-box">Upload map GM<input id="mapImageUpload" type="file" accept="image/png,image/jpeg,image/webp"></label>
+        <label class="upload-box compact-upload">Upload map GM<input id="mapImageUpload" type="file" accept="image/png,image/jpeg,image/webp"></label>
         ${state.mapUploadDraft ? `<div class="upload-preview"><img src="${state.mapUploadDraft}" alt="Preview map"><button class="dnd-btn primary" data-action="use-uploaded-map">Pakai Map Ini</button></div>` : ""}
-        <details class="ai-prompt-preview"><summary>Preview prompt AI</summary><p>${esc(prompt)}</p></details>
+        <details class="ai-prompt-preview compact-details"><summary>Prompt AI lengkap</summary><p>${esc(prompt)}</p></details>
       </div>
-      <div class="map-control-group">
-        <h3>NPC Room</h3>
-        <label>Template NPC<select id="npc-template">${npcOptions}</select></label>
-        <label>Nama NPC<input id="npc-name" placeholder="Nama NPC"></label>
-        <label>Role NPC<input id="npc-role" placeholder="Quest Giver, Guard, Merchant..."></label>
-        <label>Catatan NPC<textarea id="npc-note" rows="3" placeholder="Motivasi, rahasia, hubungan ke quest."></textarea></label>
+      <div class="map-control-group compact-panel">
+        <div class="map-tool-head"><h3>NPC Room</h3><span>${esc(roomNpcs(state.activeRoomId).length)} NPC</span></div>
+        <label>Template<select id="npc-template">${npcOptions}</select></label>
+        <div class="form-grid two compact-map-grid">
+          <label>Nama<input id="npc-name" placeholder="Nama NPC"></label>
+          <label>Role<input id="npc-role" placeholder="Guard, Merchant..."></label>
+        </div>
+        <label>Catatan<textarea id="npc-note" rows="2" placeholder="Motivasi, rahasia, hubungan ke quest."></textarea></label>
         <button class="dnd-btn primary" data-action="add-npc">Tambah NPC</button>
-        <ul class="guide-list small">${roleGuide}</ul>
+        <details class="compact-details"><summary>Panduan role NPC</summary><ul class="guide-list small">${roleGuide}</ul></details>
       </div>` : ""}
-      <div class="map-control-group">
-        <h3>NPC Aktif</h3>${roomNpcList}
+      <div class="map-control-group compact-panel">
+        <div class="map-tool-head"><h3>NPC Aktif</h3></div>
+        ${roomNpcList}
       </div>
-      <div class="map-control-group">
-        <h3>Monster List 5E</h3>
-        <p class="dnd-small-muted">Daftar ringkas untuk referensi encounter. Detail angka lengkap tetap ikuti SRD/guide book yang dipakai meja.</p>
+      <details class="map-control-group compact-details monster-compact">
+        <summary>Monster List 5E ringkas</summary>
         <ul class="guide-list monster-list">${monsterList}</ul>
-      </div>
+      </details>
     `;
   }
 
@@ -4621,8 +5535,8 @@
         <div class="dnd-card span-5">
           <h3>Dice</h3>
           <div class="dice-stage"><div><div id="dice-face" class="dice-face">${esc(state.ui.diceResult || 20)}</div><p id="dice-label" class="dnd-muted" style="text-align:center;margin:.75rem 0 0">${esc(state.ui.diceLabel || "d20")}</p><p id="dice-detail" class="dice-detail">${esc(state.ui.diceDetail || "single die")}</p></div></div>
-          <div class="dnd-actions">${[100,20,12,10,8,6,4].map((s) => `<button class="dnd-btn primary" data-action="roll-dice" data-sides="${s}" data-label="d${s}">d${s}</button>`).join("")}</div>
-          <p class="dnd-muted" style="margin:.75rem 0 0">d100 memakai percentile dice: die puluhan 00,10,20...90 + die satuan 0-9. 00 + 0 = 100.</p>
+          <div class="dnd-actions">${[2,3,4,6,8,10,12,20,100].map((s) => `<button class="dnd-btn primary" data-action="roll-dice" data-sides="${s}" data-label="d${s}">d${s}</button>`).join("")}</div>
+          <p class="dnd-muted" style="margin:.75rem 0 0">Dadu lengkap: d2, d3, d4, d6, d8, d10, d12, d20, dan d100 percentile. d100 memakai die puluhan 00,10,20...90 + die satuan 0-9. 00 + 0 = 100.</p>
           <h3 style="margin-top:1rem">Skill Roll</h3>
           <div class="dnd-form-grid">
             <div class="dnd-field"><label>Character</label><select id="skill-character">${charOptions}</select></div>
@@ -4814,7 +5728,24 @@
 
   function afterRender() {
     drawMapCanvas();
+    bindImageMapPlacement();
     updateCharacterBuilderGuide();
+  }
+
+  function bindImageMapPlacement() {
+    const hitbox = qs("#dnd-image-map-hitbox");
+    const map = activeMap();
+    if (!hitbox || !map) return;
+    const playerCanClick = !isGm() && !!activeCharacter();
+    hitbox.disabled = !(isGm() || playerCanClick);
+    hitbox.onclick = function (event) {
+      const rect = hitbox.getBoundingClientRect();
+      const size = Number(map.size || 32);
+      const x = Math.floor((event.clientX - rect.left) / Math.max(1, rect.width) * size);
+      const y = Math.floor((event.clientY - rect.top) / Math.max(1, rect.height) * size);
+      if (isGm()) placeNpcOnMap(x, y);
+      else placeOwnCharacterOnMap(x, y);
+    };
   }
 
   function drawMapCanvas() {
@@ -4858,12 +5789,31 @@
       ctx.textBaseline = "middle";
       ctx.fillText(initials(npc.name), cx, cy);
     });
-    if (isGm()) {
+    (map.characters || []).forEach((pos) => {
+      const character = state.characters.find((c) => c.id === pos.characterId);
+      if (!character) return;
+      const cx = Number(pos.x || 0) * tile + tile / 2;
+      const cy = Number(pos.y || 0) * tile + tile / 2;
+      ctx.beginPath();
+      ctx.fillStyle = characterBelongsToUser(character) ? "#1c7c54" : "#1f4d7a";
+      ctx.strokeStyle = "#fff1bd";
+      ctx.lineWidth = 2;
+      ctx.arc(cx, cy, tile * 0.34, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#fff7df";
+      ctx.font = `bold ${Math.max(10, tile * 0.25)}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(initials(character.name), cx, cy);
+    });
+    if (isGm() || activeCharacter()) {
       canvas.onclick = function (event) {
         const rect = canvas.getBoundingClientRect();
         const x = Math.floor((event.clientX - rect.left) / rect.width * size);
         const y = Math.floor((event.clientY - rect.top) / rect.height * size);
-        placeNpcOnMap(x, y);
+        if (isGm()) placeNpcOnMap(x, y);
+        else placeOwnCharacterOnMap(x, y);
       };
     }
   }

@@ -62,7 +62,7 @@
     state.campaign.name = room.name;
     state.campaign.partyLevel = levelStart;
     state.campaign.playMode = room.playMode;
-    saveState(true);
+    saveState(true, 'campaign');
     render();
     toast("Room campaign dibuat.");
   }
@@ -89,7 +89,7 @@
     state.ui.lobbyInsideRoom = true;
     state.ui.tab = "lobby";
     state.campaign.name = room.name;
-    saveState(true);
+    saveState(true, 'campaign');
     render();
     toast("Room aktif.");
   }
@@ -104,7 +104,7 @@
       state.activeRoomId = "";
       state.ui.lobbyInsideRoom = false;
     }
-    saveState(true);
+    saveState(true, 'campaign');
     render();
     toast("Keluar dari room.");
   }
@@ -122,7 +122,7 @@
       state.activeRoomId = state.rooms[0]?.id || "";
       state.ui.lobbyInsideRoom = false;
     }
-    saveState(true);
+    saveState(true, 'campaign');
     render();
     toast("Room dihapus.");
   }
@@ -153,7 +153,7 @@
     state.ui.lobbyInsideRoom = true;
     state.ui.tab = "lobby";
     state.campaign.name = room.name;
-    saveState(false);
+    saveState(false, 'campaign');
     if (showToast) toast("Room cepat GM siap untuk map.");
     return true;
   }
@@ -178,6 +178,9 @@
 
   function activeCharacter() {
     if (state.activeCharacterId === "__new_character__") return null;
+    if (state.activeCharacterId && state.characterDetails && state.characterDetails[state.activeCharacterId]) {
+        return state.characterDetails[state.activeCharacterId];
+    }
     const owned = ownedCharacters();
     return owned.find((c) => c.id === state.activeCharacterId) || owned[0] || null;
   }
@@ -486,14 +489,14 @@
     const next = prompt("Isi announcement berjalan untuk player:", current);
     if (next === null) return;
     state.campaign.announcementText = String(next).trim() || "Selamat bermain. Tidak ada announcement khusus dari owner.";
-    saveState(true);
+    saveState(true, 'campaign');
     render();
     toast("Announcement owner diperbarui.");
   }
 
   function ownerDatabaseRefresh() {
     if (!userIsOwner(currentUser())) return toast("Hanya Owner yang bisa membuka database panel.");
-    saveState(true);
+    saveState(true, 'campaign');
     render();
     toast("Database panel disinkronkan ke MySQL.");
   }
@@ -524,7 +527,7 @@
       account.gmGrantedBy = "";
     }
     account.updatedAt = nowIso();
-    saveState(true);
+    saveState(true, 'campaign');
     render();
     toast(role === "gm" ? `Role GM aktif${days ? " selama " + days + " hari" : " tanpa timer"}.` : "Role akun dikembalikan menjadi Player.");
   }
@@ -554,7 +557,7 @@
       map.npcs = (map.npcs || []).filter((token) => token.characterId !== character.id);
     });
     if (state.activeCharacterId === character.id) state.activeCharacterId = state.characters[0]?.id || "";
-    saveState(true);
+    saveState(true, 'campaign');
     render();
     toast("Karakter dihapus dari state dan akan diarsipkan di MySQL saat autosave.");
   }
@@ -582,7 +585,7 @@
       createdAt: nowIso()
     });
     state.chatLog = state.chatLog.slice(0, 160);
-    saveState(true);
+    saveState(true, 'campaign');
     render();
   }
 
@@ -603,7 +606,7 @@
       createdAt: nowIso()
     });
     state.roomEvents = state.roomEvents.slice(0, 160);
-    saveState(true);
+    saveState(true, 'campaign');
     render();
   }
 
@@ -748,7 +751,7 @@
     state.campaign.startingCustomItems = qs("#campaign-starting-items")?.value.trim() || "Healing Potion";
     const room = currentRoom();
     if (room) { room.name = state.campaign.name; room.lastActiveAt = nowIso(); }
-    saveState(true);
+    saveState(true, 'campaign');
     render();
   }
 

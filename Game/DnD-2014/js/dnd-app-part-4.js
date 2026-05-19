@@ -693,6 +693,18 @@
   }
 
   function render() {
+    if (bootingFromSql) {
+        app.innerHTML = `
+            <div class="dnd-panel glass-card p-6" style="margin: 40px auto; max-width: 800px; text-align: center;">
+                <h2 style="margin-bottom: 20px;">Memuat data karakter...</h2>
+                <div class="loading-skeleton" style="height: 120px; border-radius: 8px; margin-bottom: 16px;"></div>
+                <div class="loading-skeleton" style="height: 80px; border-radius: 8px; margin-bottom: 16px;"></div>
+                <div class="loading-skeleton" style="height: 200px; border-radius: 8px;"></div>
+            </div>
+        `;
+        return;
+    }
+
     enforcePlayerStartLocation();
     const user = currentUser();
     const char = activeCharacter();
