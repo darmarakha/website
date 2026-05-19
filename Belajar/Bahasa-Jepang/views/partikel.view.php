@@ -388,6 +388,9 @@
 
   <!-- Wanakana JS for Romaji -> Kana conversion -->
   <script src="https://unpkg.com/wanakana"></script>
+  <script src="assets/js/partikel.utils.js"></script>
+  <script src="assets/js/partikel.data.js"></script>
+  <script src="assets/js/partikel.practice.js"></script>
   <script src="assets/js/partikel.js"></script>
   <script>
     lucide.createIcons();
