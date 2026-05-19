@@ -1,3 +1,11 @@
+function escapeHtml(unsafe) {
+    return (unsafe || '').toString()
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+}
 
 // =====================================
 // PROCEDURAL QUESTION GENERATOR
@@ -5,53 +13,53 @@
 // Kita siapkan kamus lokal fallback (Full Kana) agar aman tanpa kanji.
 const dictionary = {
     orang: [
-        { kana: 'わたし', id: 'Saya' },
-        { kana: 'あなた', id: 'Kamu' },
-        { kana: 'ともだち', id: 'Teman' },
-        { kana: 'せんせい', id: 'Guru' },
-        { kana: 'がくせい', id: 'Pelajar' },
-        { kana: 'ねこ', id: 'Kucing' },
-        { kana: 'いぬ', id: 'Anjing' }
+        { kana: 'わたし', id: 'Saya', emoji: '🧑' },
+        { kana: 'あなた', id: 'Kamu', emoji: '🫵' },
+        { kana: 'ともだち', id: 'Teman', emoji: '🤝' },
+        { kana: 'せんせい', id: 'Guru', emoji: '👨‍🏫' },
+        { kana: 'がくせい', id: 'Pelajar', emoji: '🎒' },
+        { kana: 'ねこ', id: 'Kucing', emoji: '🐱' },
+        { kana: 'いぬ', id: 'Anjing', emoji: '🐶' }
     ],
     benda: [
-        { kana: 'みず', id: 'Air' },
-        { kana: 'パン', id: 'Roti' },
-        { kana: 'りんご', id: 'Apel' },
-        { kana: 'ほん', id: 'Buku' },
-        { kana: 'てがみ', id: 'Surat' },
-        { kana: 'くるま', id: 'Mobil' },
-        { kana: 'えんぴつ', id: 'Pensil' }
+        { kana: 'みず', id: 'Air', emoji: '💧' },
+        { kana: 'パン', id: 'Roti', emoji: '🍞' },
+        { kana: 'りんご', id: 'Apel', emoji: '🍎' },
+        { kana: 'ほん', id: 'Buku', emoji: '📖' },
+        { kana: 'てがみ', id: 'Surat', emoji: '✉️' },
+        { kana: 'くるま', id: 'Mobil', emoji: '🚗' },
+        { kana: 'えんぴつ', id: 'Pensil', emoji: '✏️' }
     ],
     tempat: [
-        { kana: 'がっこう', id: 'Sekolah' },
-        { kana: 'へや', id: 'Kamar' },
-        { kana: 'うち', id: 'Rumah' },
-        { kana: 'えき', id: 'Stasiun' },
-        { kana: 'こうえん', id: 'Taman' },
-        { kana: 'スーパー', id: 'Supermarket' }
+        { kana: 'がっこう', id: 'Sekolah', emoji: '🏫' },
+        { kana: 'へや', id: 'Kamar', emoji: '🚪' },
+        { kana: 'うち', id: 'Rumah', emoji: '🏠' },
+        { kana: 'えき', id: 'Stasiun', emoji: '🚉' },
+        { kana: 'こうえん', id: 'Taman', emoji: '🏞️' },
+        { kana: 'スーパー', id: 'Supermarket', emoji: '🛒' }
     ],
     waktu: [
-        { kana: 'あした', id: 'Besok' },
-        { kana: 'きのう', id: 'Kemarin' },
-        { kana: 'きょう', id: 'Hari ini' },
-        { kana: 'あさ', id: 'Pagi' },
-        { kana: 'よる', id: 'Malam' }
+        { kana: 'あした', id: 'Besok', emoji: '⏭️' },
+        { kana: 'きのう', id: 'Kemarin', emoji: '⏮️' },
+        { kana: 'きょう', id: 'Hari ini', emoji: '⏬' },
+        { kana: 'あさ', id: 'Pagi', emoji: '🌅' },
+        { kana: 'よる', id: 'Malam', emoji: '🌃' }
     ],
     verbTrans: [
-        { kana: 'のみます', id: 'minum', particle: 'を' },
-        { kana: 'たべます', id: 'makan', particle: 'を' },
-        { kana: 'よみます', id: 'membaca', particle: 'を' },
-        { kana: 'かいます', id: 'membeli', particle: 'を' },
-        { kana: 'かきます', id: 'menulis', particle: 'を' }
+        { kana: 'のみます', id: 'minum', particle: 'を', emoji: '🥤' },
+        { kana: 'たべます', id: 'makan', particle: 'を', emoji: '🍽️' },
+        { kana: 'よみます', id: 'membaca', particle: 'を', emoji: '👀' },
+        { kana: 'かいます', id: 'membeli', particle: 'を', emoji: '🛍️' },
+        { kana: 'かきます', id: 'menulis', particle: 'を', emoji: '✍️' }
     ],
     verbGerak: [
-        { kana: 'いきます', id: 'pergi', particle: 'へ' }, // Atau ni
-        { kana: 'きます', id: 'datang', particle: 'へ' },
-        { kana: 'かえります', id: 'pulang', particle: 'へ' }
+        { kana: 'いきます', id: 'pergi', particle: 'へ', emoji: '🚶' }, // Atau ni
+        { kana: 'きます', id: 'datang', particle: 'へ', emoji: '🏃' },
+        { kana: 'かえります', id: 'pulang', particle: 'へ', emoji: '↩️' }
     ],
     verbAda: [
-        { kana: 'あります', id: 'ada (benda mati)', particle: 'が' },
-        { kana: 'います', id: 'ada (hidup)', particle: 'が' }
+        { kana: 'あります', id: 'ada (benda mati)', particle: 'が', emoji: '📦' },
+        { kana: 'います', id: 'ada (hidup)', particle: 'が', emoji: '🧍' }
     ]
 };
 
@@ -72,11 +80,13 @@ function generateQuestions(amount) {
             let benda = getRandomItem(dictionary.benda);
             let verb = getRandomItem(dictionary.verbTrans);
             let p1 = Math.random() > 0.5 ? 'は' : 'が';
+            let emojiStr = `${orang.emoji} 💭 ${benda.emoji} ${verb.emoji}`;
 
             // Randomly blank out one of the particles
             if (Math.random() > 0.5) {
                 return {
                     type: "mcq",
+                    emoji: emojiStr,
                     soal: `${orang.kana} ___ ${benda.kana} ${verb.particle} ${verb.kana}。`,
                     terjemahan: `${orang.id} ${verb.id} ${benda.id}.`,
                     options: [`A. ${p1}`, `B. に`, `C. で`, `D. へ`],
@@ -87,6 +97,7 @@ function generateQuestions(amount) {
             } else {
                 return {
                     type: "essay",
+                    emoji: emojiStr,
                     soal: `${orang.kana} ${p1} ${benda.kana} ___ ${verb.kana}。`,
                     terjemahan: `${orang.id} ${verb.id} ${benda.id}.`,
                     jawaban: verb.particle,
@@ -101,10 +112,12 @@ function generateQuestions(amount) {
             let isHidup = Math.random() > 0.5;
             let subjek = isHidup ? getRandomItem(dictionary.orang) : getRandomItem(dictionary.benda);
             let verb = isHidup ? dictionary.verbAda[1] : dictionary.verbAda[0];
+            let emojiStr = `${tempat.emoji} 📍 ${subjek.emoji} ${verb.emoji}`;
 
             if (Math.random() > 0.5) {
                 return {
                     type: "mcq",
+                    emoji: emojiStr,
                     soal: `${tempat.kana} ___ ${subjek.kana} が ${verb.kana}。`,
                     terjemahan: `Di ${tempat.id.toLowerCase()} ada ${subjek.id.toLowerCase()}.`,
                     options: ["A. で", "B. に", "C. を", "D. へ"],
@@ -115,6 +128,7 @@ function generateQuestions(amount) {
             } else {
                 return {
                     type: "essay",
+                    emoji: emojiStr,
                     soal: `${tempat.kana} に ${subjek.kana} ___ ${verb.kana}。`,
                     terjemahan: `Di ${tempat.id.toLowerCase()} ada ${subjek.id.toLowerCase()}.`,
                     jawaban: "が",
@@ -128,9 +142,11 @@ function generateQuestions(amount) {
             let tempat = getRandomItem(dictionary.tempat);
             let benda = getRandomItem(dictionary.benda);
             let verb = getRandomItem(dictionary.verbTrans);
+            let emojiStr = `${tempat.emoji} 🛠️ ${benda.emoji} ${verb.emoji}`;
 
             return {
                 type: "mcq",
+                emoji: emojiStr,
                 soal: `${tempat.kana} ___ ${benda.kana} を ${verb.kana}。`,
                 terjemahan: `${verb.id.charAt(0).toUpperCase() + verb.id.slice(1)} ${benda.id.toLowerCase()} di ${tempat.id.toLowerCase()}.`,
                 options: ["A. に", "B. で", "C. は", "D. も"],
@@ -144,9 +160,11 @@ function generateQuestions(amount) {
             let waktu = getRandomItem(dictionary.waktu);
             let tempat = getRandomItem(dictionary.tempat);
             let verb = getRandomItem(dictionary.verbGerak);
+            let emojiStr = `${waktu.emoji} ⏳ ${tempat.emoji} ${verb.emoji}`;
 
             return {
                 type: "essay",
+                emoji: emojiStr,
                 soal: `${waktu.kana}、 ${tempat.kana} ___ ${verb.kana}。`,
                 terjemahan: `${waktu.id}, ${verb.id} ke ${tempat.id.toLowerCase()}.`,
                 jawaban: verb.particle,
@@ -159,9 +177,11 @@ function generateQuestions(amount) {
             let b1 = getRandomItem(dictionary.benda);
             let b2 = getRandomItem(dictionary.benda);
             while (b1.kana === b2.kana) b2 = getRandomItem(dictionary.benda);
+            let emojiStr = `${b1.emoji} ➕ ${b2.emoji} 🛍️`;
 
             return {
                 type: "mcq",
+                emoji: emojiStr,
                 soal: `${b1.kana} ___ ${b2.kana} を かいます。`,
                 terjemahan: `Membeli ${b1.id.toLowerCase()} dan ${b2.id.toLowerCase()}.`,
                 options: ["A. と", "B. や", "C. も", "D. で"],
@@ -481,7 +501,9 @@ function updateUIProgress() {
         const id = btn.getAttribute('data-id');
         if (userProgress.kontrasSelesai.includes(id)) {
             btn.classList.add('completed');
-            btn.innerHTML = `<i data-lucide="check-double" class="w-4 h-4"></i> Selesai`;
+            btn.classList.add('bg-green-500/20');
+            btn.classList.add('text-green-400');
+            btn.innerHTML = `> git push origin main <i data-lucide="check" class="w-4 h-4 inline ml-1"></i>`;
         }
     });
 
@@ -524,53 +546,83 @@ function openPartikelModal(id) {
 
     const content = document.getElementById('modalContent');
     content.innerHTML = `
-        <div class="flex items-center gap-4 mb-6 border-b border-white/10 pb-4">
-            <div class="w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center font-jp ${p.char.length > 1 ? 'text-2xl' : 'text-4xl'} font-bold text-purple-400 border border-purple-500/30">
-                ${p.char}
+        <!-- Fake Window/IDE Header -->
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
+            <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
             </div>
-            <div>
-                <h3 class="text-2xl font-bold text-white">Partikel ${p.char}</h3>
-                <p class="text-neutral-400">Dibaca: <strong class="text-white">${p.romaji}</strong></p>
-            </div>
+            <div class="text-xs font-mono text-neutral-500">particle_${p.id}.ts</div>
+            <div class="w-16"></div> <!-- Spacer for balance -->
         </div>
 
-        <div class="space-y-4 mb-6">
+        <!-- Scrollable Content Area with max height -->
+        <div class="overflow-y-auto max-h-[60vh] md:max-h-[65vh] pr-2 custom-scrollbar space-y-6">
+
+            <!-- Section 1: Declaration -->
             <div>
-                <p class="text-xs text-neutral-500 uppercase tracking-wider mb-1">Fungsi Utama</p>
-                <p class="text-white font-medium bg-white/5 p-3 rounded-lg border border-white/10">${p.fungsi}</p>
+                <p class="text-xs font-mono text-purple-400 mb-2">// 1. Initialize Particle</p>
+                <div class="flex items-center gap-5 bg-dark-900/80 p-4 rounded-xl border border-white/5">
+                    <div class="w-16 h-16 rounded-xl bg-purple-500/20 flex items-center justify-center font-jp text-4xl font-bold text-purple-400 border border-purple-500/30 shrink-0">
+                        ${p.char}
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-1"><span class="text-purple-400">const</span> <span class="text-yellow-200">partikel</span> = '${p.char}';</h3>
+                        <p class="text-sm text-neutral-400 font-mono">readAs: <span class="text-emerald-300">"${p.romaji}"</span></p>
+                    </div>
+                </div>
             </div>
+
+            <!-- Section 2: Function & Formula -->
             <div>
-                <p class="text-xs text-neutral-500 uppercase tracking-wider mb-1">Rumus Dasar</p>
-                <p class="text-purple-300 font-mono bg-purple-500/10 p-3 rounded-lg border border-purple-500/20">${p.rumus}</p>
+                <p class="text-xs font-mono text-blue-400 mb-2">// 2. Syntax Definition</p>
+                <div class="bg-dark-900/80 p-4 rounded-xl border border-white/5 font-mono text-sm">
+                    <p class="text-neutral-400 mb-1">/** ${p.fungsi} */</p>
+                    <p class="text-blue-300 leading-relaxed">${p.rumus.replace(/\[(.*?)\]/g, '<span class="text-yellow-200">[$1]</span>')}</p>
+                </div>
             </div>
+
+            <!-- Section 3: Execution / Examples -->
             <div>
-                <p class="text-xs text-neutral-500 uppercase tracking-wider mb-2">Contoh Kalimat</p>
+                <p class="text-xs font-mono text-emerald-400 mb-2">// 3. Execution Examples</p>
                 <div class="space-y-3">
                     ${p.contoh.map(c => `
-                        <div class="bg-dark-900/50 p-4 rounded-xl border border-white/5">
-                            <p class="text-xl font-jp text-white mb-2 leading-relaxed tracking-wide">${c.jp.replace(p.char, `<span class="text-purple-400 font-bold">${p.char}</span>`)}</p>
-                            <p class="text-sm text-neutral-400">${c.id}</p>
+                        <div class="bg-dark-900/80 p-4 rounded-xl border border-white/5">
+                            <p class="text-lg font-jp text-white mb-2 leading-relaxed tracking-wide">${c.jp.replace(p.char, `<span class="text-purple-400 font-bold bg-purple-500/10 px-1 rounded">${p.char}</span>`)}</p>
+                            <p class="text-xs font-mono text-emerald-400/80 border-t border-white/5 pt-2 mt-2">> ${c.id}</p>
                         </div>
                     `).join('')}
                 </div>
             </div>
-            ${p.perbandingan ? `
-            <div class="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl text-sm">
-                <p class="text-blue-300 font-semibold mb-2 flex items-center gap-2"><i data-lucide="split" class="w-4 h-4"></i> Perbandingan</p>
-                <p class="text-blue-200/90 leading-relaxed">${p.perbandingan}</p>
-            </div>
-            ` : ''}
 
-            <div class="bg-orange-500/10 border border-orange-500/20 p-4 rounded-xl text-sm">
-                <p class="text-orange-300 font-semibold mb-1 flex items-center gap-2"><i data-lucide="alert-triangle" class="w-4 h-4"></i> Catatan & Kesalahan Umum</p>
-                <p class="text-orange-200/80 mb-2">${p.catatan}</p>
-                <p class="text-orange-200/60 text-xs">${p.salah}</p>
+            <!-- Section 4: Debug & Logs -->
+            <div>
+                <p class="text-xs font-mono text-orange-400 mb-2">// 4. Logs & Warnings</p>
+                <div class="space-y-3">
+                    ${p.perbandingan ? `
+                    <div class="bg-blue-900/20 border-l-2 border-blue-400 p-4 text-sm font-mono">
+                        <p class="text-blue-300 mb-2">[INFO] diff_check()</p>
+                        <p class="text-blue-100/80 leading-relaxed">${p.perbandingan.replace(/<b>/g, '<span class="text-blue-300 font-bold">').replace(/<\/b>/g, '</span>').replace(/<i>/g, '<span class="italic">').replace(/<\/i>/g, '</span>')}</p>
+                    </div>
+                    ` : ''}
+
+                    <div class="bg-orange-900/20 border-l-2 border-orange-400 p-4 text-sm font-mono">
+                        <p class="text-orange-300 mb-2">[WARN] common_mistakes()</p>
+                        <p class="text-orange-100/80 mb-2 leading-relaxed">${p.catatan}</p>
+                        <p class="text-rose-300/80 text-xs mt-2 pt-2 border-t border-rose-500/20">Error: ${p.salah}</p>
+                    </div>
+                </div>
             </div>
+
         </div>
 
-        <button class="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl transition" onclick="markPartikelSelesai('${p.id}')">
-            Mengerti & Tandai Selesai
-        </button>
+        <!-- Sticky Bottom Button -->
+        <div class="mt-6 pt-4 border-t border-white/10">
+            <button class="w-full py-3.5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500 text-white font-mono font-bold rounded-xl transition shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2" onclick="markPartikelSelesai('${p.id}')">
+                <i data-lucide="terminal" class="w-5 h-5"></i> compile_and_mark_done()
+            </button>
+        </div>
     `;
 
     document.getElementById('partikelModal').classList.add('active');
@@ -1016,14 +1068,20 @@ function renderUjian() {
         `;
     }
 
+    let emojiDisplayHtml = '';
+    if (q.emoji) {
+        emojiDisplayHtml = `<div class="text-center text-4xl mb-4">${q.emoji}</div>`;
+    }
+
     container.innerHTML = `
         <div class="flex justify-between items-center mb-6 text-sm text-neutral-400 font-bold uppercase tracking-wider">
             <span class="text-orange-400">Soal Ujian ${currentUjianIndex + 1} / ${ujianData.length}</span>
             <span>Tipe: ${q.type === 'mcq' ? 'Pilihan Ganda' : 'Essai (Wanakana)'}</span>
         </div>
-        <div class="bg-white/5 p-6 rounded-2xl border border-white/10 mb-6">
-            <h3 class="text-2xl font-bold font-jp leading-relaxed">${q.soal}</h3>
-            <p class="text-sm text-neutral-400 mt-2"><i data-lucide="languages" class="w-4 h-4 inline mr-1"></i> ${q.terjemahan || 'Arti kalimat di atas.'}</p>
+        <div class="bg-white/5 p-6 rounded-2xl border border-white/10 mb-6 relative">
+            ${emojiDisplayHtml}
+            <h3 class="text-2xl font-bold font-jp leading-relaxed text-center">${q.soal}</h3>
+            <p class="text-sm text-neutral-400 mt-4 text-center"><i data-lucide="languages" class="w-4 h-4 inline mr-1"></i> ${q.terjemahan || 'Arti kalimat di atas.'}</p>
         </div>
         ${contentHtml}
         <div id="ujianFeedback" class="hidden mt-6 p-4 rounded-xl text-sm border"></div>
@@ -1168,7 +1226,7 @@ function showUjianResult() {
 
                         <div class="bg-white/5 rounded-lg p-3 mb-3 border border-white/5">
                             <span class="text-xs text-neutral-400 uppercase tracking-wider block mb-1">Jawaban Kamu:</span>
-                            <span class="${userAnsClass} font-bold">${item.jawabanUser}</span> ${correctAnsHtml}
+                            <span class="${userAnsClass} font-bold">${escapeHtml(item.jawabanUser)}</span> ${correctAnsHtml}
                         </div>
 
                         <div class="text-sm text-neutral-300">
@@ -1264,6 +1322,11 @@ function renderLatihan() {
         `;
     }
 
+    let emojiDisplayHtml = '';
+    if (q.emoji) {
+        emojiDisplayHtml = `<div class="text-center text-4xl mb-4">${q.emoji}</div>`;
+    }
+
     container.innerHTML = `
         <div class="flex justify-between items-center mb-6 text-sm text-neutral-400 font-bold uppercase tracking-wider">
             <span class="text-purple-400">Soal Latihan ${currentLatihanIndex + 1} / ${latihanData.length}</span>
@@ -1276,9 +1339,10 @@ function renderLatihan() {
             <i data-lucide="info" class="w-4 h-4 inline mr-1"></i> ${q.hint || 'Tidak ada petunjuk spesifik.'}
         </div>
 
-        <div class="bg-white/5 p-6 rounded-2xl border border-white/10 mb-6">
-            <h3 class="text-2xl font-bold font-jp leading-relaxed">${q.soal}</h3>
-            <p class="text-sm text-neutral-400 mt-2"><i data-lucide="languages" class="w-4 h-4 inline mr-1"></i> ${q.terjemahan || 'Arti kalimat di atas.'}</p>
+        <div class="bg-white/5 p-6 rounded-2xl border border-white/10 mb-6 relative">
+            ${emojiDisplayHtml}
+            <h3 class="text-2xl font-bold font-jp leading-relaxed text-center">${q.soal}</h3>
+            <p class="text-sm text-neutral-400 mt-4 text-center"><i data-lucide="languages" class="w-4 h-4 inline mr-1"></i> ${q.terjemahan || 'Arti kalimat di atas.'}</p>
         </div>
         ${contentHtml}
         <div id="latihanFeedback" class="hidden mt-6 p-4 rounded-xl text-sm border"></div>
