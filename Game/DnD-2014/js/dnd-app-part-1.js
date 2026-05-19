@@ -895,17 +895,27 @@
     syncBusy = true;
     syncPendingShow = false;
     try {
+      let savedSomething = false;
       if (state.dirtyCharacter && state.activeCharacterId) {
         const char = state.characterDetails[state.activeCharacterId] || state.characters.find(c => c.id === state.activeCharacterId);
         if (char) {
             await dndApi("save_character", { character: char });
+            savedSomething = true;
         }
-      } else if (state.dirtyCampaign) {
+      }
+      if (state.dirtyCampaign) {
           await dndApi("save_campaign", { campaign: state.campaign });
-      } else {
+          savedSomething = true;
+      }
+
+      if (!savedSomething) {
+        // Fallback or full save (like a manual backup trigger)
         const data = await dndApi("save", { state: sanitizeStateForSql(state), snapshot_name: "Autosave DND 2014" });
         if (show) toast(data.message || "DND tersimpan ke SQL.");
+      } else if (show) {
+          toast("DND tersimpan ke SQL.");
       }
+
       state.dirtyCharacter = false;
       state.dirtyCampaign = false;
       syncWarned = false;
