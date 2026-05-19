@@ -64,15 +64,15 @@
                 const klass = DATA.classes.find(k => k.id === draft.className) || {};
                 const expertiseCount = Number(klass.expertiseCount || 0);
                 if (!expertiseCount) return "";
-                const allSkillIds = skillSelectionBreakdown(draft.skills || [], draft).all;
-                const selectedSkills = allSkillIds.map(id => DATA.skills.find(s => s.id === id)).filter(Boolean);
-                const hasTool = klass.id === "rogue" || (draft.inventory || []).some(i => /thieves' tools/i.test(i));
+                const skillInfo = skillSelectionBreakdown(draft.skills || [], draft);
+                const selectedSkills = DATA.skills.filter(s => skillInfo.all.includes(s.id));
+                const hasTool = klass.tools && klass.tools !== "None";
                 const expertiseOptions = [
                   ...selectedSkills.map(s => `<option value="skill:${esc(s.id)}" ${(draft.expertise||[]).includes("skill:"+s.id)?"selected":""}>${esc(s.label)}</option>`),
                   ...(hasTool ? [`<option value="tool:thieves_tools" ${(draft.expertise||[]).includes("tool:thieves_tools")?"selected":""}>Thieves' Tools</option>`] : [])
                 ].join("");
                 return `<h3 style="margin:1rem 0 .35rem">Expertise</h3>
-                <p class="dnd-muted">Pilih ${expertiseCount} skill atau tool untuk mendapat Expertise (double proficiency bonus). Hanya bisa memilih dari skill yang sudah dipilih di atas.</p>
+                <p class="dnd-muted">Pilih ${expertiseCount} skill atau tool untuk mendapat Expertise (double proficiency bonus). Hanya bisa memilih dari 4 skill yang sudah dipilih di atas.</p>
                 <div class="dnd-form-grid">
                   ${Array.from({length: expertiseCount}, (_, i) => `<div class="dnd-field"><label>Expertise ${i+1}</label><select name="expertise-${i}">
                     <option value="">— Pilih skill/tool —</option>
