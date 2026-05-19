@@ -125,9 +125,9 @@ function renderCerts() {
              onclick="openLightbox('${c.fullSrc || c.coverSrc || c.imgSrc || ''}','${certsI18n[c.titleKey][currentLang]}','${c.pdfSrc || ''}')">
             ${c.featured ? `<div class="relative flex-shrink-0"><div class="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-10 px-2 sm:px-3 py-0.5 sm:py-1 bg-accent-500 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-lg">${t('cert.featured')}</div>` : '<div class="flex-shrink-0">'}
             <div class="aspect-[4/3] overflow-hidden bg-navy-900/50 relative">
-                ${(c.imgSrc || '').toLowerCase().endsWith('.pdf') || (c.pdfSrc || '').toLowerCase().endsWith('.pdf') 
+                ${(c.imgSrc || '').toLowerCase().endsWith('.pdf') || (c.pdfSrc || '').toLowerCase().endsWith('.pdf')
                     ? `<iframe src="${c.pdfSrc || c.imgSrc}#toolbar=0&navpanes=0&scrollbar=0" class="w-full h-full pointer-events-none scale-110" style="border:none;"></iframe>
-                       <div class="absolute inset-0 z-10"></div>` 
+                       <div class="absolute inset-0 z-10"></div>`
                     : `<img src="${c.coverSrc || c.imgSrc || c.fullSrc || ''}" alt="${certsI18n[c.titleKey][currentLang]}" class="w-full h-full object-cover transition-transform duration-500" loading="lazy">`
                 }
             </div>
@@ -493,7 +493,7 @@ authForm.addEventListener('submit', async e => {
     const name = nameInput ? nameInput.value.trim() : '';
     const email = document.getElementById('auth-email').value.trim();
     const password = document.getElementById('auth-pass').value.trim();
-    
+
     // Menentukan apakah user sedang Login atau Register
     const action = isLoginMode ? 'login' : 'register';
 
@@ -536,7 +536,7 @@ authForm.addEventListener('submit', async e => {
             } else {
                 // Paksa browser memuat ulang halaman agar sesi PHP terbaca dan navbar berubah
                 setTimeout(() => {
-                    window.location.reload(); 
+                    window.location.reload();
                 }, 1500);
             }
         } else {
@@ -587,11 +587,25 @@ contactForm.addEventListener('submit', e => {
 // ================================================================
 // ACTIVE NAV LINK & INIT
 // ================================================================
+// ⚡ Bolt: Optimize scroll performance by:
+// 1. Caching static DOM elements (allNavLinks) outside the event listener
+// 2. Caching window.scrollY to prevent layout thrashing inside the loop
+// 3. Using requestAnimationFrame to throttle scroll events (measurably reduces main thread blocking)
 const sections = document.querySelectorAll('section[id]');
+const allNavLinks = document.querySelectorAll('.nav-link');
+let isNavScrollThrottled = false;
+
 window.addEventListener('scroll', () => {
-    let cur = '';
-    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) cur = s.id; });
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + cur));
+    if (!isNavScrollThrottled) {
+        window.requestAnimationFrame(() => {
+            let cur = '';
+            const scrollY = window.scrollY;
+            sections.forEach(s => { if (scrollY >= s.offsetTop - 100) cur = s.id; });
+            allNavLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + cur));
+            isNavScrollThrottled = false;
+        });
+        isNavScrollThrottled = true;
+    }
 }, { passive: true });
 
 gemuCreateIcons();
