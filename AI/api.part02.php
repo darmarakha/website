@@ -605,37 +605,179 @@ function gemu_is_self_intro_question(string $q): bool {
     return (bool)preg_match('/\b(kamu\s+siapa|siapa\s+kamu|siapa\s+dirimu|siapa\s+anda|siapa\s+gemu|gemu\s+itu\s+siapa|kamu\s+ini\s+siapa|kenalin\s+dirimu|perkenalkan\s+dirimu)\b/i', trim($q));
 }
 
+// Only simple arithmetic is supported. No identifiers, variables, functions, or PHP execution.
+function gemu_safe_math_eval(string $expr): ?float {
+    // Check max length
+    if (strlen($expr) > 120) return null;
+
+    // Remove all whitespace
+    $expr = preg_replace('/\s+/', '', $expr);
+    if ($expr === '') return null;
+
+    // Check for allowed characters
+    if (!preg_match('/^[0-9\+\-\*\/\(\)\.]+$/', $expr)) return null;
+
+    // Check for malformed decimals (e.g. 1..2)
+    if (strpos($expr, '..') !== false) return null;
+
+    $tokens = gemu_math_tokenize($expr);
+    if ($tokens === null) return null;
+
+    $rpn = gemu_math_to_rpn($tokens);
+    if ($rpn === null) return null;
+
+    return gemu_math_eval_rpn($rpn);
+}
+
+function gemu_math_tokenize(string $expr): ?array {
+    $tokens = [];
+    $length = strlen($expr);
+    $i = 0;
+
+    // Track previous token to identify unary minus
+    $prevToken = null;
+
+    while ($i < $length) {
+        $char = $expr[$i];
+
+        if (strpos('+-*/()', $char) !== false) {
+            // Check if it's a unary minus
+            if ($char === '-' && ($prevToken === null || $prevToken === '(' || strpos('+-*/', $prevToken) !== false)) {
+                $tokens[] = 'u-'; // u- represents unary minus
+            } else {
+                $tokens[] = $char;
+            }
+            $prevToken = $char;
+            $i++;
+        } elseif (ctype_digit($char) || $char === '.') {
+            $num = '';
+            while ($i < $length && (ctype_digit($expr[$i]) || $expr[$i] === '.')) {
+                $num .= $expr[$i];
+                $i++;
+            }
+            // Basic check for valid number format
+            if (substr_count($num, '.') > 1) return null; // Invalid number like 1.2.3
+
+            $tokens[] = $num;
+            $prevToken = 'num';
+        } else {
+            return null; // Should not happen due to regex check, but safe
+        }
+    }
+
+    return $tokens;
+}
+
+function gemu_math_to_rpn(array $tokens): ?array {
+    $output = [];
+    $operators = [];
+
+    $precedence = [
+        '+' => 1,
+        '-' => 1,
+        '*' => 2,
+        '/' => 2,
+        'u-' => 3 // Unary minus has highest precedence
+    ];
+
+    foreach ($tokens as $token) {
+        if (is_numeric($token)) {
+            $output[] = (float)$token;
+        } elseif ($token === 'u-') {
+            $operators[] = $token;
+        } elseif (isset($precedence[$token])) {
+            while (!empty($operators)) {
+                $top = end($operators);
+                if ($top !== '(' && $precedence[$top] >= $precedence[$token]) {
+                    $output[] = array_pop($operators);
+                } else {
+                    break;
+                }
+            }
+            $operators[] = $token;
+        } elseif ($token === '(') {
+            $operators[] = $token;
+        } elseif ($token === ')') {
+            $foundParen = false;
+            while (!empty($operators)) {
+                $top = array_pop($operators);
+                if ($top === '(') {
+                    $foundParen = true;
+                    break;
+                } else {
+                    $output[] = $top;
+                }
+            }
+            if (!$foundParen) return null; // Unbalanced parentheses
+        } else {
+            return null; // Unknown token
+        }
+    }
+
+    while (!empty($operators)) {
+        $top = array_pop($operators);
+        if ($top === '(' || $top === ')') return null; // Unbalanced parentheses
+        $output[] = $top;
+    }
+
+    return $output;
+}
+
+function gemu_math_eval_rpn(array $rpn): ?float {
+    $stack = [];
+
+    foreach ($rpn as $token) {
+        if (is_float($token)) {
+            $stack[] = $token;
+        } elseif ($token === 'u-') {
+            if (empty($stack)) return null;
+            $a = array_pop($stack);
+            $stack[] = -$a;
+        } else {
+            if (count($stack) < 2) return null;
+            $b = array_pop($stack);
+            $a = array_pop($stack);
+
+            switch ($token) {
+                case '+': $stack[] = $a + $b; break;
+                case '-': $stack[] = $a - $b; break;
+                case '*': $stack[] = $a * $b; break;
+                case '/':
+                    if ($b == 0) return null; // Division by zero
+                    $stack[] = $a / $b;
+                    break;
+                default: return null; // Unknown operator
+            }
+        }
+    }
+
+    if (count($stack) !== 1) return null; // Invalid expression
+
+    return $stack[0];
+}
+
 function gemu_handle_simple_math(string $q): ?string {
     $q = trim($q);
+    $originalQ = $q;
+
+    // Check if the query clearly starts with a math keyword
+    $isMathIntent = preg_match('/^(berapa|hitung|hasil\s+dari|what\s+is|calculate|solve)\s+/i', $q);
+
     // Remove common question prefixes in Indonesian/English
     $q = preg_replace('/^(berapa|hitung|hasil\s+dari|what\s+is|calculate|solve)\s+/i', '', $q);
     
     // Remove trailing question mark and allow spaces/parentheses
     $clean = preg_replace('/[?]$/', '', $q);
-    $clean = preg_replace('/\s+/', '', $clean);
     
-    // Only allow digits, operators + - * / and parentheses
-    if (!preg_match('/^[0-9\+\-\*\/\(\)\.]+$/', $clean)) return null;
+    // Try to evaluate the expression
+    $res = gemu_safe_math_eval($clean);
     
-    // Very basic safety check for nested or malicious patterns
-    if (strpos($clean, 'eval') !== false || strpos($clean, '$_') !== false) return null;
-
-    try {
-        // Use a simple replacement and eval-like logic but with preg_replace safety
-        // Since we already filtered for numbers and basic operators, it's relatively safe.
-        // We'll use a calculator logic for simple chains
-        $res = null;
-        // Basic arithmetic evaluator for simple chains like (125*4)+500
-        // We use @ to suppress errors from malformed math
-        $val = @eval("return $clean;");
-        if ($val !== false && $val !== null) {
-            $res = $val;
-        }
-
-        if ($res !== null) {
-            return "Hasil perhitungan dari “{$q}” adalah $res. Ada lagi yang bisa saya hitung?";
-        }
-    } catch (Throwable $e) {}
+    if ($res !== null) {
+        return "Hasil perhitungan dari “{$q}” adalah $res. Ada lagi yang bisa saya hitung?";
+    } elseif ($isMathIntent && preg_match('/^[0-9\+\-\*\/\(\)\.\s]+$/', $clean)) {
+        // If it looks like a math intent and contains math characters, but failed evaluation (e.g. div by zero or malformed)
+        return "Maaf, perhitungan tidak bisa diproses karena pembagian dengan nol atau format matematikanya tidak valid.";
+    }
     
     return null;
 }
