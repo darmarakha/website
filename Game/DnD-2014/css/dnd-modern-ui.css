@@ -105,3 +105,123 @@ h1, h2, h3, h4, h5, h6 {
     transform: none;
   }
 }
+
+/* Sync Console (Live Loading Log) */
+.dnd-boot-console {
+  background: rgba(12, 18, 26, 0.72);
+  border: 1px solid rgba(217, 181, 111, 0.28);
+  border-radius: 12px;
+  color: #f4ead2;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  box-shadow: 0 18px 60px rgba(0,0,0,.28);
+  margin-top: 20px;
+  width: 100%;
+  max-width: 400px;
+  text-align: left;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+.dnd-boot-console--collapsed {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  max-width: 200px;
+  margin-top: 0;
+  z-index: 9999;
+  opacity: 0.8;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+.dnd-boot-console--collapsed:hover {
+  opacity: 1;
+  max-width: 400px;
+}
+
+.dnd-boot-console--collapsed .dnd-boot-console__rows {
+  display: none;
+}
+
+.dnd-boot-console--collapsed:hover .dnd-boot-console__rows {
+  display: block;
+}
+
+.dnd-boot-console__header {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  border-bottom: 1px solid rgba(217, 181, 111, 0.15);
+  color: var(--dnd-gold-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dnd-boot-console__rows {
+  padding: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(217, 181, 111, 0.3) transparent;
+}
+
+.dnd-boot-console__rows::-webkit-scrollbar {
+  width: 6px;
+}
+.dnd-boot-console__rows::-webkit-scrollbar-thumb {
+  background: rgba(217, 181, 111, 0.3);
+  border-radius: 3px;
+}
+
+.dnd-boot-console__row {
+  display: flex;
+  margin-bottom: 4px;
+  animation: log-reveal 0.2s ease-out;
+}
+
+@keyframes log-reveal {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dnd-boot-console__time {
+  color: var(--dnd-moss);
+  margin-right: 8px;
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.dnd-boot-console__type {
+  color: var(--dnd-rune-blue);
+  margin-right: 8px;
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+.dnd-boot-console__message {
+  color: var(--dnd-text-main);
+  word-break: break-word;
+}
+
+.dnd-boot-console__cursor {
+  display: inline-block;
+  animation: blink 1s step-end infinite;
+  color: var(--dnd-gold-soft);
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@media (max-width: 400px) {
+  .dnd-boot-console {
+    max-width: 360px;
+    font-size: 0.75rem;
+  }
+}
