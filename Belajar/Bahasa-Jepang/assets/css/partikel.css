@@ -1,0 +1,129 @@
+/* Scoped CSS specifically for Partikel Module */
+.partikel-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.partikel-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.2);
+}
+
+.partikel-card.completed {
+    border-color: rgba(168, 85, 247, 0.5);
+    background: rgba(168, 85, 247, 0.05);
+}
+
+.partikel-card.completed .card-icon {
+    background: rgba(168, 85, 247, 0.2);
+    color: #c084fc;
+}
+
+.btn-mark-contrast.completed {
+    border-color: rgba(34, 197, 94, 0.5); /* green-500/50 */
+    cursor: default;
+}
+
+.quiz-option {
+    transition: all 0.2s ease;
+}
+
+.quiz-option:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.quiz-option.correct {
+    background: rgba(52, 211, 153, 0.2);
+    border-color: rgba(52, 211, 153, 0.5);
+    color: #6ee7b7;
+}
+
+.quiz-option.wrong {
+    background: rgba(244, 63, 94, 0.2);
+    border-color: rgba(244, 63, 94, 0.5);
+    color: #fda4af;
+}
+
+#toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+#partikelModal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#partikelModal.active #partikelModalCard {
+    transform: scale(1);
+}
+
+/* Additional overrides for JLPT Ujian to ensure mobile responsiveness */
+#ujianContainer {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+    .ujian-essay-input {
+        width: 100% !important;
+        max-width: 200px;
+        margin-bottom: 1rem;
+    }
+}
+
+/* Additional overrides for Partikel Card Grid on Mobile */
+@media (max-width: 640px) {
+    #partikelGrid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+/* Furigana Styling */
+ruby {
+    ruby-align: center;
+}
+rt {
+    font-size: 0.6em;
+    color: #a3a3a3; /* neutral-400 */
+    font-weight: normal;
+    letter-spacing: 0;
+}
+
+
+/* Coding Vibe Modal Enhancements */
+#partikelModalCard {
+    background: #0f111a; /* Dark IDE Theme */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(168, 85, 247, 0.3);
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(168, 85, 247, 0.5);
+}
+
+/* Ensure Furigana still looks good inside IDE Theme */
+ruby {
+    ruby-align: center;
+}
+rt {
+    font-size: 0.55em;
+    color: #94a3b8; /* neutral-400 */
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: normal;
+    letter-spacing: 0;
+    transform: translateY(-0.1em);
+}

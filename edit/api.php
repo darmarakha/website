@@ -37,6 +37,18 @@ if ($action === 'load_file') {
         exit;
     }
 
+    // Validasi: konten tidak boleh kosong
+    if (empty(trim($content))) {
+        echo json_encode(['status' => 'error', 'message' => 'Konten tidak boleh kosong! Simpan dibatalkan.']);
+        exit;
+    }
+
+    // Buat backup file sebelum ditimpa (untuk pemulihan darurat)
+    $backupFile = $filename . '.bak';
+    if (file_exists($filename)) {
+        @copy($filename, $backupFile);
+    }
+
     // Tulis ulang file dengan konten baru
     if (file_put_contents($filename, $content) !== false) {
         // Update timestamp index.php agar cache-busting di frontend terpicu
@@ -44,6 +56,10 @@ if ($action === 'load_file') {
         clearstatcache();
         echo json_encode(['status' => 'success', 'message' => 'File berhasil diperbarui!']);
     } else {
+        // Pulihkan dari backup jika gagal
+        if (file_exists($backupFile)) {
+            @copy($backupFile, $filename);
+        }
         echo json_encode(['status' => 'error', 'message' => 'Gagal menyimpan file. Pastikan Permission file di cPanel adalah 0644.']);
     }
 
@@ -54,6 +70,26 @@ if ($action === 'load_file') {
         exit;
     }
 
+    $originalName = basename($_FILES['image']['name']);
+    $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+    $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+
+    if (!in_array($extension, $allowedExtensions)) {
+        echo json_encode(['status' => 'error', 'message' => 'Ekstensi file tidak diizinkan. Gunakan JPG, JPEG, PNG, WEBP, atau GIF.']);
+        exit;
+    }
+
+    // Validasi MIME type
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_file($finfo, $_FILES['image']['tmp_name']);
+    finfo_close($finfo);
+
+    $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!in_array($mimeType, $allowedMimeTypes)) {
+        echo json_encode(['status' => 'error', 'message' => 'Tipe file tidak valid.']);
+        exit;
+    }
+
     // Buat folder 'uploads' di dalam folder 'edit' jika belum ada
     $uploadDir = 'uploads/';
     if (!is_dir($uploadDir)) {
@@ -61,7 +97,8 @@ if ($action === 'load_file') {
     }
 
     // Bersihkan nama file agar aman dan tidak menimpa file lama
-    $fileName = time() . '_' . preg_replace("/[^a-zA-Z0-9.]/", "", basename($_FILES['image']['name']));
+    $safeBase = preg_replace('/[^a-zA-Z0-9._-]/', '', $originalName);
+    $fileName = time() . '_' . $safeBase;
     $targetPath = $uploadDir . $fileName;
 
     if (move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
@@ -86,10 +123,27 @@ if ($action === 'load_file') {
 
     $originalName = basename($_FILES['project_file']['name']);
     $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-    $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'pdf', 'html', 'htm', 'zip', 'rar', '7z'];
+    $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf', 'zip', 'rar', '7z'];
 
     if (!in_array($extension, $allowedExtensions)) {
-        echo json_encode(['status' => 'error', 'message' => 'Tipe file tidak diizinkan. Gunakan gambar, PDF, HTML, ZIP, RAR, atau 7Z.']);
+        echo json_encode(['status' => 'error', 'message' => 'Tipe file tidak diizinkan. Gunakan gambar JPG, JPEG, PNG, WEBP, GIF, PDF, ZIP, RAR, atau 7Z.']);
+        exit;
+    }
+
+    // Validasi MIME type
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_file($finfo, $_FILES['project_file']['tmp_name']);
+    finfo_close($finfo);
+
+    $allowedMimeTypes = [
+        'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+        'application/pdf', 'application/zip',
+        'application/x-rar-compressed', 'application/vnd.rar',
+        'application/x-7z-compressed'
+    ];
+
+    if (!in_array($mimeType, $allowedMimeTypes)) {
+        echo json_encode(['status' => 'error', 'message' => 'Tipe file tidak valid.']);
         exit;
     }
 

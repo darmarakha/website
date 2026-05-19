@@ -222,23 +222,55 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
             }
         }
 
+        // Ekstrak blok JS array/object dengan bracket-matching yang aman
+        function extractBlock(content, varName, opener) {
+            const keyword = 'const ' + varName + ' = ';
+            const startIdx = content.indexOf(keyword);
+            if (startIdx === -1) return null;
+            const blockStart = content.indexOf(opener, startIdx);
+            if (blockStart === -1) return null;
+            const closer = opener === '[' ? ']' : '}';
+            let depth = 0;
+            let inStr = false, strChar = '';
+            for (let i = blockStart; i < content.length; i++) {
+                const ch = content[i];
+                if (inStr) {
+                    if (ch === strChar && content[i-1] !== '\\') inStr = false;
+                } else if (ch === '"' || ch === "'" || ch === '`') {
+                    inStr = true; strChar = ch;
+                } else if (ch === opener) {
+                    depth++;
+                } else if (ch === closer) {
+                    depth--;
+                    if (depth === 0) {
+                        return content.slice(blockStart, i + 1);
+                    }
+                }
+            }
+            return null;
+        }
+
         function parseData(content) {
             try {
-                const certsMatch = content.match(/const certsData = (\[[\s\S]*?\]);/);
-                const certsI18nMatch = content.match(/const certsI18n = (\{[\s\S]*?\});/);
-                const skillsMatch = content.match(/const skillsData = (\[[\s\S]*?\]);/);
-                const skillsI18nMatch = content.match(/const skillsI18n = (\{[\s\S]*?\});/);
-                const projMatch = content.match(/const projData = (\[[\s\S]*?\]);/);
-                const projI18nMatch = content.match(/const projI18n = (\{[\s\S]*?\});/);
+                const certsRaw    = extractBlock(content, 'certsData', '[');
+                const certsI18nRaw = extractBlock(content, 'certsI18n', '{');
+                const skillsRaw   = extractBlock(content, 'skillsData', '[');
+                const skillsI18nRaw = extractBlock(content, 'skillsI18n', '{');
+                const projRaw     = extractBlock(content, 'projData', '[');
+                const projI18nRaw = extractBlock(content, 'projI18n', '{');
 
-                if (certsMatch) certs = eval(certsMatch[1]);
-                if (certsI18nMatch) certsI18n = eval('(' + certsI18nMatch[1] + ')');
-                if (skillsMatch) skills = eval(skillsMatch[1]);
-                if (skillsI18nMatch) skillsI18n = eval('(' + skillsI18nMatch[1] + ')');
-                if (projMatch) projects = eval(projMatch[1]);
-                if (projI18nMatch) projectsI18n = eval('(' + projI18nMatch[1] + ')');
+                // Pakai Function() sebagai eval yang lebih terkontrol
+                const safeEval = (str) => Function('"use strict"; return (' + str + ')')();
+
+                if (certsRaw)     certs         = safeEval(certsRaw);
+                if (certsI18nRaw) certsI18n     = safeEval(certsI18nRaw);
+                if (skillsRaw)    skills        = safeEval(skillsRaw);
+                if (skillsI18nRaw) skillsI18n   = safeEval(skillsI18nRaw);
+                if (projRaw)      projects      = safeEval(projRaw);
+                if (projI18nRaw)  projectsI18n  = safeEval(projI18nRaw);
             } catch (e) {
                 console.error("Parse Error", e);
+                alert('Gagal membaca data.js: ' + e.message);
             }
         }
 
@@ -669,20 +701,59 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
             }
         }
 
+        // Ganti blok const di dalam string konten menggunakan bracket-matching
+        function replaceBlock(content, varName, opener, newValue) {
+            const keyword = 'const ' + varName + ' = ';
+            const startIdx = content.indexOf(keyword);
+            if (startIdx === -1) return content; // Jika tidak ditemukan, kembalikan apa adanya
+            const blockStart = content.indexOf(opener, startIdx);
+            if (blockStart === -1) return content;
+            const closer = opener === '[' ? ']' : '}';
+            let depth = 0;
+            let inStr = false, strChar = '';
+            for (let i = blockStart; i < content.length; i++) {
+                const ch = content[i];
+                if (inStr) {
+                    if (ch === strChar && content[i-1] !== '\\') inStr = false;
+                } else if (ch === '"' || ch === "'" || ch === '`') {
+                    inStr = true; strChar = ch;
+                } else if (ch === opener) {
+                    depth++;
+                } else if (ch === closer) {
+                    depth--;
+                    if (depth === 0) {
+                        // Hapus juga ';' opsional setelah block
+                        const endIdx = content[i+1] === ';' ? i + 2 : i + 1;
+                        return content.slice(0, startIdx) + keyword + newValue + ';' + content.slice(endIdx);
+                    }
+                }
+            }
+            return content;
+        }
+
         async function saveAll() {
             showLoading(true);
             try {
                 let content = rawData;
-                if (currentMode === 'code') content = document.getElementById('editor').value;
-                else {
-                    // Update regex to be more resilient (handle spaces/newlines/missing semicolons)
-                    content = content.replace(/const certsData\s*=\s*\[[\s\S]*?\]\s*;?/, "const certsData = " + JSON.stringify(certs, null, 4) + ";");
-                    content = content.replace(/const certsI18n\s*=\s*\{[\s\S]*?\}\s*;?/, "const certsI18n = " + JSON.stringify(certsI18n, null, 4) + ";");
-                    content = content.replace(/const skillsData\s*=\s*\[[\s\S]*?\]\s*;?/, "const skillsData = " + JSON.stringify(skills, null, 4) + ";");
-                    content = content.replace(/const skillsI18n\s*=\s*\{[\s\S]*?\}\s*;?/, "const skillsI18n = " + JSON.stringify(skillsI18n, null, 4) + ";");
-                    content = content.replace(/const projData\s*=\s*\[[\s\S]*?\]\s*;?/, "const projData = " + JSON.stringify(projects, null, 4) + ";");
-                    content = content.replace(/const projI18n\s*=\s*\{[\s\S]*?\}\s*;?/, "const projI18n = " + JSON.stringify(projectsI18n, null, 4) + ";");
+                if (currentMode === 'code') {
+                    content = document.getElementById('editor').value;
+                } else {
+                    // Gunakan replaceBlock yang aman daripada regex greedy
+                    content = replaceBlock(content, 'certsData',  '[', JSON.stringify(certs, null, 4));
+                    content = replaceBlock(content, 'certsI18n',  '{', JSON.stringify(certsI18n, null, 4));
+                    content = replaceBlock(content, 'skillsData', '[', JSON.stringify(skills, null, 4));
+                    content = replaceBlock(content, 'skillsI18n', '{', JSON.stringify(skillsI18n, null, 4));
+                    content = replaceBlock(content, 'projData',   '[', JSON.stringify(projects, null, 4));
+                    content = replaceBlock(content, 'projI18n',   '{', JSON.stringify(projectsI18n, null, 4));
                 }
+
+                // Validasi: pastikan konten tidak kosong
+                if (!content || content.trim().length < 100) {
+                    alert('Terjadi kesalahan: konten yang akan disimpan terlalu pendek. Simpan dibatalkan untuk keamanan.');
+                    showLoading(false);
+                    return;
+                }
+
                 const fd = new FormData();
                 fd.append('action', 'save_file');
                 fd.append('filename', currentFile);
@@ -691,15 +762,19 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                 const data = await res.json();
                 if (data.status === 'success') { 
                     rawData = content; 
-                    alert('Data disinkronkan!'); 
+                    alert('✅ Data berhasil disimpan!');
                     if (currentFile !== '../data.js') {
-                        // Jika mengedit file sistem lain, muat ulang datanya agar konsisten
                         location.reload();
                     }
+                } else {
+                    alert('❌ ' + data.message);
                 }
-                else alert(data.message);
-            } catch(e) { console.error(e); alert('Simpan gagal.'); }
-            finally { showLoading(false); }
+            } catch(e) { 
+                console.error(e); 
+                alert('Simpan gagal: ' + e.message); 
+            } finally { 
+                showLoading(false); 
+            }
         }
 
         function showLoading(show) {

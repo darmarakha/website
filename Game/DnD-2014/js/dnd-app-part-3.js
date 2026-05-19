@@ -407,12 +407,24 @@
       return yPos + 16 + lines.length * 10;
     };
     const nextDetailPage = (title) => { doc.addPage(); section(title, 42); return 64; };
-    let detailY = nextDetailPage("Features & Traits Detail");
+    
+    let detailY = nextDetailPage("Inventory & Equipment Detail");
+    const inventoryRows = [
+      ["Gold", `${Number(character.gold || 0)} gp`],
+      ["Starting Package", character.startingChoice?.name || "None"],
+      ["All Items", (character.inventory || []).map(i => "• " + i).join("\n") || "Kosong"]
+    ];
+    inventoryRows.forEach(([title, text]) => {
+      if (detailY > pageH - 86) { addFooter(); detailY = nextDetailPage("Inventory & Equipment Detail"); }
+      detailY = writePair(title, text, margin, detailY, pageW - margin * 2) + 5;
+    });
+    addFooter();
+
+    detailY = nextDetailPage("Features & Traits Detail");
     const featureRows = [
       ...raceTraits.map((trait) => ["Race Trait - " + trait, traitGuideText(trait)]),
       ...(klass.features || []).map((feature) => ["Class Feature - " + feature, pdfClassFeatureGuideText(feature)]),
-      ["Languages", languages || "Common"],
-      ["Starting Package", `${character.startingChoice?.name || "-"}\nGold: ${Number(character.gold || 0)} gp\n${(character.inventory || []).map(i => "• " + i).join("\n") || "inventory belum ada"}`]
+      ["Languages", languages || "Common"]
     ];
     featureRows.forEach(([title, text]) => {
       if (detailY > pageH - 86) { addFooter(); detailY = nextDetailPage("Features & Traits Detail"); }

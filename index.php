@@ -523,8 +523,8 @@ $gemu_asset_version = max(
     <section id="hero" class="hero-gradient min-h-screen min-h-[100dvh] flex items-center relative">
         <div id="particles" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
         <div
-            class="max-w-7xl mx-auto px-4 sm:px-6 pt-28 pb-20 sm:pt-32 sm:pb-24 md:pt-40 md:pb-32 relative z-10 w-full">
-            <div class="max-w-3xl">
+            class="max-w-7xl mx-auto px-4 sm:px-6 pt-28 pb-20 sm:pt-32 sm:pb-24 md:pt-40 md:pb-32 relative z-10 w-full flex flex-col md:flex-row items-center justify-between">
+            <div class="max-w-3xl relative z-10">
                 <div
                     class="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm mb-6 sm:mb-8 reveal">
                     <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-accent-400 pulse-dot"></span>
@@ -566,7 +566,7 @@ $gemu_asset_version = max(
                         </svg>
                     </a>
                 </div>
-                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 reveal" style="transition-delay:.4s">
+                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 reveal relative z-20" style="transition-delay:.4s">
                     <a href="#certifications"
                         class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-accent-500 text-white font-semibold rounded-xl active:scale-[0.98] transition-all duration-200 shadow-xl shadow-accent-500/25 text-sm sm:text-base">
                         <i data-lucide="award" class="w-4 h-4 sm:w-5 sm:h-5"></i>
@@ -600,6 +600,19 @@ $gemu_asset_version = max(
                         <p class="text-xs sm:text-sm text-navy-400 mt-0.5 sm:mt-1 i18n-fade" data-i18n="hero.stat3">
                             Riset Internasional</p>
                     </div>
+                </div>
+            </div>
+
+            <!-- VIBE CODING EFFECT CARD -->
+            <div class="hidden lg:block w-80 xl:w-96 bg-[#0a1929]/80 backdrop-blur-md border border-[#0ea5e9]/20 rounded-xl shadow-[0_0_40px_rgba(14,165,233,0.15)] reveal mt-12 md:mt-0 relative z-0" style="transition-delay:.6s">
+                <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-white/5 rounded-t-xl">
+                    <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                    <span class="text-[10px] text-navy-300 font-mono ml-2">profile.js</span>
+                </div>
+                <div class="p-5 font-mono text-xs sm:text-sm text-navy-200 space-y-1.5 overflow-hidden" id="vibe-coding-text">
+                    <!-- Typing effect akan dirender di sini lewat JS -->
                 </div>
             </div>
         </div>
@@ -817,6 +830,117 @@ $gemu_asset_version = max(
                     data-i18n="proj.subtitle">Klik pada setiap kartu untuk melihat detail proyek secara lengkap.</p>
             </div>
             <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8" id="proj-grid"></div>
+        </div>
+    </section>
+
+    <section id="github" class="py-16 sm:py-20 md:py-32 bg-navy-950 relative overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute top-0 right-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-accent-500/5 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 left-1/4 w-56 sm:w-80 h-56 sm:h-80 bg-accent-500/5 rounded-full blur-3xl"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+            <div class="text-center mb-10 sm:mb-16 reveal">
+                <p class="text-accent-400 font-semibold text-xs sm:text-sm tracking-widest uppercase mb-3 sm:mb-4">Open Source</p>
+                <h2 class="font-serif text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight text-white flex items-center justify-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-github md:w-10 md:h-10"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+                    GitHub Activity
+                </h2>
+                <p class="text-navy-300 mt-3 sm:mt-4 max-w-lg mx-auto text-sm sm:text-base px-2">Aktivitas open source dan repositori publik saya.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-6 sm:gap-8 items-start">
+                <!-- GitHub Profile Card -->
+                <div class="lg:col-span-1 reveal bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm" id="github-profile-card">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-16 h-16 rounded-full bg-navy-800 animate-pulse" id="gh-avatar-skeleton"></div>
+                        <img id="gh-avatar" src="" alt="GitHub Avatar" class="w-16 h-16 rounded-full border-2 border-white/20 hidden">
+                        <div>
+                            <div class="h-5 w-32 bg-navy-800 rounded animate-pulse mb-2" id="gh-name-skeleton"></div>
+                            <h3 class="text-lg font-bold text-white hidden" id="gh-name"></h3>
+                            <div class="h-4 w-24 bg-navy-800 rounded animate-pulse" id="gh-login-skeleton"></div>
+                            <a id="gh-login" href="https://github.com/darmarakha" target="_blank" rel="noopener" class="text-accent-400 text-sm hover:underline hidden">@darmarakha</a>
+                        </div>
+                    </div>
+
+                    <div class="h-4 w-full bg-navy-800 rounded animate-pulse mb-6" id="gh-bio-skeleton"></div>
+                    <p class="text-navy-300 text-sm mb-6 hidden" id="gh-bio"></p>
+
+                    <div class="flex justify-between items-center py-4 border-t border-white/10">
+                        <div class="text-center">
+                            <div class="h-6 w-8 bg-navy-800 rounded animate-pulse mx-auto mb-1" id="gh-repos-skeleton"></div>
+                            <p class="text-xl font-bold text-white hidden" id="gh-repos">0</p>
+                            <p class="text-xs text-navy-400">Repositories</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="h-6 w-8 bg-navy-800 rounded animate-pulse mx-auto mb-1" id="gh-followers-skeleton"></div>
+                            <p class="text-xl font-bold text-white hidden" id="gh-followers">0</p>
+                            <p class="text-xs text-navy-400">Followers</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="h-6 w-8 bg-navy-800 rounded animate-pulse mx-auto mb-1" id="gh-following-skeleton"></div>
+                            <p class="text-xl font-bold text-white hidden" id="gh-following">0</p>
+                            <p class="text-xs text-navy-400">Following</p>
+                        </div>
+                    </div>
+
+                    <a href="https://github.com/darmarakha" target="_blank" rel="noopener" class="w-full mt-2 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold rounded-xl transition-colors border border-white/10">
+                        <span>Visit Profile</span>
+                        <i data-lucide="external-link" class="w-4 h-4"></i>
+                    </a>
+                </div>
+
+                <!-- GitHub Repositories -->
+                <div class="lg:col-span-2 reveal" style="transition-delay: .15s">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-white">Recent Repositories</h3>
+                        <div class="text-xs text-navy-400 flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Live Sync
+                        </div>
+                    </div>
+
+                    <div class="grid sm:grid-cols-2 gap-4" id="github-repos-container">
+                        <!-- Skeleton Loaders -->
+                        <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-pulse">
+                            <div class="h-5 w-3/4 bg-navy-800 rounded mb-3"></div>
+                            <div class="h-4 w-full bg-navy-800 rounded mb-2"></div>
+                            <div class="h-4 w-2/3 bg-navy-800 rounded mb-4"></div>
+                            <div class="flex gap-3">
+                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
+                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-pulse">
+                            <div class="h-5 w-3/4 bg-navy-800 rounded mb-3"></div>
+                            <div class="h-4 w-full bg-navy-800 rounded mb-2"></div>
+                            <div class="h-4 w-2/3 bg-navy-800 rounded mb-4"></div>
+                            <div class="flex gap-3">
+                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
+                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-pulse hidden sm:block">
+                            <div class="h-5 w-3/4 bg-navy-800 rounded mb-3"></div>
+                            <div class="h-4 w-full bg-navy-800 rounded mb-2"></div>
+                            <div class="h-4 w-2/3 bg-navy-800 rounded mb-4"></div>
+                            <div class="flex gap-3">
+                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
+                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-pulse hidden sm:block">
+                            <div class="h-5 w-3/4 bg-navy-800 rounded mb-3"></div>
+                            <div class="h-4 w-full bg-navy-800 rounded mb-2"></div>
+                            <div class="h-4 w-2/3 bg-navy-800 rounded mb-4"></div>
+                            <div class="flex gap-3">
+                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
+                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -1087,6 +1211,126 @@ $gemu_asset_version = max(
     <script src="AI/guide-widget.js?v=<?php echo (int) $gemu_asset_version; ?>" defer></script>
 
     <script>
+        // SCRIPT GITHUB ACTIVITY
+        document.addEventListener('DOMContentLoaded', () => {
+            const githubUsername = 'darmarakha';
+
+            // Elements
+            const els = {
+                avatar: document.getElementById('gh-avatar'),
+                name: document.getElementById('gh-name'),
+                login: document.getElementById('gh-login'),
+                bio: document.getElementById('gh-bio'),
+                reposCount: document.getElementById('gh-repos'),
+                followers: document.getElementById('gh-followers'),
+                following: document.getElementById('gh-following'),
+                reposContainer: document.getElementById('github-repos-container')
+            };
+
+            // Skeletons
+            const skeletons = [
+                'gh-avatar-skeleton', 'gh-name-skeleton', 'gh-login-skeleton',
+                'gh-bio-skeleton', 'gh-repos-skeleton', 'gh-followers-skeleton',
+                'gh-following-skeleton'
+            ];
+
+            // Fetch Profile
+            fetch(`https://api.github.com/users/${githubUsername}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.message) throw new Error(data.message);
+
+                    // Hide Skeletons
+                    skeletons.forEach(id => {
+                        const el = document.getElementById(id);
+                        if(el) el.classList.add('hidden');
+                    });
+
+                    // Populate Data
+                    els.avatar.src = data.avatar_url;
+                    els.avatar.classList.remove('hidden');
+
+                    els.name.textContent = data.name || data.login;
+                    els.name.classList.remove('hidden');
+
+                    els.login.textContent = `@${data.login}`;
+                    els.login.classList.remove('hidden');
+
+                    if (data.bio) {
+                        els.bio.textContent = data.bio;
+                        els.bio.classList.remove('hidden');
+                    }
+
+                    els.reposCount.textContent = data.public_repos;
+                    els.reposCount.classList.remove('hidden');
+
+                    els.followers.textContent = data.followers;
+                    els.followers.classList.remove('hidden');
+
+                    els.following.textContent = data.following;
+                    els.following.classList.remove('hidden');
+                })
+                .catch(err => {
+                    console.error('GitHub API Error (Profile):', err);
+                });
+
+            // Fetch Repositories
+            fetch(`https://api.github.com/users/${githubUsername}/repos?sort=updated&per_page=4`)
+                .then(res => res.json())
+                .then(repos => {
+                    if (!Array.isArray(repos)) throw new Error('Invalid repos data');
+
+                    els.reposContainer.innerHTML = '';
+
+                    if (repos.length === 0) {
+                        els.reposContainer.innerHTML = `<div class="col-span-2 p-6 text-center text-navy-300 bg-white/5 border border-white/10 rounded-xl">Belum ada repositori publik.</div>`;
+                        return;
+                    }
+
+                    repos.forEach(repo => {
+                        const langColors = {
+                            'Python': 'bg-blue-500',
+                            'JavaScript': 'bg-yellow-400',
+                            'HTML': 'bg-orange-500',
+                            'CSS': 'bg-purple-500',
+                            'PHP': 'bg-indigo-500',
+                            'TypeScript': 'bg-blue-600',
+                            'Jupyter Notebook': 'bg-orange-400'
+                        };
+                        const langColor = repo.language ? (langColors[repo.language] || 'bg-navy-400') : 'bg-navy-600';
+                        const langDot = repo.language ? `<span class="w-2.5 h-2.5 rounded-full ${langColor}"></span> <span class="text-xs text-navy-300">${repo.language}</span>` : '';
+
+                        const repoCard = `
+                            <a href="${repo.html_url}" target="_blank" rel="noopener" class="block bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/10 transition-colors group">
+                                <h4 class="text-white font-bold mb-2 flex items-center gap-2 group-hover:text-accent-400 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+                                    <span class="truncate">${repo.name}</span>
+                                </h4>
+                                <p class="text-sm text-navy-300 mb-4 line-clamp-2 h-10">${repo.description || 'No description available.'}</p>
+                                <div class="flex items-center gap-4">
+                                    <div class="flex items-center gap-1.5">
+                                        ${langDot}
+                                    </div>
+                                    <div class="flex items-center gap-1 text-xs text-navy-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                        ${repo.stargazers_count}
+                                    </div>
+                                    <div class="flex items-center gap-1 text-xs text-navy-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v12"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+                                        ${repo.forks_count}
+                                    </div>
+                                </div>
+                            </a>
+                        `;
+                        els.reposContainer.innerHTML += repoCard;
+                    });
+                })
+                .catch(err => {
+                    console.error('GitHub API Error (Repos):', err);
+                    els.reposContainer.innerHTML = `<div class="col-span-2 p-6 text-center text-red-300 bg-red-900/20 border border-red-500/20 rounded-xl">Gagal memuat repositori GitHub. Silakan kunjungi profil langsung.</div>`;
+                });
+        });
+
             // SCRIPT TAMBAHAN UNTUK HARD REFRESH OTOMATIS BROWSER
             (function () {
                 const key = 'gemu_build_version';
@@ -1220,6 +1464,46 @@ $gemu_asset_version = max(
                 navUserName.classList.toggle('text-navy-900', scrolled);
                 navUserName.classList.toggle('text-white', !scrolled);
             }
+        });
+
+        // SCRIPT VIBE CODING EFFECT
+        document.addEventListener('DOMContentLoaded', () => {
+            const vibeContainer = document.getElementById('vibe-coding-text');
+            if (!vibeContainer) return;
+
+            const lines = [
+                '<span class="text-accent-400">const</span> <span class="text-white">profile</span> = {',
+                '  <span class="text-navy-300">name:</span> <span class="text-green-400">"Darma Alif Rakhaa"</span>,',
+                '  <span class="text-navy-300">focus:</span> [',
+                '    <span class="text-green-400">"Data Analysis"</span>,',
+                '    <span class="text-green-400">"Python"</span>,',
+                '    <span class="text-green-400">"Web Development"</span>',
+                '  ],',
+                '  <span class="text-navy-300">status:</span> <span class="text-green-400">"Open to Opportunities"</span>,',
+                '  <span class="text-navy-300">execute:</span> <span class="text-accent-400">function</span>() {',
+                '    <span class="text-white">console</span>.<span class="text-accent-300">log</span>(<span class="text-green-400">"Ready to work!"</span>);',
+                '  }',
+                '};'
+            ];
+
+            let lineIndex = 0;
+            let charIndex = 0;
+            let currentHTML = '';
+
+            // Render line by line
+            function typeLine() {
+                if (lineIndex >= lines.length) return;
+
+                const currentLine = lines[lineIndex];
+                vibeContainer.innerHTML = currentHTML + currentLine + '<br>';
+                currentHTML += currentLine + '<br>';
+                lineIndex++;
+
+                setTimeout(typeLine, 150 + Math.random() * 100);
+            }
+
+            // Start effect slightly after page load
+            setTimeout(typeLine, 800);
         });
     </script>
     <!-- Scroll to Top Button -->

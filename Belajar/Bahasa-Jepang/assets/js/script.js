@@ -66,24 +66,64 @@ if (revealElements.length > 0) {
   revealElements.forEach(el => revealObserver.observe(el));
 }
 
-// ===== Link Card Materi Terstruktur ke Folder N5 =====
+// ===== Perbaikan arah menu Bahasa Jepang: tidak lagi menuju folder N5 =====
+document.querySelectorAll('a[href*="N5/index.php"], a[href="N5/index.php"]').forEach(link => {
+  link.setAttribute('href', 'index.php');
+});
+
 document.querySelectorAll('.card-hover.glass-card').forEach(card => {
   const title = card.querySelector('h3');
 
   if (!title || title.textContent.trim() !== 'Materi Terstruktur') return;
 
-  const cta = Array.from(card.querySelectorAll('div')).find(el =>
-    el.textContent.trim().startsWith('Pelajari')
+  const cta = Array.from(card.querySelectorAll('div, a')).find(el =>
+    el.textContent.trim().startsWith('Pelajari') || el.textContent.trim().startsWith('N5')
   );
 
   if (!cta) return;
 
-  const n5Link = document.createElement('a');
-  n5Link.href = 'N5/index.php';
-  n5Link.className = cta.className;
-  n5Link.innerHTML = 'N5 <i data-lucide="arrow-right" class="w-4 h-4"></i>';
-  cta.replaceWith(n5Link);
+  const materiLink = document.createElement('a');
+  materiLink.href = '#materi';
+  materiLink.className = cta.className || 'mt-6 flex items-center gap-2 text-sakura-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity';
+  materiLink.innerHTML = 'Lihat Materi <i data-lucide="arrow-right" class="w-4 h-4"></i>';
+  cta.replaceWith(materiLink);
 });
+
+// ===== Tambah menu Kotoba tanpa mengubah struktur PHP utama =====
+(function addKotobaMenu() {
+  const cardsWrap = document.querySelector('#materi .lg\\:col-span-7.space-y-4');
+  if (!cardsWrap || cardsWrap.querySelector('a[href="kotoba.php"]')) return;
+
+  const kanjiCard = cardsWrap.querySelector('a[href="kanji.php"]');
+  const kotobaCard = document.createElement('a');
+  kotobaCard.href = 'kotoba.php';
+  kotobaCard.className = 'block reveal category-card glass-card rounded-2xl p-5 flex items-center gap-5 active';
+  kotobaCard.style.transitionDelay = '375ms';
+  kotobaCard.innerHTML = `
+    <div class="cat-icon w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/15 transition-all shrink-0">
+      <span class="text-2xl font-jp font-semibold text-amber-300">語</span>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-3 mb-1">
+        <h3 class="text-lg font-semibold text-white">Kotoba</h3>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/15">Ujian JLPT</span>
+      </div>
+      <p class="text-sm text-neutral-400 truncate">Kumpulan kosakata N5 lengkap dengan latihan soal pilihan ganda</p>
+      <div class="mt-2 w-full bg-white/5 rounded-full h-1.5">
+        <div class="bg-gradient-to-r from-amber-300 to-orange-400 h-1.5 rounded-full" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="cat-arrow opacity-50 transition-all shrink-0">
+      <i data-lucide="chevron-right" class="w-5 h-5 text-neutral-500"></i>
+    </div>
+  `;
+
+  if (kanjiCard) {
+    cardsWrap.insertBefore(kotobaCard, kanjiCard);
+  } else {
+    cardsWrap.appendChild(kotobaCard);
+  }
+})();
 
 if (window.lucide) {
   lucide.createIcons();
@@ -246,29 +286,35 @@ const ctaBelajarBtn = document.getElementById('ctaBelajarBtn');
 const sertifikatBtn = document.getElementById('sertifikatBtn');
 const cekLevelBtn = document.getElementById('cekLevelBtn');
 
-if (mulaiBelajarBtn) {
-  mulaiBelajarBtn.addEventListener('click', () => {
-    showToast('よろしくお願いします！', 'Selamat datang! Mari mulai belajar bahasa Jepang.', 'success');
 
-    const materiSection = document.getElementById('materi');
-
-    if (materiSection) {
-      materiSection.scrollIntoView({
-        behavior: 'smooth'
-      });
-    }
-  });
-}
 
 if (ctaBelajarBtn) {
   ctaBelajarBtn.addEventListener('click', () => {
     showToast('Akun Siap!', 'Selamat bergabung! Mulai perjalanan N5-mu sekarang.', 'success');
+    const materiSection = document.getElementById('materi');
+    if (materiSection) {
+      materiSection.scrollIntoView({ behavior: 'smooth' });
+    }
   });
 }
 
 if (sertifikatBtn) {
   sertifikatBtn.addEventListener('click', () => {
-    showToast('Sertifikat N5', 'Selesaikan 100% materi untuk unlock sertifikat.', 'info');
+    const progNum = document.getElementById('aiProgressNumber') || document.getElementById('progressNumber');
+    let currentProg = parseInt(progNum.getAttribute('data-target')) || 0;
+
+    if (currentProg >= 80) {
+      const certModal = document.getElementById('certModal');
+      if(certModal) {
+          certModal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+      }
+    } else {
+      showToast('Belum Memenuhi Syarat', `Progress kamu ${currentProg}%. Selesaikan minimal 80% materi N5 untuk unlock sertifikat.`, 'info');
+      // Highlight materi section
+      const materiSection = document.getElementById('materi');
+      if (materiSection) materiSection.scrollIntoView({ behavior: 'smooth' });
+    }
   });
 }
 
@@ -323,9 +369,19 @@ if (cekLevelBtn) {
 
     loadQuestion();
 
-    if (levelModal) {
-      levelModal.classList.add('active');
+    // Scroll to progress section before opening modal
+    const progSection = document.getElementById('progress');
+    if(progSection) {
+        progSection.scrollIntoView({ behavior: 'smooth' });
+        // Slight delay to allow scroll before opening modal
+        setTimeout(() => {
+            if (levelModal) levelModal.classList.add('active');
+        }, 500);
+    } else {
+        if (levelModal) levelModal.classList.add('active');
     }
+
+
   });
 }
 
@@ -452,3 +508,112 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     }
   });
 });
+
+// ===== Placement Test AI Guide =====
+const ptData = [
+  {q: 'Manakah huruf Hiragana untuk "A"?', opts: ['あ', 'い', 'ア', 'イ'], correct: 0},
+  {q: 'Manakah huruf Katakana untuk "Ka"?', opts: ['か', 'カ', 'キ', 'き'], correct: 1},
+  {q: 'Apa arti dari kanji "水"?', opts: ['Api', 'Pohon', 'Air', 'Tanah'], correct: 2},
+  {q: 'Bahasa Jepangnya "Terima kasih" adalah?', opts: ['Konnichiwa', 'Sayounara', 'Arigatou', 'Sumimasen'], correct: 2},
+  {q: 'Partikel penanda subjek/topik utama adalah?', opts: ['を (wo)', 'は (wa)', 'に (ni)', 'で (de)'], correct: 1}
+];
+
+let currentPtQ = 0;
+let ptScore = 0;
+
+const mulaiBelajarBtnPt = document.getElementById('mulaiBelajarBtn');
+if (mulaiBelajarBtnPt) {
+  // Override existing behavior to open Placement Test
+  mulaiBelajarBtnPt.onclick = (e) => {
+    e.preventDefault();
+    const modal = document.getElementById('placementModal');
+    if(modal) {
+        currentPtQ = 0;
+        ptScore = 0;
+        document.getElementById('ptContent').classList.remove('hidden');
+        document.getElementById('ptResult').classList.add('hidden');
+        loadPtQuestion();
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+  };
+}
+
+function closePlacementModal() {
+  const modal = document.getElementById('placementModal');
+  if(modal) {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+  }
+}
+
+function loadPtQuestion() {
+  if (currentPtQ >= ptData.length) {
+    showPtResult();
+    return;
+  }
+
+  const qNum = document.getElementById('ptNum');
+  const questionText = document.getElementById('ptQuestionText');
+  const container = document.getElementById('ptOptionsContainer');
+
+  const q = ptData[currentPtQ];
+  if(qNum) qNum.textContent = currentPtQ + 1;
+  if(questionText) questionText.textContent = q.q;
+
+  if(container) {
+      container.innerHTML = '';
+      q.opts.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full text-left px-5 py-3.5 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-neutral-300 hover:bg-white/[0.08] hover:border-orange-400/30 transition-all';
+        btn.textContent = opt;
+        btn.onclick = () => selectPtAnswer(btn, i);
+        container.appendChild(btn);
+      });
+  }
+}
+
+function selectPtAnswer(btn, idx) {
+  const correct = ptData[currentPtQ].correct;
+  const allBtns = document.getElementById('ptOptionsContainer').querySelectorAll('button');
+
+  allBtns.forEach((b, i) => {
+    b.style.pointerEvents = 'none';
+    if (i === correct) {
+      b.style.background = 'rgba(16,185,129,0.15)';
+      b.style.borderColor = 'rgba(16,185,129,0.5)';
+      b.style.color = '#6ee7b7';
+    } else if (i === idx && idx !== correct) {
+      b.style.background = 'rgba(239,68,68,0.15)';
+      b.style.borderColor = 'rgba(239,68,68,0.5)';
+      b.style.color = '#fca5a5';
+    }
+  });
+
+  if (idx === correct) ptScore++;
+
+  setTimeout(() => {
+    currentPtQ++;
+    loadPtQuestion();
+  }, 1000);
+}
+
+function showPtResult() {
+  const content = document.getElementById('ptContent');
+  const result = document.getElementById('ptResult');
+  const title = document.getElementById('ptResultTitle');
+  const desc = document.getElementById('ptResultDesc');
+
+  if(content) content.classList.add('hidden');
+  if(result) result.classList.remove('hidden');
+
+  if(desc) {
+      if (ptScore <= 1) {
+          desc.innerHTML = "Skor: " + ptScore + "/5<br><br><b>AI Guide:</b> Mulai dari <b>Hiragana</b>. Pelajari huruf dasar terlebih dahulu agar tidak kesulitan di materi selanjutnya.";
+      } else if (ptScore <= 3) {
+          desc.innerHTML = "Skor: " + ptScore + "/5<br><br><b>AI Guide:</b> Hiragana Anda sudah lumayan. Coba perkuat <b>Katakana</b> dan mulai masuk ke dasar <b>Kosakata</b>.";
+      } else {
+          desc.innerHTML = "Skor: " + ptScore + "/5<br><br><b>AI Guide:</b> Fondasi Anda luar biasa! Langsung saja ke <b>Tata Bahasa (Bunpou)</b> dan <b>Kanji</b> N5.";
+      }
+  }
+}
