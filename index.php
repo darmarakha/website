@@ -75,6 +75,15 @@ $gemu_asset_version = max(
             border-radius: 4px
         }
 
+        /* GitHub Heatmap Classes */
+        .gh-level-0 { background-color: rgba(255, 255, 255, 0.05); }
+        .gh-level-1 { background-color: #0e4429; }
+        .gh-level-2 { background-color: #006d32; }
+        .gh-level-3 { background-color: #26a641; }
+        .gh-level-4 { background-color: #39d353; }
+        .gh-cell { transition: all 0.2s ease; cursor: pointer; }
+        .gh-cell:hover { opacity: 0.8; transform: scale(1.1); }
+
         .hero-gradient {
             background: linear-gradient(135deg, #0a1929 0%, #102a43 30%, #1e3a5f 60%, #243b53 100%);
             position: relative;
@@ -135,6 +144,16 @@ $gemu_asset_version = max(
             opacity: 0;
             transform: translateY(24px);
             transition: opacity .6s ease, transform .6s ease
+        }
+
+        .blinking-cursor::after {
+            content: '|';
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
         }
 
         .reveal.visible {
@@ -512,6 +531,14 @@ $gemu_asset_version = max(
             0% { transform: scale(0); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
+
+        .syntax-particle { position: absolute; pointer-events: none; opacity: 0; animation: floatUp linear infinite; }
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
     </style>
 </head>
 
@@ -603,7 +630,7 @@ $gemu_asset_version = max(
                 </div>
             </div>
 
-            <!-- VIBE CODING EFFECT CARD -->
+            <!-- VIBE CODING EFFECT CARD (Desktop) -->
             <div class="hidden lg:block w-80 xl:w-96 bg-[#0a1929]/80 backdrop-blur-md border border-[#0ea5e9]/20 rounded-xl shadow-[0_0_40px_rgba(14,165,233,0.15)] reveal mt-12 md:mt-0 relative z-0" style="transition-delay:.6s">
                 <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-white/5 rounded-t-xl">
                     <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
@@ -613,6 +640,14 @@ $gemu_asset_version = max(
                 </div>
                 <div class="p-5 font-mono text-xs sm:text-sm text-navy-200 space-y-1.5 overflow-hidden" id="vibe-coding-text">
                     <!-- Typing effect akan dirender di sini lewat JS -->
+                </div>
+            </div>
+
+            <!-- VIBE CODING BADGE (Mobile) -->
+            <div class="lg:hidden mt-10 reveal" style="transition-delay: .6s">
+                <div class="inline-flex items-center gap-3 px-4 py-2 bg-[#0a1929]/80 backdrop-blur-md border border-[#0ea5e9]/20 rounded-xl shadow-[0_0_20px_rgba(14,165,233,0.1)]">
+                    <i data-lucide="terminal" class="w-4 h-4 text-accent-400"></i>
+                    <span class="font-mono text-xs text-green-400">const status = "Coding vibes";</span>
                 </div>
             </div>
         </div>
@@ -891,52 +926,23 @@ $gemu_asset_version = max(
                     </a>
                 </div>
 
-                <!-- GitHub Repositories -->
+                <!-- GitHub Contribution Heatmap -->
                 <div class="lg:col-span-2 reveal" style="transition-delay: .15s">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-bold text-white">Recent Repositories</h3>
+                        <h3 class="text-lg font-bold text-white" id="gh-contributions-title">Loading contributions...</h3>
                         <div class="text-xs text-navy-400 flex items-center gap-1">
                             <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Live Sync
                         </div>
                     </div>
 
-                    <div class="grid sm:grid-cols-2 gap-4" id="github-repos-container">
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 backdrop-blur-sm overflow-hidden" id="github-heatmap-container">
                         <!-- Skeleton Loaders -->
-                        <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-pulse">
-                            <div class="h-5 w-3/4 bg-navy-800 rounded mb-3"></div>
-                            <div class="h-4 w-full bg-navy-800 rounded mb-2"></div>
-                            <div class="h-4 w-2/3 bg-navy-800 rounded mb-4"></div>
-                            <div class="flex gap-3">
-                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
-                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
-                            </div>
-                        </div>
-                        <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-pulse">
-                            <div class="h-5 w-3/4 bg-navy-800 rounded mb-3"></div>
-                            <div class="h-4 w-full bg-navy-800 rounded mb-2"></div>
-                            <div class="h-4 w-2/3 bg-navy-800 rounded mb-4"></div>
-                            <div class="flex gap-3">
-                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
-                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
-                            </div>
-                        </div>
-                        <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-pulse hidden sm:block">
-                            <div class="h-5 w-3/4 bg-navy-800 rounded mb-3"></div>
-                            <div class="h-4 w-full bg-navy-800 rounded mb-2"></div>
-                            <div class="h-4 w-2/3 bg-navy-800 rounded mb-4"></div>
-                            <div class="flex gap-3">
-                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
-                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
-                            </div>
-                        </div>
-                        <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-pulse hidden sm:block">
-                            <div class="h-5 w-3/4 bg-navy-800 rounded mb-3"></div>
-                            <div class="h-4 w-full bg-navy-800 rounded mb-2"></div>
-                            <div class="h-4 w-2/3 bg-navy-800 rounded mb-4"></div>
-                            <div class="flex gap-3">
-                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
-                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
-                            </div>
+                        <div class="animate-pulse flex flex-col gap-2">
+                            <div class="h-4 w-full bg-navy-800/50 rounded"></div>
+                            <div class="h-4 w-11/12 bg-navy-800/50 rounded"></div>
+                            <div class="h-4 w-full bg-navy-800/50 rounded"></div>
+                            <div class="h-4 w-5/6 bg-navy-800/50 rounded"></div>
+                            <div class="h-4 w-full bg-navy-800/50 rounded"></div>
                         </div>
                     </div>
                 </div>
@@ -1223,8 +1229,7 @@ $gemu_asset_version = max(
                 bio: document.getElementById('gh-bio'),
                 reposCount: document.getElementById('gh-repos'),
                 followers: document.getElementById('gh-followers'),
-                following: document.getElementById('gh-following'),
-                reposContainer: document.getElementById('github-repos-container')
+                following: document.getElementById('gh-following')
             };
 
             // Skeletons
@@ -1272,62 +1277,6 @@ $gemu_asset_version = max(
                 })
                 .catch(err => {
                     console.error('GitHub API Error (Profile):', err);
-                });
-
-            // Fetch Repositories
-            fetch(`https://api.github.com/users/${githubUsername}/repos?sort=updated&per_page=4`)
-                .then(res => res.json())
-                .then(repos => {
-                    if (!Array.isArray(repos)) throw new Error('Invalid repos data');
-
-                    els.reposContainer.innerHTML = '';
-
-                    if (repos.length === 0) {
-                        els.reposContainer.innerHTML = `<div class="col-span-2 p-6 text-center text-navy-300 bg-white/5 border border-white/10 rounded-xl">Belum ada repositori publik.</div>`;
-                        return;
-                    }
-
-                    repos.forEach(repo => {
-                        const langColors = {
-                            'Python': 'bg-blue-500',
-                            'JavaScript': 'bg-yellow-400',
-                            'HTML': 'bg-orange-500',
-                            'CSS': 'bg-purple-500',
-                            'PHP': 'bg-indigo-500',
-                            'TypeScript': 'bg-blue-600',
-                            'Jupyter Notebook': 'bg-orange-400'
-                        };
-                        const langColor = repo.language ? (langColors[repo.language] || 'bg-navy-400') : 'bg-navy-600';
-                        const langDot = repo.language ? `<span class="w-2.5 h-2.5 rounded-full ${langColor}"></span> <span class="text-xs text-navy-300">${repo.language}</span>` : '';
-
-                        const repoCard = `
-                            <a href="${repo.html_url}" target="_blank" rel="noopener" class="block bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/10 transition-colors group">
-                                <h4 class="text-white font-bold mb-2 flex items-center gap-2 group-hover:text-accent-400 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-                                    <span class="truncate">${repo.name}</span>
-                                </h4>
-                                <p class="text-sm text-navy-300 mb-4 line-clamp-2 h-10">${repo.description || 'No description available.'}</p>
-                                <div class="flex items-center gap-4">
-                                    <div class="flex items-center gap-1.5">
-                                        ${langDot}
-                                    </div>
-                                    <div class="flex items-center gap-1 text-xs text-navy-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                        ${repo.stargazers_count}
-                                    </div>
-                                    <div class="flex items-center gap-1 text-xs text-navy-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v12"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
-                                        ${repo.forks_count}
-                                    </div>
-                                </div>
-                            </a>
-                        `;
-                        els.reposContainer.innerHTML += repoCard;
-                    });
-                })
-                .catch(err => {
-                    console.error('GitHub API Error (Repos):', err);
-                    els.reposContainer.innerHTML = `<div class="col-span-2 p-6 text-center text-red-300 bg-red-900/20 border border-red-500/20 rounded-xl">Gagal memuat repositori GitHub. Silakan kunjungi profil langsung.</div>`;
                 });
         });
 
@@ -1490,20 +1439,164 @@ $gemu_asset_version = max(
             let charIndex = 0;
             let currentHTML = '';
 
-            // Render line by line
-            function typeLine() {
-                if (lineIndex >= lines.length) return;
+            function typeChar() {
+                if (lineIndex >= lines.length) {
+                    vibeContainer.classList.remove('blinking-cursor');
+                    return;
+                }
 
                 const currentLine = lines[lineIndex];
-                vibeContainer.innerHTML = currentHTML + currentLine + '<br>';
-                currentHTML += currentLine + '<br>';
-                lineIndex++;
 
-                setTimeout(typeLine, 150 + Math.random() * 100);
+                if (currentLine.includes('<span')) {
+                     vibeContainer.innerHTML = currentHTML + currentLine.substring(0, charIndex + 1);
+                     charIndex++;
+
+                     if (charIndex >= currentLine.length) {
+                         currentHTML += currentLine + '<br>';
+                         vibeContainer.innerHTML = currentHTML;
+                         lineIndex++;
+                         charIndex = 0;
+                         setTimeout(typeChar, 300);
+                     } else {
+                         const isTag = currentLine.substring(charIndex - 1, charIndex) === '<' ||
+                                       currentLine.substring(charIndex, charIndex + 1) === '>';
+                         setTimeout(typeChar, isTag ? 5 : 20 + Math.random() * 30);
+                     }
+                } else {
+                    vibeContainer.innerHTML = currentHTML + currentLine.substring(0, charIndex + 1);
+                    charIndex++;
+
+                    if (charIndex >= currentLine.length) {
+                         currentHTML += currentLine + '<br>';
+                         vibeContainer.innerHTML = currentHTML;
+                         lineIndex++;
+                         charIndex = 0;
+                         setTimeout(typeChar, 300);
+                    } else {
+                         setTimeout(typeChar, 20 + Math.random() * 30);
+                    }
+                }
             }
 
             // Start effect slightly after page load
-            setTimeout(typeLine, 800);
+            vibeContainer.classList.add('blinking-cursor');
+            setTimeout(typeChar, 800);
+
+            // Add Syntax Particles Background to Hero
+            const heroParticles = document.getElementById('particles');
+            if(heroParticles) {
+                const snippets = ['{ }', '();', '=>', '</>', '[]', 'if()', 'def', 'import', 'pd.'];
+                for(let i=0; i<15; i++) {
+                    let p = document.createElement('div');
+                    p.className = 'syntax-particle text-xs md:text-sm font-bold text-accent-400/20';
+                    p.textContent = snippets[Math.floor(Math.random() * snippets.length)];
+                    p.style.left = Math.random() * 100 + '%';
+                    p.style.top = (Math.random() * 100 + 100) + 'vh'; // start below
+                    p.style.animationDuration = (15 + Math.random() * 20) + 's';
+                    p.style.animationDelay = (Math.random() * 10) + 's';
+                    heroParticles.appendChild(p);
+                }
+            }
+        });
+
+        // SCRIPT GITHUB CONTRIBUTION HEATMAP
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('github-heatmap-container');
+            const titleEl = document.getElementById('gh-contributions-title');
+            if (!container) return;
+
+            try {
+                const response = await fetch('api/github_contributions.php');
+                const data = await response.json();
+
+                if (!data.ok || !data.weeks) {
+                    throw new Error(data.error || 'Failed to load contributions');
+                }
+
+                // Update Title
+                if (titleEl) {
+                    titleEl.textContent = `${data.totalContributions} contributions in the last year`;
+                }
+
+                // Generate Heatmap UI
+                let heatmapHTML = `<div class="heatmap-scroll pb-2">
+                    <div class="flex gap-1 inline-flex">`;
+
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                let monthLabelsHTML = `<div class="flex mb-1 relative h-4 text-[10px] text-navy-400 font-medium">`;
+
+                let currentMonth = -1;
+
+                data.weeks.forEach((week, weekIndex) => {
+                    // Check if month changed for labels
+                    const firstDay = new Date(week.firstDay);
+                    if (firstDay.getMonth() !== currentMonth && weekIndex < data.weeks.length - 1) {
+                        currentMonth = firstDay.getMonth();
+                        // Position label absolute to align with weeks correctly
+                        monthLabelsHTML += `<span style="position: absolute; left: ${weekIndex * 14}px;">${months[currentMonth]}</span>`;
+                    }
+
+                    heatmapHTML += `<div class="flex flex-col gap-1">`;
+
+                    // We need 7 days per column, pad if needed for first week
+                    let dayIndex = 0;
+                    if (weekIndex === 0) {
+                         const firstDayOfWeek = new Date(week.days[0].date).getDay();
+                         // GitHub graph starts on Sunday (0)
+                         for(let i=0; i<firstDayOfWeek; i++) {
+                             heatmapHTML += `<div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm bg-transparent"></div>`;
+                             dayIndex++;
+                         }
+                    }
+
+                    week.days.forEach(day => {
+                        heatmapHTML += `
+                            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm gh-cell gh-level-${day.level}"
+                                 title="${day.count} contributions on ${day.date}">
+                            </div>`;
+                        dayIndex++;
+                    });
+
+                    // Pad last week if needed
+                    while(dayIndex < 7 && weekIndex === data.weeks.length - 1) {
+                        heatmapHTML += `<div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm bg-transparent"></div>`;
+                        dayIndex++;
+                    }
+
+                    heatmapHTML += `</div>`;
+                });
+
+                monthLabelsHTML += `</div>`;
+                heatmapHTML += `</div></div>`;
+
+                // Legend
+                heatmapHTML += `
+                    <div class="flex items-center justify-end gap-1.5 mt-3 text-[10px] sm:text-xs text-navy-400">
+                        <span>Less</span>
+                        <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm gh-level-0"></div>
+                        <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm gh-level-1"></div>
+                        <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm gh-level-2"></div>
+                        <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm gh-level-3"></div>
+                        <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm gh-level-4"></div>
+                        <span>More</span>
+                    </div>
+                `;
+
+                // Safe DOM insertion
+                container.innerHTML = monthLabelsHTML + heatmapHTML;
+
+            } catch (err) {
+                console.error('Heatmap error:', err);
+                if (titleEl) titleEl.textContent = 'GitHub Activity';
+                container.innerHTML = `
+                    <div class="text-center py-8 text-navy-300">
+                        <i data-lucide="github" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+                        <p class="text-sm">Contribution activity could not be loaded.</p>
+                        <a href="https://github.com/darmarakha" target="_blank" class="text-accent-400 text-xs mt-2 inline-block hover:underline">Visit GitHub profile</a>
+                    </div>
+                `;
+                if(window.lucide) window.lucide.createIcons();
+            }
         });
     </script>
     <!-- Scroll to Top Button -->
