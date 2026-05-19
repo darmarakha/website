@@ -52,6 +52,106 @@ $gemu_asset_version = max(
         }
     </script>
     <style>
+
+        /* GitHub Contribution Graph Styles */
+        .gh-contrib-card {
+            color: #c9d1d9;
+        }
+
+        .gh-contrib-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: .75rem;
+        }
+
+        .gh-contrib-topbar h3 {
+            color: #f0f6fc;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .gh-contrib-settings {
+            color: #8b949e;
+            font-size: .75rem;
+        }
+
+        .gh-contrib-panel {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 14px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .gh-contrib-months {
+            display: grid;
+            grid-template-columns: repeat(53, 12px);
+            gap: 3px;
+            margin-left: 34px;
+            color: #c9d1d9;
+            font-size: 12px;
+            min-width: max-content;
+        }
+
+        .gh-contrib-body {
+            display: flex;
+            gap: 8px;
+            min-width: max-content;
+        }
+
+        .gh-contrib-weekdays {
+            display: grid;
+            grid-template-rows: repeat(7, 12px);
+            gap: 3px;
+            width: 26px;
+            color: #c9d1d9;
+            font-size: 12px;
+        }
+
+        .gh-contrib-grid {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: 12px;
+            grid-template-rows: repeat(7, 12px);
+            gap: 3px;
+        }
+
+        .gh-contrib-cell,
+        .gh-level {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        .gh-level-0 { background: #161b22; }
+        .gh-level-1 { background: #0e4429; }
+        .gh-level-2 { background: #006d32; }
+        .gh-level-3 { background: #26a641; }
+        .gh-level-4 { background: #39d353; }
+
+        .gh-contrib-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 10px;
+            color: #8b949e;
+            font-size: 12px;
+        }
+
+        .gh-contrib-footer a {
+            color: #8b949e;
+        }
+
+        .gh-contrib-legend {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent
@@ -542,6 +642,13 @@ $gemu_asset_version = max(
                     style="transition-delay:.3s" data-i18n="hero.desc">Lulusan S1 Fisika dari Universitas Negeri Malang
                     yang berfokus pada <span class="text-white font-medium">Data Analysis</span> dan <span
                         class="text-white font-medium">Python Programming</span>.</p>
+
+                <div class="lg:hidden flex flex-wrap justify-center items-center gap-2 mb-6 sm:mb-8 text-xs font-mono text-navy-300 bg-white/5 border border-white/10 rounded-full px-4 py-2 reveal" style="transition-delay:.35s">
+                    <span class="text-accent-400">status:</span> <span class="text-green-400">portfolio.ready()</span>
+                    <span class="text-navy-500 hidden sm:inline">|</span>
+                    <span class="text-accent-400">stack:</span> <span class="text-white">python &middot; data &middot; web</span>
+                </div>
+
                 <div class="flex items-center gap-4 mb-8 sm:mb-10">
                     <a href="https://www.linkedin.com/in/darmarakhaa" target="_blank" rel="noopener"
                         class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-[#0077b5] hover:border-[#0077b5]/50 hover:bg-[#0077b5]/10 transition-all duration-300 shadow-lg"
@@ -891,55 +998,56 @@ $gemu_asset_version = max(
                     </a>
                 </div>
 
-                <!-- GitHub Repositories -->
-                <div class="lg:col-span-2 reveal" style="transition-delay: .15s">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-bold text-white">Recent Repositories</h3>
-                        <div class="text-xs text-navy-400 flex items-center gap-1">
-                            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Live Sync
-                        </div>
-                    </div>
 
-                    <div class="grid sm:grid-cols-2 gap-4" id="github-repos-container">
-                        <!-- Skeleton Loaders -->
-                        <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-pulse">
-                            <div class="h-5 w-3/4 bg-navy-800 rounded mb-3"></div>
-                            <div class="h-4 w-full bg-navy-800 rounded mb-2"></div>
-                            <div class="h-4 w-2/3 bg-navy-800 rounded mb-4"></div>
-                            <div class="flex gap-3">
-                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
-                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
-                            </div>
+                <!-- GitHub Contribution Heatmap -->
+                <div class="lg:col-span-2 reveal" style="transition-delay: .15s">
+                    <div class="gh-contrib-card">
+                        <div class="gh-contrib-topbar">
+                            <h3 id="gh-contrib-title" class="text-white text-lg font-bold">Loading contributions...</h3>
+                            <button type="button" class="gh-contrib-settings hover:text-white transition-colors" aria-label="Contribution settings">
+                                Contribution settings ▾
+                            </button>
                         </div>
-                        <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-pulse">
-                            <div class="h-5 w-3/4 bg-navy-800 rounded mb-3"></div>
-                            <div class="h-4 w-full bg-navy-800 rounded mb-2"></div>
-                            <div class="h-4 w-2/3 bg-navy-800 rounded mb-4"></div>
-                            <div class="flex gap-3">
-                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
-                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
+
+                        <div class="gh-contrib-panel">
+                            <div id="gh-contrib-months" class="gh-contrib-months"></div>
+
+                            <div class="gh-contrib-body">
+                                <div class="gh-contrib-weekdays">
+                                    <span></span>
+                                    <span>Mon</span>
+                                    <span></span>
+                                    <span>Wed</span>
+                                    <span></span>
+                                    <span>Fri</span>
+                                    <span></span>
+                                </div>
+
+                                <div id="gh-contrib-grid" class="gh-contrib-grid" aria-label="GitHub contribution heatmap"></div>
                             </div>
-                        </div>
-                        <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-pulse hidden sm:block">
-                            <div class="h-5 w-3/4 bg-navy-800 rounded mb-3"></div>
-                            <div class="h-4 w-full bg-navy-800 rounded mb-2"></div>
-                            <div class="h-4 w-2/3 bg-navy-800 rounded mb-4"></div>
-                            <div class="flex gap-3">
-                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
-                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
-                            </div>
-                        </div>
-                        <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-pulse hidden sm:block">
-                            <div class="h-5 w-3/4 bg-navy-800 rounded mb-3"></div>
-                            <div class="h-4 w-full bg-navy-800 rounded mb-2"></div>
-                            <div class="h-4 w-2/3 bg-navy-800 rounded mb-4"></div>
-                            <div class="flex gap-3">
-                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
-                                <div class="h-4 w-12 bg-navy-800 rounded"></div>
+
+                            <div class="gh-contrib-footer">
+                                <a href="https://docs.github.com/en/account-and-profile/reference/profile-contributions-reference"
+                                   target="_blank"
+                                   rel="noopener"
+                                   class="hover:text-accent-400 transition-colors">
+                                    Learn how we count contributions
+                                </a>
+
+                                <div class="gh-contrib-legend">
+                                    <span>Less</span>
+                                    <span class="gh-level gh-level-0"></span>
+                                    <span class="gh-level gh-level-1"></span>
+                                    <span class="gh-level gh-level-2"></span>
+                                    <span class="gh-level gh-level-3"></span>
+                                    <span class="gh-level gh-level-4"></span>
+                                    <span>More</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
@@ -1224,7 +1332,7 @@ $gemu_asset_version = max(
                 reposCount: document.getElementById('gh-repos'),
                 followers: document.getElementById('gh-followers'),
                 following: document.getElementById('gh-following'),
-                reposContainer: document.getElementById('github-repos-container')
+
             };
 
             // Skeletons
@@ -1274,60 +1382,66 @@ $gemu_asset_version = max(
                     console.error('GitHub API Error (Profile):', err);
                 });
 
-            // Fetch Repositories
-            fetch(`https://api.github.com/users/${githubUsername}/repos?sort=updated&per_page=4`)
+            // Fetch Contributions from our backend API
+            fetch('/api/github_contributions.php')
                 .then(res => res.json())
-                .then(repos => {
-                    if (!Array.isArray(repos)) throw new Error('Invalid repos data');
+                .then(data => {
+                    const titleEl = document.getElementById('gh-contrib-title');
+                    const monthsEl = document.getElementById('gh-contrib-months');
+                    const gridEl = document.getElementById('gh-contrib-grid');
 
-                    els.reposContainer.innerHTML = '';
-
-                    if (repos.length === 0) {
-                        els.reposContainer.innerHTML = `<div class="col-span-2 p-6 text-center text-navy-300 bg-white/5 border border-white/10 rounded-xl">Belum ada repositori publik.</div>`;
+                    if (!data.ok || !data.weeks) {
+                        titleEl.textContent = 'Contribution activity could not be loaded. Visit GitHub profile.';
+                        titleEl.classList.add('text-red-400');
+                        gridEl.innerHTML = '';
                         return;
                     }
 
-                    repos.forEach(repo => {
-                        const langColors = {
-                            'Python': 'bg-blue-500',
-                            'JavaScript': 'bg-yellow-400',
-                            'HTML': 'bg-orange-500',
-                            'CSS': 'bg-purple-500',
-                            'PHP': 'bg-indigo-500',
-                            'TypeScript': 'bg-blue-600',
-                            'Jupyter Notebook': 'bg-orange-400'
-                        };
-                        const langColor = repo.language ? (langColors[repo.language] || 'bg-navy-400') : 'bg-navy-600';
-                        const langDot = repo.language ? `<span class="w-2.5 h-2.5 rounded-full ${langColor}"></span> <span class="text-xs text-navy-300">${repo.language}</span>` : '';
+                    titleEl.textContent = `${data.totalContributions} contributions in the last year`;
 
-                        const repoCard = `
-                            <a href="${repo.html_url}" target="_blank" rel="noopener" class="block bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/10 transition-colors group">
-                                <h4 class="text-white font-bold mb-2 flex items-center gap-2 group-hover:text-accent-400 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-                                    <span class="truncate">${repo.name}</span>
-                                </h4>
-                                <p class="text-sm text-navy-300 mb-4 line-clamp-2 h-10">${repo.description || 'No description available.'}</p>
-                                <div class="flex items-center gap-4">
-                                    <div class="flex items-center gap-1.5">
-                                        ${langDot}
-                                    </div>
-                                    <div class="flex items-center gap-1 text-xs text-navy-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                        ${repo.stargazers_count}
-                                    </div>
-                                    <div class="flex items-center gap-1 text-xs text-navy-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v12"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
-                                        ${repo.forks_count}
-                                    </div>
-                                </div>
-                            </a>
-                        `;
-                        els.reposContainer.innerHTML += repoCard;
+                    monthsEl.innerHTML = '';
+                    gridEl.innerHTML = '';
+
+                    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    let currentMonth = -1;
+
+                    data.weeks.forEach(week => {
+                        // Month label logic
+                        let monthLabelAdded = false;
+                        if (week.days.length > 0) {
+                            const firstDayDate = new Date(week.days[0].date);
+                            const monthIndex = firstDayDate.getMonth();
+                            // Check if this is the first week of a month (roughly)
+                            if (monthIndex !== currentMonth) {
+                                // Add month label
+                                const span = document.createElement('span');
+                                span.textContent = monthNames[monthIndex];
+                                // Span spanning column
+                                monthsEl.appendChild(span);
+                                currentMonth = monthIndex;
+                                monthLabelAdded = true;
+                            } else {
+                                const span = document.createElement('span');
+                                monthsEl.appendChild(span); // Empty spacer
+                            }
+                        }
+
+                        // Grid column
+                        week.days.forEach(day => {
+                            const cell = document.createElement('div');
+                            cell.className = `gh-contrib-cell gh-level-${day.level}`;
+                            cell.title = `${day.count} contribution${day.count === 1 ? '' : 's'} on ${day.date}`;
+                            gridEl.appendChild(cell);
+                        });
                     });
                 })
                 .catch(err => {
-                    console.error('GitHub API Error (Repos):', err);
-                    els.reposContainer.innerHTML = `<div class="col-span-2 p-6 text-center text-red-300 bg-red-900/20 border border-red-500/20 rounded-xl">Gagal memuat repositori GitHub. Silakan kunjungi profil langsung.</div>`;
+                    console.error('GitHub API Error (Contributions):', err);
+                    const titleEl = document.getElementById('gh-contrib-title');
+                    if (titleEl) {
+                        titleEl.textContent = 'Failed to load contributions.';
+                        titleEl.classList.add('text-red-400');
+                    }
                 });
         });
 
@@ -1471,39 +1585,62 @@ $gemu_asset_version = max(
             const vibeContainer = document.getElementById('vibe-coding-text');
             if (!vibeContainer) return;
 
-            const lines = [
-                '<span class="text-accent-400">const</span> <span class="text-white">profile</span> = {',
-                '  <span class="text-navy-300">name:</span> <span class="text-green-400">"Darma Alif Rakhaa"</span>,',
-                '  <span class="text-navy-300">focus:</span> [',
-                '    <span class="text-green-400">"Data Analysis"</span>,',
-                '    <span class="text-green-400">"Python"</span>,',
-                '    <span class="text-green-400">"Web Development"</span>',
-                '  ],',
-                '  <span class="text-navy-300">status:</span> <span class="text-green-400">"Open to Opportunities"</span>,',
-                '  <span class="text-navy-300">execute:</span> <span class="text-accent-400">function</span>() {',
-                '    <span class="text-white">console</span>.<span class="text-accent-300">log</span>(<span class="text-green-400">"Ready to work!"</span>);',
-                '  }',
-                '};'
+
+            const vibeLines = [
+                { text: "$ git status --short", color: "text-navy-300", delay: 800 },
+                { text: "$ python analyze_profile.py", color: "text-navy-300", delay: 1000 },
+                { text: "$ npm run build:portfolio", color: "text-navy-300", delay: 1200 },
+                { text: "$ deploy --target gemuyokai", color: "text-navy-300", delay: 1500 },
+                { text: "", color: "", delay: 500 },
+                { text: "portfolio.ready()", color: "text-green-400", delay: 800 },
+                { text: "stack: python · data · web", color: "text-white", delay: 500 },
+                { text: "focus: data analysis / automation / web", color: "text-white", delay: 500 },
+                { text: "research: COSINE-100 data quality", color: "text-white", delay: 500 },
+                { text: "status: open_to_opportunities", color: "text-accent-400", delay: 500 }
             ];
 
-            let lineIndex = 0;
-            let charIndex = 0;
-            let currentHTML = '';
+            let vLine = 0;
+            let vChar = 0;
+            let vHtml = "";
+            let vCursor = '<span class="inline-block w-2 h-4 bg-accent-400 animate-pulse ml-1 align-middle"></span>';
 
-            // Render line by line
-            function typeLine() {
-                if (lineIndex >= lines.length) return;
+            function typeNextChar() {
+                if (vLine >= vibeLines.length) {
+                    vibeContainer.innerHTML = vHtml; // Remove cursor at end
+                    return;
+                }
 
-                const currentLine = lines[lineIndex];
-                vibeContainer.innerHTML = currentHTML + currentLine + '<br>';
-                currentHTML += currentLine + '<br>';
-                lineIndex++;
+                const line = vibeLines[vLine];
+                if (vChar === 0) {
+                    // Start of new line
+                    if (vLine > 0) {
+                        vHtml += "<br>";
+                    }
+                    if (line.text === "") {
+                        vLine++;
+                        setTimeout(typeNextChar, line.delay);
+                        return;
+                    }
+                }
 
-                setTimeout(typeLine, 150 + Math.random() * 100);
+                let currentText = line.text.substring(0, vChar + 1);
+                let coloredText = `<span class="${line.color}">${currentText}</span>`;
+
+                vibeContainer.innerHTML = vHtml + coloredText + vCursor;
+
+                vChar++;
+                if (vChar >= line.text.length) {
+                    vHtml += `<span class="${line.color}">${line.text}</span>`;
+                    vLine++;
+                    vChar = 0;
+                    setTimeout(typeNextChar, line.delay);
+                } else {
+                    setTimeout(typeNextChar, 30 + Math.random() * 50);
+                }
             }
 
-            // Start effect slightly after page load
-            setTimeout(typeLine, 800);
+            setTimeout(typeNextChar, 800);
+
         });
     </script>
     <!-- Scroll to Top Button -->
