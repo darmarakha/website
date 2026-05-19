@@ -295,7 +295,7 @@ function dnd_account_id_to_user_id($accountId, array $account = []): ?int {
 
 function dnd_sync_current_member(PDO $pdo, int $campaignId, ?int $userId, string $userName, bool $isOwner): void {
     if (!$userId) return;
-    dnd_ensure_member_columns($pdo);
+    // dnd_ensure_member_columns removed for performance
     $displayName = mb_substr($userName ?: 'Player', 0, 120);
     $find = $pdo->prepare('SELECT id, role, permissions_json FROM dnd_campaign_members WHERE campaign_id=:cid AND user_id=:uid LIMIT 1');
     $find->execute([':cid' => $campaignId, ':uid' => $userId]);
@@ -339,7 +339,7 @@ function dnd_sync_current_member(PDO $pdo, int $campaignId, ?int $userId, string
 
 function dnd_sync_accounts(PDO $pdo, int $campaignId, array $state, ?int $ownerUserId, bool $isOwner): void {
     if (!$isOwner) return;
-    dnd_ensure_member_columns($pdo);
+    // dnd_ensure_member_columns removed for performance
     $accounts = is_array($state['accounts'] ?? null) ? $state['accounts'] : [];
     $stmt = $pdo->prepare('INSERT INTO dnd_campaign_members (campaign_id, user_id, display_name, role, permissions_json, invite_status) VALUES (:cid, :uid, :display_name, :role, :permissions_json, :invite_status) ON DUPLICATE KEY UPDATE display_name=VALUES(display_name), role=VALUES(role), permissions_json=VALUES(permissions_json), invite_status=VALUES(invite_status)');
     foreach ($accounts as $account) {
@@ -374,19 +374,16 @@ function dnd_sync_accounts(PDO $pdo, int $campaignId, array $state, ?int $ownerU
 }
 
 function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $userId, bool $isOwner): void {
-    dnd_ensure_character_columns($pdo);
+    // dnd_ensure_character_columns removed for performance
     $characters = is_array($state['characters'] ?? null) ? $state['characters'] : [];
     if (!$characters) return;
 
-    $stmtCheck = $pdo->prepare('SELECT id FROM dnd_characters WHERE campaign_id = :campaign_id AND local_character_id = :local_character_id LIMIT 1');
-    $stmtInsert = $pdo->prepare('INSERT INTO dnd_characters
+    $stmtUpsert = $pdo->prepare('INSERT INTO dnd_characters
         (campaign_id, local_character_id, user_id, name, race, subrace, languages_json, race_traits_json, class_name, level, background, alignment, personality_traits_json, ideal, bond, flaw, ability_scores_json, skill_proficiencies_json, appearance_json, inventory_json, gold, attacks_json, hp_max, hp_current, ac, speed, locked_fields_json, gm_notes, status, inspiration, hit_dice)
         VALUES
-        (:campaign_id, :local_character_id, :user_id, :name, :race, :subrace, :languages_json, :race_traits_json, :class_name, :level, :background, :alignment, :personality_traits_json, :ideal, :bond, :flaw, :ability_scores_json, :skill_proficiencies_json, :appearance_json, :inventory_json, :gold, :attacks_json, :hp_max, :hp_current, :ac, :speed, :locked_fields_json, :gm_notes, :status, :inspiration, :hit_dice)');
-    
-    $stmtUpdate = $pdo->prepare('UPDATE dnd_characters SET
-        user_id=:user_id, name=:name, race=:race, subrace=:subrace, languages_json=:languages_json, race_traits_json=:race_traits_json, class_name=:class_name, level=:level, background=:background, alignment=:alignment, personality_traits_json=:personality_traits_json, ideal=:ideal, bond=:bond, flaw=:flaw, ability_scores_json=:ability_scores_json, skill_proficiencies_json=:skill_proficiencies_json, appearance_json=:appearance_json, inventory_json=:inventory_json, gold=:gold, attacks_json=:attacks_json, hp_max=:hp_max, hp_current=:hp_current, ac=:ac, speed=:speed, locked_fields_json=:locked_fields_json, gm_notes=:gm_notes, status=:status, inspiration=:inspiration, hit_dice=:hit_dice, updated_at=CURRENT_TIMESTAMP
-        WHERE id=:id');
+        (:campaign_id, :local_character_id, :user_id, :name, :race, :subrace, :languages_json, :race_traits_json, :class_name, :level, :background, :alignment, :personality_traits_json, :ideal, :bond, :flaw, :ability_scores_json, :skill_proficiencies_json, :appearance_json, :inventory_json, :gold, :attacks_json, :hp_max, :hp_current, :ac, :speed, :locked_fields_json, :gm_notes, :status, :inspiration, :hit_dice)
+        ON DUPLICATE KEY UPDATE
+        user_id=VALUES(user_id), name=VALUES(name), race=VALUES(race), subrace=VALUES(subrace), languages_json=VALUES(languages_json), race_traits_json=VALUES(race_traits_json), class_name=VALUES(class_name), level=VALUES(level), background=VALUES(background), alignment=VALUES(alignment), personality_traits_json=VALUES(personality_traits_json), ideal=VALUES(ideal), bond=VALUES(bond), flaw=VALUES(flaw), ability_scores_json=VALUES(ability_scores_json), skill_proficiencies_json=VALUES(skill_proficiencies_json), appearance_json=VALUES(appearance_json), inventory_json=VALUES(inventory_json), gold=VALUES(gold), attacks_json=VALUES(attacks_json), hp_max=VALUES(hp_max), hp_current=VALUES(hp_current), ac=VALUES(ac), speed=VALUES(speed), locked_fields_json=VALUES(locked_fields_json), gm_notes=VALUES(gm_notes), status=VALUES(status), inspiration=VALUES(inspiration), hit_dice=VALUES(hit_dice), updated_at=CURRENT_TIMESTAMP');
 
     $seen = [];
     foreach ($characters as $character) {
@@ -408,7 +405,7 @@ function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $user
             $ownerId = $userId;
         }
 
-        $params = [
+        $stmtUpsert->execute([
             ':campaign_id' => $campaignId,
             ':local_character_id' => mb_substr($localId, 0, 80),
             ':user_id' => $ownerId,
@@ -440,23 +437,7 @@ function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $user
             ':status' => 'active',
             ':inspiration' => !empty($character['inspiration']) ? 1 : 0,
             ':hit_dice' => mb_substr((string)($character['hitDice'] ?? ''), 0, 20),
-        ];
-
-        $stmtCheck->execute([
-            ':campaign_id' => $campaignId,
-            ':local_character_id' => $params[':local_character_id']
         ]);
-        $existingId = $stmtCheck->fetchColumn();
-
-        if ($existingId) {
-            $updateParams = $params;
-            unset($updateParams[':campaign_id']);
-            unset($updateParams[':local_character_id']);
-            $updateParams[':id'] = $existingId;
-            $stmtUpdate->execute($updateParams);
-        } else {
-            $stmtInsert->execute($params);
-        }
     }
 
     if ($seen) {
@@ -475,7 +456,6 @@ function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $user
         $pdo->prepare($sql)->execute($params);
     }
 }
-
 function dnd_decode_json_field($value, $fallback = []) {
     if ($value === null || $value === '') return $fallback;
     if (is_array($value)) return $value;
@@ -502,7 +482,7 @@ function dnd_state_from_sql(PDO $pdo, int $campaignId, ?int $userId, bool $isOwn
         'lastSaved' => date('c'),
     ], is_array($campaignSettings) ? $campaignSettings : []);
 
-    dnd_ensure_member_columns($pdo);
+    // dnd_ensure_member_columns removed for performance
     $memberStmt = $pdo->prepare('SELECT * FROM dnd_campaign_members WHERE campaign_id = :cid AND invite_status = "accepted" ORDER BY joined_at ASC, id ASC');
     $memberStmt->execute([':cid' => $campaignId]);
     $accounts = [];
@@ -537,7 +517,8 @@ function dnd_state_from_sql(PDO $pdo, int $campaignId, ?int $userId, bool $isOwn
         $where .= ' AND user_id = :uid';
         $params[':uid'] = $userId;
     }
-    $stmt = $pdo->prepare('SELECT * FROM dnd_characters WHERE ' . $where . ' ORDER BY updated_at DESC, id DESC');
+    // Only select lightweight columns for summary to avoid heavy JSON decoding on list load
+    $stmt = $pdo->prepare('SELECT id, local_character_id, user_id, name, race, subrace, class_name, level, hp_max, hp_current, ac, updated_at FROM dnd_characters WHERE ' . $where . ' ORDER BY updated_at DESC, id DESC');
     $stmt->execute($params);
     $characters = [];
     while ($row = $stmt->fetch()) {
@@ -550,32 +531,11 @@ function dnd_state_from_sql(PDO $pdo, int $campaignId, ?int $userId, bool $isOwn
             'name' => $row['name'] ?: 'Nameless Adventurer',
             'race' => $row['race'] ?: 'human',
             'subrace' => $row['subrace'] ?: '',
-            'languages' => dnd_decode_json_field($row['languages_json'] ?? null, []),
-            'raceTraits' => dnd_decode_json_field($row['race_traits_json'] ?? null, []),
             'className' => $row['class_name'] ?: 'fighter',
             'level' => max(1, (int)($row['level'] ?? 1)),
-            'background' => $row['background'] ?: 'folk-hero',
-            'alignment' => $row['alignment'] ?: 'True Neutral',
-            'personalityTraits' => dnd_decode_json_field($row['personality_traits_json'] ?? null, []),
-            'ideal' => $row['ideal'] ?? '',
-            'bond' => $row['bond'] ?? '',
-            'flaw' => $row['flaw'] ?? '',
-            'abilities' => dnd_decode_json_field($row['ability_scores_json'] ?? null, ['str'=>15,'dex'=>14,'con'=>13,'int'=>10,'wis'=>12,'cha'=>8]),
-            'baseAbilities' => dnd_decode_json_field($row['ability_scores_json'] ?? null, ['str'=>15,'dex'=>14,'con'=>13,'int'=>10,'wis'=>12,'cha'=>8]),
-            'skills' => dnd_decode_json_field($row['skill_proficiencies_json'] ?? null, []),
-            'appearance' => dnd_decode_json_field($row['appearance_json'] ?? null, []),
-            'inventory' => dnd_decode_json_field($row['inventory_json'] ?? null, []),
-            'gold' => (int)($row['gold'] ?? 0),
-            'attacks' => dnd_decode_json_field($row['attacks_json'] ?? null, []),
             'hpMax' => max(1, (int)($row['hp_max'] ?? 1)),
             'hpCurrent' => max(0, (int)($row['hp_current'] ?? 1)),
             'ac' => max(1, (int)($row['ac'] ?? 10)),
-            'speed' => max(0, (int)($row['speed'] ?? 30)),
-            'startingChoice' => dnd_decode_json_field($row['locked_fields_json'] ?? null, []),
-            'gmNotes' => $row['gm_notes'] ?? '',
-            'inspiration' => !empty($row['inspiration']),
-            'hitDice' => $row['hit_dice'] ?? '',
-            'createdAt' => $row['created_at'] ?? date('c'),
             'updatedAt' => $row['updated_at'] ?? date('c'),
         ];
     }
@@ -615,15 +575,13 @@ function dnd_state_from_sql(PDO $pdo, int $campaignId, ?int $userId, bool $isOwn
         ],
     ];
 }
-
-
 try {
     $action = (string)($input['action'] ?? '');
     $campaignId = dnd_get_campaign_id($pdo, $userId, $isOwner);
     dnd_sync_current_member($pdo, $campaignId, $userId, $userName, $isOwner);
 
     if ($action === 'load') {
-        dnd_ensure_character_columns($pdo);
+        // dnd_ensure_character_columns removed for performance
         $stmt = $pdo->prepare('SELECT state_json, created_at FROM dnd_save_snapshots WHERE campaign_id = :cid ORDER BY id DESC LIMIT 1');
         $stmt->execute([':cid' => $campaignId]);
         $row = $stmt->fetch();

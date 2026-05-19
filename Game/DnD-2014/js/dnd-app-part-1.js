@@ -195,7 +195,13 @@
     }
     if (target.id === "active-character-select") {
       state.activeCharacterId = target.value;
-      saveState();
+      if (state.activeCharacterId && state.activeCharacterId !== "__new_character__") {
+          toast("Memuat detail karakter...");
+          loadFullCharacter(state.activeCharacterId).then(() => {
+              render();
+          });
+      }
+      saveState(false, 'character');
       render();
     }
     if (target.id === "active-map-select") {
@@ -504,6 +510,9 @@
       rooms: [],
       accounts: [],
       characters: [],
+      characterDetails: {},
+      dirtyCharacter: false,
+      dirtyCampaign: false,
       maps: [],
       npcs: [],
       customItems: [],
@@ -628,15 +637,47 @@
     saveState(false);
   }
 
-  function saveState(show = false) {
+  function saveState(show = false, type = 'character') {
     if (bootingFromSql) return;
     state.campaign.lastSaved = nowIso();
     normalizeSqlOnlyIdentity();
+
+    if (type === 'character') {
+        state.dirtyCharacter = true;
+    } else if (type === 'campaign') {
+        state.dirtyCampaign = true;
+    } else {
+        state.dirtyCharacter = true;
+        state.dirtyCampaign = true;
+    }
+
     if (hasWebsiteSession()) {
       scheduleSqlSave(show);
-      if (show) toast("Autosave dikirim ke MySQL.");
+      if (show) toast("Menyimpan ke MySQL...");
     } else if (show) {
       toast("Login website dulu agar data DND tersimpan ke MySQL.");
+    }
+  }
+
+  async function loadFullCharacter(characterId) {
+    if (!characterId || characterId === "__new_character__") return;
+    if (state.characterDetails && state.characterDetails[characterId]) return; // already loaded
+
+    try {
+        const data = await dndApi("load_character", { character_id: characterId });
+        if (data && data.character) {
+            state.characterDetails = state.characterDetails || {};
+            state.characterDetails[characterId] = data.character;
+
+            // Sync summary
+            const index = state.characters.findIndex(c => c.id === characterId);
+            if (index >= 0) {
+                state.characters[index] = { ...state.characters[index], ...data.character };
+            }
+            render();
+        }
+    } catch (e) {
+        console.warn("Failed to load character details", e);
     }
   }
 
@@ -670,12 +711,13 @@
     if (!apiUrl || !syncToken || !hasWebsiteSession()) return;
     syncPendingShow = syncPendingShow || !!show;
     window.clearTimeout(syncTimer);
-    syncTimer = window.setTimeout(() => persistStateToSql(syncPendingShow), 900);
+    syncTimer = window.setTimeout(() => persistStateToSql(syncPendingShow), 2500);
   }
 
   async function syncLoadFromSql() {
     if (!apiUrl || !syncToken || !hasWebsiteSession()) return;
     try {
+      toast("Memuat karakter dari MySQL...");
       const data = await dndApi("load");
       if (!data.state) {
         scheduleSqlSave(false);
@@ -686,10 +728,17 @@
       seedSystemAiNotes();
       normalizeStoredCharacters();
       normalizeSqlOnlyIdentity();
+
+      // Attempt to load the active character detail right away if available
+      if (state.activeCharacterId && state.activeCharacterId !== "__new_character__") {
+          await loadFullCharacter(state.activeCharacterId);
+      }
+
       render();
-      toast("Data DND dimuat dari MySQL.");
+      toast("Data DND dimuat.");
     } catch (error) {
       if (!syncWarned) console.warn("DND SQL load fallback:", error);
+      toast("Gagal memuat karakter. Coba refresh.");
       syncWarned = true;
     }
   }
@@ -702,8 +751,19 @@
     syncBusy = true;
     syncPendingShow = false;
     try {
-      const data = await dndApi("save", { state: sanitizeStateForSql(state), snapshot_name: "Autosave DND 2014" });
-      if (show) toast(data.message || "DND tersimpan ke SQL.");
+      if (state.dirtyCharacter && state.activeCharacterId) {
+        const char = state.characterDetails[state.activeCharacterId] || state.characters.find(c => c.id === state.activeCharacterId);
+        if (char) {
+            await dndApi("save_character", { character: char });
+        }
+      } else if (state.dirtyCampaign) {
+          await dndApi("save_campaign", { campaign: state.campaign });
+      } else {
+        const data = await dndApi("save", { state: sanitizeStateForSql(state), snapshot_name: "Autosave DND 2014" });
+        if (show) toast(data.message || "DND tersimpan ke SQL.");
+      }
+      state.dirtyCharacter = false;
+      state.dirtyCampaign = false;
       syncWarned = false;
     } catch (error) {
       if (!syncWarned) {
@@ -721,12 +781,32 @@
     }
   }
 
+  const toastQueue = [];
+  let isToasting = false;
+
+  function processToastQueue() {
+      if (toastQueue.length === 0 || isToasting) return;
+      isToasting = true;
+      const msg = toastQueue.shift();
+      if (!toastEl) return;
+      toastEl.innerHTML = '<span>' + esc(msg) + '</span>';
+      toastEl.classList.add("show");
+      window.clearTimeout(toastEl._timer);
+      toastEl._timer = window.setTimeout(() => {
+          toastEl.classList.remove("show");
+          setTimeout(() => {
+              isToasting = false;
+              processToastQueue();
+          }, 300); // Wait for transition
+      }, 2600);
+  }
+
   function toast(message) {
-    if (!toastEl) return;
-    toastEl.textContent = message;
-    toastEl.classList.add("show");
-    window.clearTimeout(toastEl._timer);
-    toastEl._timer = window.setTimeout(() => toastEl.classList.remove("show"), 2600);
+      if (!message) return;
+      // if same message is already showing, don't spam
+      if (toastEl && toastEl.classList.contains("show") && toastEl.textContent === message) return;
+      toastQueue.push(message);
+      processToastQueue();
   }
 
   function currentUser() {
