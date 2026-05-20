@@ -563,9 +563,7 @@
   }
 
   function isSessionOwner() {
-    const haystack = `${sessionName} ${sessionEmail}`.toLowerCase();
-    // Hanya Darma yang bisa jadi Owner mutlak sesuai permintaan
-    return haystack.includes("darma");
+    return sessionRole === "owner" || sessionRole === "admin" || sessionRole === "gm";
   }
 
   function seedSessionAccount() {
@@ -707,13 +705,13 @@
           let extra = '';
           if (log.meta && Array.isArray(log.meta.debugTiming)) {
               extra = `<div class="dnd-boot-console__meta" style="margin-left: 7.5rem; font-size: 0.85em; opacity: 0.7;">` +
-                log.meta.debugTiming.map(t => `└─ ${t.step}: ${t.ms}ms`).join('<br>') +
+                log.meta.debugTiming.map(t => `└─ ${esc(t.step)}: ${esc(t.ms)}ms`).join('<br>') +
                 `</div>`;
           }
           return `<div class="dnd-boot-console__row">
-            <span class="dnd-boot-console__time">[${log.elapsed}s]</span>
-            <span class="dnd-boot-console__type">${String(log.type).padEnd(10, ' ')}</span>
-            <span class="dnd-boot-console__message">${log.message}</span>
+            <span class="dnd-boot-console__time">[${esc(log.elapsed)}s]</span>
+            <span class="dnd-boot-console__type">${esc(String(log.type).padEnd(10, ' '))}</span>
+            <span class="dnd-boot-console__message">${esc(log.message)}</span>
           </div>${extra}`;
       }).join('');
       rowsEl.innerHTML = html + `<div class="dnd-boot-console__cursor">_</div>`;
@@ -755,11 +753,19 @@
     syncTimer = window.setTimeout(() => persistStateToSql(syncPendingShow), 2500);
   }
 
+  let isBootLoading = false;
+
   async function syncLoadFromSql() {
+    if (isBootLoading) return;
     if (!apiUrl || !syncToken || !hasWebsiteSession()) {
         const loadingOverlay = document.getElementById("dnd-loading-overlay");
         if (loadingOverlay) loadingOverlay.style.display = "none";
         return;
+    }
+    isBootLoading = true;
+
+    if (loadAbortController) {
+        loadAbortController.abort();
     }
 
     resetBootLog();
@@ -871,6 +877,8 @@
           }
           if (spinnerEl) spinnerEl.style.display = "none";
       }
+    } finally {
+      isBootLoading = false;
     }
   }
 
@@ -882,6 +890,10 @@
       if (actionsEl) actionsEl.style.display = "none";
       if (spinnerEl) spinnerEl.style.display = "block";
       if (errorTextEl) errorTextEl.textContent = "";
+
+      if (loadAbortController) {
+          loadAbortController.abort();
+      }
 
       addBootLog('retry', 'Retrying load sequence...');
       syncLoadFromSql();
@@ -895,19 +907,29 @@
     syncBusy = true;
     syncPendingShow = false;
     try {
+      let savedAnything = false;
+
       if (state.dirtyCharacter && state.activeCharacterId) {
         const char = state.characterDetails[state.activeCharacterId] || state.characters.find(c => c.id === state.activeCharacterId);
         if (char) {
             await dndApi("save_character", { character: char });
+            savedAnything = true;
+            state.dirtyCharacter = false;
         }
-      } else if (state.dirtyCampaign) {
+      }
+
+      if (state.dirtyCampaign) {
           await dndApi("save_campaign", { campaign: state.campaign });
-      } else {
+          savedAnything = true;
+          state.dirtyCampaign = false;
+      }
+
+      if (!savedAnything) {
         const data = await dndApi("save", { state: sanitizeStateForSql(state), snapshot_name: "Autosave DND 2014" });
         if (show) toast(data.message || "DND tersimpan ke SQL.");
+        state.dirtyCharacter = false;
+        state.dirtyCampaign = false;
       }
-      state.dirtyCharacter = false;
-      state.dirtyCampaign = false;
       syncWarned = false;
     } catch (error) {
       if (!syncWarned) {
@@ -962,9 +984,9 @@
     // Jika user adalah session user, gunakan logika isSessionOwner yang sudah diperketat
     if (user.id === "php-session-user") return isSessionOwner();
     
-    // Untuk akun lain di database, pastikan nama atau email mengandung 'darma'
-    const haystack = `${user.name} ${user.email}`.toLowerCase();
-    return haystack.includes("darma");
+    // Untuk akun lain di database, periksa role
+    const role = (user.role || "").toLowerCase();
+    return role === "owner" || role === "admin" || role === "gm";
   }
 
   function gmTimerIsActive(expiresAt) {
