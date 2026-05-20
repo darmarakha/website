@@ -65,6 +65,42 @@ BEGIN
         ALTER TABLE `dnd_characters` ADD COLUMN `flaw` text DEFAULT NULL AFTER `bond`;
     END IF;
 
+    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = db_name AND TABLE_NAME = 'dnd_characters' AND COLUMN_NAME = 'appearance_json') THEN
+        ALTER TABLE `dnd_characters` ADD COLUMN `appearance_json` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL AFTER `alignment`;
+    END IF;
+
+    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = db_name AND TABLE_NAME = 'dnd_characters' AND COLUMN_NAME = 'inventory_json') THEN
+        ALTER TABLE `dnd_characters` ADD COLUMN `inventory_json` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL AFTER `gold`;
+    END IF;
+
+    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = db_name AND TABLE_NAME = 'dnd_characters' AND COLUMN_NAME = 'hp_max') THEN
+        ALTER TABLE `dnd_characters` ADD COLUMN `hp_max` smallint(5) UNSIGNED NOT NULL DEFAULT 1 AFTER `level`;
+    END IF;
+
+    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = db_name AND TABLE_NAME = 'dnd_characters' AND COLUMN_NAME = 'hp_current') THEN
+        ALTER TABLE `dnd_characters` ADD COLUMN `hp_current` smallint(5) UNSIGNED NOT NULL DEFAULT 1 AFTER `hp_max`;
+    END IF;
+
+    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = db_name AND TABLE_NAME = 'dnd_characters' AND COLUMN_NAME = 'speed') THEN
+        ALTER TABLE `dnd_characters` ADD COLUMN `speed` smallint(5) UNSIGNED NOT NULL DEFAULT 30 AFTER `ac`;
+    END IF;
+
+    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = db_name AND TABLE_NAME = 'dnd_characters' AND COLUMN_NAME = 'locked_fields_json') THEN
+        ALTER TABLE `dnd_characters` ADD COLUMN `locked_fields_json` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL AFTER `speed`;
+    END IF;
+
+    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = db_name AND TABLE_NAME = 'dnd_characters' AND COLUMN_NAME = 'gm_notes') THEN
+        ALTER TABLE `dnd_characters` ADD COLUMN `gm_notes` text DEFAULT NULL AFTER `locked_fields_json`;
+    END IF;
+
+    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = db_name AND TABLE_NAME = 'dnd_characters' AND COLUMN_NAME = 'inspiration') THEN
+        ALTER TABLE `dnd_characters` ADD COLUMN `inspiration` tinyint(1) NOT NULL DEFAULT 0 AFTER `status`;
+    END IF;
+
+    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = db_name AND TABLE_NAME = 'dnd_characters' AND COLUMN_NAME = 'hit_dice') THEN
+        ALTER TABLE `dnd_characters` ADD COLUMN `hit_dice` varchar(20) DEFAULT NULL AFTER `inspiration`;
+    END IF;
+
     -- 2. dnd_campaign_members columns
     IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = db_name AND TABLE_NAME = 'dnd_campaign_members' AND COLUMN_NAME = 'invite_status') THEN
         ALTER TABLE `dnd_campaign_members` ADD COLUMN `invite_status` enum('pending','accepted','declined') NOT NULL DEFAULT 'accepted' AFTER `permissions_json`;
