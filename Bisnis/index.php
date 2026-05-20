@@ -234,10 +234,11 @@ usort($publishedProducts, function($a, $b) {
         // 1. DATA & LOGIKA PRODUK DARI PHP JSON
         const products = <?php echo file_exists('edit/produk.json') ? file_get_contents('edit/produk.json') : '[]'; ?>;
                 let currentLang = localStorage.getItem('biz-catalog-lang') || 'id';
-        function tr(key) { return currentLang === 'en' && dic[key]?.en ? dic[key].en : (dic[key]?.id || key); }
+        function tr(key) { const dictionary = window.dic || window.translations || {}; return currentLang === 'en' && dictionary[key]?.en ? dictionary[key].en : (dictionary[key]?.id || key); }
         function pickLang(obj, field) { return currentLang === 'en' && obj[field+'_en'] ? obj[field+'_en'] : (obj[field] || ''); }
 
         // Cart State
+        const BUSINESS_INTEREST_KEY = 'gy_business_interest_v1';
         let minatList = JSON.parse(localStorage.getItem(BUSINESS_INTEREST_KEY) || '[]');
 
         function updateMinatCount() {

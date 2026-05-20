@@ -229,48 +229,106 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_product'])) {
                     <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
                         <i data-lucide="plus-circle" class="text-red-600"></i> Tambah Produk
                     </h2>
-                    <form action="" method="POST" enctype="multipart/form-data" class="space-y-4">
-                        <?php echo csrf_field(); ?>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nama Produk / Jasa</label>
-                            <input type="text" name="title" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Product / Service Name (EN)</label>
-                            <input type="text" name="title_en" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Harga (Teks)</label>
-                            <input type="text" name="price" placeholder="Contoh: Rp 500.000" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Deskripsi Singkat</label>
-                            <textarea name="shortDesc" rows="2" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Short Description (EN)</label>
-                            <textarea name="shortDesc_en" rows="2" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Deskripsi Lengkap (HTML)</label>
-                            <textarea name="fullDesc" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Full Description (EN HTML)</label>
-                            <textarea name="fullDesc_en" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Upload File (JPG, JPEG, PNG, PDF)</label>
-                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:border-red-500 transition-colors relative">
-                                <input type="file" name="files[]" multiple accept=".jpg,.jpeg,.pdf,.png" class="absolute inset-0 opacity-0 cursor-pointer">
-                                <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
-                                <p class="text-xs text-slate-500">Klik atau seret file ke sini</p>
-                                <p class="text-[10px] text-slate-400 mt-1">Cover otomatis pakai file gambar pertama (JPG/JPEG/PNG). Jika semua file PDF, kartu akan tampil sebagai dokumen PDF.</p>
+                                        <form action="" method="POST" enctype="multipart/form-data" class="space-y-6" id="productForm">
+                        <input type="hidden" name="_csrf_token" value="<?php echo csrf_generate(); ?>">
+                        <input type="hidden" name="edit_id" id="edit_id" value="">
+                        <input type="hidden" name="edit_cover" id="edit_cover" value="">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Judul (ID)</label>
+                                <input type="text" name="title" id="form_title" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Judul (EN)</label>
+                                <input type="text" name="title_en" id="form_title_en" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
                             </div>
                         </div>
-                        <button type="submit" name="save_product" class="w-full py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-600/20">
-                            Simpan Produk
-                        </button>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Harga Tampil</label>
+                                <input type="text" name="price" id="form_price" required placeholder="Contoh: Rp 500.000" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Harga Angka</label>
+                                <input type="number" name="price_number" id="form_price_number" placeholder="500000" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Status</label>
+                                <select name="status" id="form_status" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
+                                    <option value="published">Published</option>
+                                    <option value="draft">Draft</option>
+                                    <option value="hidden">Hidden</option>
+                                    <option value="sold_out">Sold Out</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Kategori</label>
+                                <input type="text" name="category" id="form_category" placeholder="Contoh: Jasa Digital" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Tipe</label>
+                                <select name="type" id="form_type" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
+                                    <option value="service">Jasa</option>
+                                    <option value="digital">Produk Digital</option>
+                                    <option value="document">Dokumen / PDF</option>
+                                    <option value="package">Paket Layanan</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Deskripsi Singkat (ID)</label>
+                                <textarea name="shortDesc" id="form_shortDesc" required rows="2" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Deskripsi Singkat (EN)</label>
+                                <textarea name="shortDesc_en" id="form_shortDesc_en" rows="2" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Deskripsi Lengkap (HTML)</label>
+                                <textarea name="fullDesc" id="form_fullDesc" required rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Full Description (EN HTML)</label>
+                                <textarea name="fullDesc_en" id="form_fullDesc_en" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 mb-4">
+                            <input type="checkbox" name="featured" id="form_featured" value="1" class="w-4 h-4 text-red-600 rounded border-gray-300 focus:ring-red-500">
+                            <label for="form_featured" class="text-sm font-medium text-slate-700">Rekomendasikan (Featured)</label>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold uppercase text-slate-500 mb-1" id="fileLabel">Upload File Baru (JPG, PNG, WEBP, PDF)</label>
+                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:border-red-500 transition-colors relative">
+                                <input type="file" name="files[]" id="file_input" multiple accept=".jpg,.jpeg,.pdf,.png,.webp" class="absolute inset-0 opacity-0 cursor-pointer" onchange="document.getElementById('file_count').textContent = this.files.length + ' file dipilih'">
+                                <i data-lucide="upload-cloud" class="w-8 h-8 text-slate-400 mx-auto mb-2"></i>
+                                <p class="text-sm font-medium text-slate-700" id="file_count">Klik atau seret file ke sini</p>
+                                <p class="text-xs text-slate-500 mt-1">Maks 5MB per file</p>
+                            </div>
+                            <div id="edit_media_container" class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4 hidden">
+                                <!-- Existing images preview here -->
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button type="submit" name="save_product" id="btnSubmit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-red-500/30 flex justify-center items-center gap-2">
+                                <i data-lucide="plus-circle" class="w-5 h-5"></i> <span id="btnSubmitText">Simpan Produk Baru</span>
+                            </button>
+                            <button type="button" onclick="resetForm()" id="btnCancelEdit" class="hidden w-1/3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-xl transition-colors flex justify-center items-center gap-2">
+                                Batal
+                            </button>
+                        </div>
                     </form>
                     <?php if (!empty($lastUploads)): ?>
                         <div class="mt-5 border-t pt-4">
