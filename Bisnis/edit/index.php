@@ -234,9 +234,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_product'])) {
 
             <div class="lg:col-span-1">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border sticky top-24">
-                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
-                        <i data-lucide="plus-circle" class="text-red-600"></i> Tambah Produk
-                    </h2>
+                    <h2 id="formTitle" class="text-lg font-bold mb-4 flex items-center gap-2"><i data-lucide="plus-circle" class="text-red-600"></i> Tambah Produk / Jasa</h2>
                                         <form action="" method="POST" enctype="multipart/form-data" class="space-y-6" id="productForm">
                         <input type="hidden" name="_csrf_token" value="<?php echo csrf_generate(); ?>">
                         <input type="hidden" name="edit_id" id="edit_id" value="">

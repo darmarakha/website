@@ -1,34 +1,395 @@
 {
-  "items": [
-    {
-      "question_patterns": ["apa itu gemuyokai", "website ini apa", "gemu yokai itu apa", "tentang gemuyokai"],
-      "answer": "GemuYokai adalah website serbaguna milik Darma Alif Rakhaa yang berfungsi sebagai portfolio profesional, platform edukasi interaktif (Bahasa, Matematika, dll), komunitas game (seperti DnD 2014), katalog layanan bisnis, serta showcase implementasi AI canggih.",
-      "tags": ["identity", "website", "gemuyokai"]
-    },
-    {
-      "question_patterns": ["cara beli", "cara pesan", "pesan jasa", "beli produk", "jasa darma"],
-      "answer": "Jika kamu tertarik untuk menggunakan jasa atau membeli produk, kamu bisa mengunjungi halaman 'Bisnis'. Di sana kamu bisa mencari layanan yang tersedia, menambahkannya ke daftar 'Minat', dan langsung memesannya melalui WhatsApp.",
-      "tags": ["business", "order", "beli"]
-    },
-    {
-      "question_patterns": ["belajar apa saja", "modul belajar", "fitur belajar", "cara belajar"],
-      "answer": "Di GemuYokai, kamu bisa belajar beberapa modul secara interaktif, seperti Bahasa Jepang (Hiragana, Katakana, Kanji), Bahasa Inggris (Grammar, Listening), Matematika, dan Pengetahuan Umum. Sistem akan melacak progress belajarmu jika kamu login atau menggunakan penyimpanan browser lokal.",
-      "tags": ["learning", "belajar"]
-    },
-    {
-      "question_patterns": ["game dnd", "apa itu dnd", "cara main dnd", "game hub"],
-      "answer": "GemuYokai menyediakan Game Hub, salah satunya adalah adaptasi platform tabletop digital Dungeons & Dragons (DnD) 2014. Fitur ini memungkinkan Game Master dan Player bermain dalam room virtual lengkap dengan interactive map, sistem turn-based, dan dice roller 3D.",
-      "tags": ["game", "dnd", "bermain"]
-    },
-    {
-      "question_patterns": ["siapa sabila", "halaman sabila", "folder sabila"],
-      "answer": "Halaman Sabila (sabila/) adalah portfolio profesional milik Sabila Fitriannisaa, yang berfokus pada Administrasi dan Human Resource Development (HRD). Kamu bisa melihat pengalaman magang dan sertifikasinya di sana.",
-      "tags": ["sabila", "portfolio", "hr"]
-    },
-    {
-      "question_patterns": ["edit web", "cara ubah website", "akses owner", "kenapa tidak bisa edit"],
-      "answer": "Fitur 'Edit Web' dan akses manajemen tingkat lanjut (termasuk meminta AI untuk mengubah kode) secara ketat dibatasi hanya untuk Owner (Darma). Tamu tidak dapat melakukan pengeditan atau modifikasi pada website ini.",
-      "tags": ["security", "owner", "edit"]
-    }
-  ]
+    "items": [
+        {
+            "question_patterns": [
+                "apa itu gemuyokai",
+                "website ini apa",
+                "gemu yokai itu apa",
+                "tentang gemuyokai"
+            ],
+            "answer": "GemuYokai adalah website serbaguna milik Darma Alif Rakhaa yang berfungsi sebagai portfolio profesional, platform edukasi interaktif (Bahasa, Matematika, dll), komunitas game (seperti DnD 2014), katalog layanan bisnis, serta showcase implementasi AI canggih.",
+            "tags": [
+                "identity",
+                "website",
+                "gemuyokai"
+            ]
+        },
+        {
+            "question_patterns": [
+                "cara beli",
+                "cara pesan",
+                "pesan jasa",
+                "beli produk",
+                "jasa darma"
+            ],
+            "answer": "Jika kamu tertarik untuk menggunakan jasa atau membeli produk, kamu bisa mengunjungi halaman 'Bisnis'. Di sana kamu bisa mencari layanan yang tersedia, menambahkannya ke daftar 'Minat', dan langsung memesannya melalui WhatsApp.",
+            "tags": [
+                "business",
+                "order",
+                "beli"
+            ]
+        },
+        {
+            "question_patterns": [
+                "belajar apa saja",
+                "modul belajar",
+                "fitur belajar",
+                "cara belajar"
+            ],
+            "answer": "Di GemuYokai, kamu bisa belajar beberapa modul secara interaktif, seperti Bahasa Jepang (Hiragana, Katakana, Kanji), Bahasa Inggris (Grammar, Listening), Matematika, dan Pengetahuan Umum. Sistem akan melacak progress belajarmu jika kamu login atau menggunakan penyimpanan browser lokal.",
+            "tags": [
+                "learning",
+                "belajar"
+            ]
+        },
+        {
+            "question_patterns": [
+                "game dnd",
+                "apa itu dnd",
+                "cara main dnd",
+                "game hub"
+            ],
+            "answer": "GemuYokai menyediakan Game Hub, salah satunya adalah adaptasi platform tabletop digital Dungeons & Dragons (DnD) 2014. Fitur ini memungkinkan Game Master dan Player bermain dalam room virtual lengkap dengan interactive map, sistem turn-based, dan dice roller 3D.",
+            "tags": [
+                "game",
+                "dnd",
+                "bermain"
+            ]
+        },
+        {
+            "question_patterns": [
+                "siapa sabila",
+                "halaman sabila",
+                "folder sabila"
+            ],
+            "answer": "Halaman Sabila (sabila\/) adalah portfolio profesional milik Sabila Fitriannisaa, yang berfokus pada Administrasi dan Human Resource Development (HRD). Kamu bisa melihat pengalaman magang dan sertifikasinya di sana.",
+            "tags": [
+                "sabila",
+                "portfolio",
+                "hr"
+            ]
+        },
+        {
+            "question_patterns": [
+                "edit web",
+                "cara ubah website",
+                "akses owner",
+                "kenapa tidak bisa edit"
+            ],
+            "answer": "Fitur 'Edit Web' dan akses manajemen tingkat lanjut (termasuk meminta AI untuk mengubah kode) secara ketat dibatasi hanya untuk Owner (Darma). Tamu tidak dapat melakukan pengeditan atau modifikasi pada website ini.",
+            "tags": [
+                "security",
+                "owner",
+                "edit"
+            ]
+        },
+        {
+            "question_patterns": [
+                "sertifikat",
+                "bukti",
+                "kompetensi",
+                "certificate"
+            ],
+            "answer": "Semua sertifikat yang diperoleh oleh Darma dapat dilihat di bagian 'Sertifikat' pada halaman depan, mulai dari bahasa, keahlian teknis (Python, MATLAB), hingga BNSP.",
+            "tags": [
+                "certificate",
+                "portfolio"
+            ]
+        },
+        {
+            "question_patterns": [
+                "project",
+                "proyek",
+                "dibuat",
+                "hasil karya"
+            ],
+            "answer": "Beberapa proyek unggulan Darma antara lain analisis data dari eksperimen COSINE-100 Korea Selatan, pengembangan platform GemuYokai, sistem IoT, dan pengenalan huruf Jepang. Selengkapnya ada di bagian 'Proyek'.",
+            "tags": [
+                "project",
+                "portfolio"
+            ]
+        },
+        {
+            "question_patterns": [
+                "pengalaman",
+                "internship",
+                "magang",
+                "korea",
+                "cosine",
+                "ibs"
+            ],
+            "answer": "Darma memiliki pengalaman magang internasional di eksperimen COSINE-100, Institute for Basic Science (IBS) di Korea Selatan, yang sangat membentuk keahliannya dalam analisis data.",
+            "tags": [
+                "experience",
+                "portfolio"
+            ]
+        },
+        {
+            "question_patterns": [
+                "bahasa jepang",
+                "hiragana",
+                "katakana",
+                "kanji",
+                "nihongo"
+            ],
+            "answer": "Modul Belajar Bahasa Jepang dirancang komprehensif, mencakup pengenalan Kana (Hiragana\/Katakana), animasi goresan Kanji menggunakan KanjiVG, serta kuis dan latihan pola kalimat (Partikel). Semuanya dapat diakses secara gratis dari menu Belajar.",
+            "tags": [
+                "learning",
+                "jepang"
+            ]
+        },
+        {
+            "question_patterns": [
+                "matematika",
+                "math",
+                "aljabar",
+                "hitung"
+            ],
+            "answer": "Modul Belajar Matematika kami mencakup materi dari tingkat pemula hingga lanjut, termasuk latihan aljabar, persentase, bangun ruang, dan statistika dasar.",
+            "tags": [
+                "learning",
+                "math"
+            ]
+        },
+        {
+            "question_patterns": [
+                "pengetahuan umum",
+                "pu",
+                "sejarah",
+                "geografi",
+                "sains"
+            ],
+            "answer": "Modul Pengetahuan Umum mencakup fakta menarik dan uji pengetahuan tentang Indonesia, Geografi Dunia, Sains, Sejarah, hingga Keselamatan Digital.",
+            "tags": [
+                "learning",
+                "knowledge"
+            ]
+        },
+        {
+            "question_patterns": [
+                "bahasa inggris",
+                "english",
+                "grammar",
+                "listening"
+            ],
+            "answer": "Dalam Modul Bahasa Inggris, kami menawarkan pelajaran terstruktur yang terdiri dari kosakata (vocabulary), grammar (tata bahasa), serta fitur listening dengan sintesis suara dari browser kamu.",
+            "tags": [
+                "learning",
+                "english"
+            ]
+        },
+        {
+            "question_patterns": [
+                "akun",
+                "login",
+                "register",
+                "daftar",
+                "member"
+            ],
+            "answer": "Kamu dapat login atau membuat akun melalui form Auth yang ada di menu utama. Membuat akun (Member) memungkinkanmu untuk melacak skor dan menyimpan kemajuan belajar di database kami.",
+            "tags": [
+                "account",
+                "login"
+            ]
+        },
+        {
+            "question_patterns": [
+                "role",
+                "owner",
+                "admin"
+            ],
+            "answer": "Ada beberapa peran: Guest (Tamu) yang hanya bisa melihat konten publik, Member (Akun terdaftar) untuk menyimpan progres, dan Owner (Darma) yang memiliki kendali penuh pada fitur Edit Web dan Gemu AI.",
+            "tags": [
+                "account",
+                "role"
+            ]
+        },
+        {
+            "question_patterns": [
+                "keamanan",
+                "privasi",
+                "aman",
+                "data saya"
+            ],
+            "answer": "GemuYokai menjaga privasi pengguna dengan baik. Kami mengimplementasikan proteksi CSRF di seluruh form dan melakukan enkripsi pada kata sandi pengguna sebelum disimpan ke database.",
+            "tags": [
+                "security",
+                "privacy"
+            ]
+        },
+        {
+            "question_patterns": [
+                "batasan ai",
+                "limit ai",
+                "apa yang tidak bisa dilakukan ai"
+            ],
+            "answer": "Sebagai AI Tamu, saya tidak memiliki izin untuk mengedit konfigurasi sistem, memanipulasi database, atau memberikan data pribadi yang sifatnya rahasia. Hanya Owner yang bisa memerintahkan GEMU untuk mengubah file website.",
+            "tags": [
+                "security",
+                "ai limits"
+            ]
+        },
+        {
+            "question_patterns": [
+                "kontak",
+                "contact",
+                "email",
+                "hubungi"
+            ],
+            "answer": "Untuk menghubungi Darma secara langsung, kamu bisa menggunakan Form Kontak di halaman bawah, atau mengakses email \/ akun profesionalnya melalui ikon yang tersedia di Navbar utama.",
+            "tags": [
+                "contact"
+            ]
+        },
+        {
+            "question_patterns": [
+                "error",
+                "rusak",
+                "bug",
+                "lapor",
+                "tidak jalan"
+            ],
+            "answer": "Jika menemukan error, kamu dapat me-refresh halaman terlebih dahulu. Bila masalah terus berlanjut, mohon informasikan melalui pesan Kontak agar dapat segera ditinjau oleh Owner.",
+            "tags": [
+                "error",
+                "bug"
+            ]
+        },
+        {
+            "question_patterns": [
+                "siapa kamu",
+                "siapa namamu",
+                "apakah kamu manusia",
+                "bot",
+                "robot"
+            ],
+            "answer": "Saya adalah GEMU, asisten digital yang bertugas memandu tamu di website ini. Saya bukan manusia, namun saya dikonfigurasi untuk membantu dan memberikan informasi terbaik berdasarkan data GemuYokai.",
+            "tags": [
+                "identity",
+                "ai"
+            ]
+        },
+        {
+            "question_patterns": [
+                "apakah kamu bisa diretas",
+                "hack kamu",
+                "bypass"
+            ],
+            "answer": "Saya hanyalah antar-muka AI membaca knowledge base lokal. Saya tidak memiliki akses langsung untuk mengeksekusi script yang berisiko pada sistem ini untuk Guest.",
+            "tags": [
+                "security",
+                "ai"
+            ]
+        },
+        {
+            "question_patterns": [
+                "makan apa",
+                "suka warna apa",
+                "apakah kamu tidur"
+            ],
+            "answer": "Sebagai asisten kecerdasan buatan, saya tidak makan, tidak memiliki warna kesukaan, dan selalu online 24 jam untuk membantumu mengeksplorasi website ini.",
+            "tags": [
+                "funny",
+                "ai"
+            ]
+        },
+        {
+            "question_patterns": [
+                "dnd map",
+                "dnd dadu",
+                "dice roller"
+            ],
+            "answer": "Fitur DnD 2014 kami dilengkapi dengan dice roller 3D (D4, D6, D8, D10, D12, D20) serta peta interaktif (Interactive Map) lengkap dengan fitur Token dan Fog of War bagi GM.",
+            "tags": [
+                "game",
+                "dnd"
+            ]
+        },
+        {
+            "question_patterns": [
+                "bisnis jasa",
+                "jasa edit",
+                "pembuatan web"
+            ],
+            "answer": "Untuk layanan profesional seperti Pembuatan Website atau Data Analysis, kamu bisa memeriksa katalog produk pada halaman 'Bisnis' dan menghubungi via WhatsApp.",
+            "tags": [
+                "business",
+                "service"
+            ]
+        },
+        {
+            "question_patterns": [
+                "apakah sabila bisa dihubungi",
+                "kontak sabila",
+                "portofolio sabila"
+            ],
+            "answer": "Halaman portfolio Sabila memuat rekam jejak kariernya di bidang Administrasi dan HR. Kamu bisa meninjau profil lengkapnya di `\/sabila`.",
+            "tags": [
+                "sabila",
+                "contact"
+            ]
+        },
+        {
+            "question_patterns": [
+                "seberapa pintar kamu",
+                "apakah kamu ai paling canggih",
+                "model ai"
+            ],
+            "answer": "Saya dibangun dengan integrasi canggih yang spesifik untuk melayani website ini, menggunakan basis bahasa dari teknologi besar yang telah di-finetuning untuk memberikan navigasi situs terbaik.",
+            "tags": [
+                "ai",
+                "capability"
+            ]
+        },
+        {
+            "question_patterns": [
+                "ganti bahasa",
+                "bahasa indonesia",
+                "bahasa inggris",
+                "english language"
+            ],
+            "answer": "Kamu bisa mengubah bahasa antarmuka (UI) dari Bahasa Indonesia ke English melalui tombol ID\/EN di bagian menu atas layar.",
+            "tags": [
+                "website",
+                "language"
+            ]
+        },
+        {
+            "question_patterns": [
+                "apakah gratis",
+                "bayar tidak",
+                "berbayar"
+            ],
+            "answer": "Semua modul pembelajaran (Belajar) dan Game Hub dapat digunakan secara bebas (gratis). Kami hanya membebankan biaya untuk layanan spesifik di katalog 'Bisnis'.",
+            "tags": [
+                "business",
+                "free"
+            ]
+        },
+        {
+            "question_patterns": [
+                "apakah ini dari wordpress",
+                "pakai cms apa",
+                "dibuat pakai apa"
+            ],
+            "answer": "Website ini merupakan karya mandiri buatan tangan (custom coded) menggunakan PHP murni, JavaScript modern (Vanilla\/Tailwind), tanpa bergantung pada platform CMS berat seperti WordPress.",
+            "tags": [
+                "website",
+                "tech"
+            ]
+        },
+        {
+            "question_patterns": [
+                "apakah dnd ada ai",
+                "bisa main sama ai",
+                "ai dnd"
+            ],
+            "answer": "Ya, dalam ruang DnD 2014 kami memiliki fitur 'AI Asisten GM' yang bisa membantumu mencari referensi monster atau menyusun alur cerita dengan cepat.",
+            "tags": [
+                "game",
+                "dnd",
+                "ai"
+            ]
+        }
+    ]
 }
