@@ -1,0 +1,78 @@
+[
+  {
+    "id": "mat-basic-1",
+    "level": "Pemula",
+    "title": "Penjumlahan Dasar",
+    "summary": "Memahami konsep dasar penjumlahan angka.",
+    "explanation": "Penjumlahan adalah proses menggabungkan dua angka atau lebih menjadi satu angka yang disebut jumlah. Simbol yang digunakan adalah '+'.",
+    "examples": [
+      {
+        "question": "Berapakah 5 + 3?",
+        "steps": ["Mulai dari angka 5.", "Tambahkan 3 langkah: 6, 7, 8.", "Hasilnya adalah 8."],
+        "answer": "8"
+      }
+    ],
+    "quiz": [
+      {
+        "type": "multiple",
+        "question": "Berapakah 7 + 4?",
+        "options": ["10", "11", "12", "13"],
+        "answer": "11",
+        "explanation": "7 ditambah 4 sama dengan 11."
+      },
+      {
+        "type": "input",
+        "question": "8 + 5 = ...",
+        "answer": "13",
+        "explanation": "8 + 5 = 13."
+      }
+    ]
+  },
+  {
+    "id": "mat-basic-2",
+    "level": "Pemula",
+    "title": "Pengurangan Dasar",
+    "summary": "Memahami konsep dasar pengurangan angka.",
+    "explanation": "Pengurangan adalah proses mengambil sejumlah angka dari angka lain. Simbol yang digunakan adalah '-'.",
+    "examples": [
+      {
+        "question": "Berapakah 10 - 4?",
+        "steps": ["Mulai dari angka 10.", "Kurangi 4 langkah: 9, 8, 7, 6.", "Hasilnya adalah 6."],
+        "answer": "6"
+      }
+    ],
+    "quiz": [
+      {
+        "type": "multiple",
+        "question": "Berapakah 15 - 8?",
+        "options": ["5", "6", "7", "8"],
+        "answer": "7",
+        "explanation": "15 dikurangi 8 sama dengan 7."
+      }
+    ]
+  },
+  {
+    "id": "percent-basic",
+    "level": "Dasar",
+    "title": "Persentase Dasar",
+    "summary": "Memahami arti persen dan cara menghitungnya.",
+    "explanation": "Persen berarti 'per seratus'. Jadi, 20% sama dengan 20/100 atau 0.2.",
+    "formula": "nilai persen = (persen / 100) × total",
+    "examples": [
+      {
+        "question": "20% dari 50 adalah ...",
+        "steps": ["Ubah ke pecahan: 20/100 × 50", "Ubah ke desimal: 0.2 × 50", "Hasilnya: 10"],
+        "answer": "10"
+      }
+    ],
+    "quiz": [
+      {
+        "type": "multiple",
+        "question": "25% dari 80 adalah ...",
+        "options": ["10", "20", "25", "40"],
+        "answer": "20",
+        "explanation": "(25/100) × 80 = 20."
+      }
+    ]
+  }
+]

@@ -1,0 +1,75 @@
+[
+  {
+    "id": "en-basic-1",
+    "level": "Pemula",
+    "title": "Greetings & Introductions",
+    "summary": "Belajar cara menyapa dan memperkenalkan diri dalam bahasa Inggris.",
+    "explanation": "Greetings (Salam) sangat penting untuk memulai percakapan. Ada formal (resmi) dan informal (santai).",
+    "vocabulary": [
+      {"en": "Hello", "id": "Halo"},
+      {"en": "Good morning", "id": "Selamat pagi"},
+      {"en": "Nice to meet you", "id": "Senang bertemu denganmu"}
+    ],
+    "examples": [
+      {
+        "en": "Hello, my name is Darma.",
+        "id": "Halo, nama saya Darma.",
+        "note": "Gunakan 'my name is' untuk memperkenalkan diri."
+      }
+    ],
+    "quiz": [
+      {
+        "type": "multiple",
+        "question": "Bagaimana cara mengatakan 'Selamat Pagi' dalam bahasa Inggris?",
+        "options": ["Good night", "Good morning", "Good afternoon", "Goodbye"],
+        "answer": "Good morning",
+        "explanation": "'Good morning' digunakan dari pagi hingga siang hari."
+      },
+      {
+        "type": "input",
+        "question": "Terjemahkan ke bahasa Inggris: 'Senang bertemu denganmu'",
+        "answer": "Nice to meet you",
+        "explanation": "Frasa umum untuk menyapa seseorang yang baru dikenal."
+      }
+    ]
+  },
+  {
+    "id": "en-basic-2",
+    "level": "Dasar",
+    "title": "Have to / Has to",
+    "summary": "Belajar menyatakan kewajiban (harus).",
+    "explanation": "'Have to' dan 'Has to' digunakan untuk menyatakan kewajiban atau sesuatu yang harus dilakukan. 'Have to' digunakan untuk I, You, We, They. 'Has to' digunakan untuk He, She, It.",
+    "vocabulary": [
+      {"en": "Study", "id": "Belajar"},
+      {"en": "Work", "id": "Bekerja"},
+      {"en": "Go", "id": "Pergi"}
+    ],
+    "examples": [
+      {
+        "en": "I have to study.",
+        "id": "Saya harus belajar.",
+        "note": "Subjek 'I' menggunakan 'have to'."
+      },
+      {
+        "en": "She has to work.",
+        "id": "Dia (perempuan) harus bekerja.",
+        "note": "Subjek 'She' menggunakan 'has to'."
+      }
+    ],
+    "quiz": [
+      {
+        "type": "multiple",
+        "question": "He ___ go to school.",
+        "options": ["have to", "has to", "having to", "had to"],
+        "answer": "has to",
+        "explanation": "Subjek 'He' menggunakan 'has to'."
+      },
+      {
+        "type": "input",
+        "question": "Terjemahkan: 'Saya harus pergi'",
+        "answer": "I have to go",
+        "explanation": "Subjek 'I' menggunakan 'have to', 'pergi' adalah 'go'."
+      }
+    ]
+  }
+]

@@ -17,6 +17,17 @@ if (isset($_GET['logout'])) {
 
 require_once __DIR__ . '/../../config.php';
 
+$gemu_base_path = '../../';
+$gemu_nav_context = [
+    'mode' => 'learning',
+    'brand_text' => 'GemuYokai Belajar',
+    'brand_badge' => 'GB',
+    'show_profile' => true,
+    'show_owner_tools' => false,
+    'show_contact' => false,
+    'compact' => true,
+];
+
 $ai_total_progress = 0;
 $prog_materi = 0;
 $prog_latihan = 0;
@@ -61,43 +72,33 @@ if (!empty($_SESSION['user_name'])) {
         error_log("Failed to fetch English progress: " . $e->getMessage());
     }
 
-    $fondasi_kuat = ($prog_materi >= 70 && $prog_latihan >= 60);
+        $fondasi_kuat = ($prog_materi >= 70 && $prog_latihan >= 60);
 
     if ($prog_materi === 0 && $prog_latihan === 0 && $prog_dialog === 0 && $prog_listening === 0) {
         $ai_total_progress = 0;
-        $ai_classification = "Novice (New User)";
-        $ai_feedback_msg = "Welcome to your English journey! Start with the basic materials and exercises.";
+        $ai_classification = "Pemula (Materi Dasar)";
+        $ai_feedback_msg = "Analisis awal: mulai dari materi dasar untuk mengukur level kamu.";
     } else {
-        if (!$fondasi_kuat) {
-            $w_mat = 0.50; $w_lat = 0.30; $w_dia = 0.10; $w_lis = 0.10;
-            $ai_classification = "Cluster A: Grammar & Vocabulary Focus";
-        } else if ($prog_listening < 60) {
-            $w_mat = 0.10; $w_lat = 0.10; $w_dia = 0.20; $w_lis = 0.60;
-            $ai_classification = "Cluster B: Listening Comprehension Focus";
-        } else {
-            $w_mat = 0.10; $w_lat = 0.10; $w_dia = 0.50; $w_lis = 0.30;
-            $ai_classification = "Cluster C: Advanced Conversation Focus";
-        }
+        // Formula: materi (25%) + latihan (30%) + listening (20%) + dialog (15%) + bonus konsistensi (10%)
+        // Because consistency bonus needs history, we just distribute the remaining 10% evenly for now or grant it if they are active in all.
+        $w_mat = 0.25; $w_lat = 0.30; $w_lis = 0.20; $w_dia = 0.15;
+        $bonus = ($prog_materi > 0 && $prog_latihan > 0 && $prog_listening > 0 && $prog_dialog > 0) ? 10 : 0;
 
-        $raw_score = ($prog_materi * $w_mat) + ($prog_latihan * $w_lat) + ($prog_dialog * $w_dia) + ($prog_listening * $w_lis);
+        $raw_score = ($prog_materi * $w_mat) + ($prog_latihan * $w_lat) + ($prog_listening * $w_lis) + ($prog_dialog * $w_dia) + $bonus;
+        $ai_total_progress = min(100, round(max(0, $raw_score)));
 
-        $ai_penalty = 0;
-        if ($prog_dialog > 30 && $prog_materi < 40) {
-            $ai_penalty = 15;
-        }
-
-        $ai_total_progress = round(max(0, $raw_score - $ai_penalty));
-
-        if ($ai_penalty > 0) {
-            $ai_feedback_msg = "⚠️ AI Anomaly Detected: You are trying advanced dialogs without mastering basic materials. Score adjusted.";
-        } elseif ($ai_total_progress < 30) {
-            $ai_feedback_msg = "AI Insight ($ai_classification): Focus on building your vocabulary and grammar foundations.";
+        if ($ai_total_progress < 30) {
+            $ai_classification = "Dasar (A1)";
+            $ai_feedback_msg = "Pertahankan! Fokus pada kosakata dasar dan pengucapan (Pronunciation).";
         } elseif ($ai_total_progress < 60) {
-            $ai_feedback_msg = "AI Insight ($ai_classification): Great progress! Now try to improve your listening skills.";
+            $ai_classification = "Menengah (A2/B1 awal)";
+            $ai_feedback_msg = "Perkembangan bagus. Tingkatkan skor Listening kamu lewat dikte.";
         } elseif ($ai_total_progress < 85) {
-            $ai_feedback_msg = "AI Insight ($ai_classification): You are quite competent! Focus on real-life dialogues with the AI.";
+            $ai_classification = "Lanjut (B1/B2)";
+            $ai_feedback_msg = "Sangat baik! Banyak praktik Roleplay di bagian Dialog untuk lebih lancar.";
         } else {
-            $ai_feedback_msg = "🎯 AI Prediction: Excellent proficiency level! You're ready for advanced English communication.";
+            $ai_classification = "Profesional";
+            $ai_feedback_msg = "Luar biasa! Pemahaman bahasa Inggrismu sudah di tahap mahir.";
         }
     }
 }

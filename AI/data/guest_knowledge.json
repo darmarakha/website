@@ -1,0 +1,25 @@
+{
+  "site_identity": {
+    "name": "GemuYokai",
+    "owner": "Darma Alif Rakhaa",
+    "purpose": "Portfolio, Platform Edukasi, Game Hub, Katalog Bisnis, dan Fitur AI"
+  },
+  "modules": {
+    "belajar": {
+      "desc": "Modul edukasi dengan gamifikasi ringan dan pelacakan progress.",
+      "subjects": ["Bahasa Jepang", "Bahasa Inggris", "Matematika", "Pengetahuan Umum"]
+    },
+    "game": {
+      "desc": "Game interaktif berbasis browser.",
+      "items": ["Game Hub", "DnD 2014 Tabletop Digital"]
+    },
+    "bisnis": {
+      "desc": "Katalog produk digital dan layanan profesional.",
+      "features": ["Pencarian", "Filter Kategori", "Minat Pembeli", "Pesan via WhatsApp"]
+    },
+    "ai": {
+      "desc": "Asisten virtual cerdas.",
+      "roles": ["AI Tamu (Penjawab Pertanyaan Umum)", "GEMU AI Internal Owner (Multi-agent editor dan asisten keamanan)"]
+    }
+  }
+}

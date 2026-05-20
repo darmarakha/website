@@ -1,0 +1,34 @@
+{
+  "items": [
+    {
+      "question_patterns": ["apa itu gemuyokai", "website ini apa", "gemu yokai itu apa", "tentang gemuyokai"],
+      "answer": "GemuYokai adalah website serbaguna milik Darma Alif Rakhaa yang berfungsi sebagai portfolio profesional, platform edukasi interaktif (Bahasa, Matematika, dll), komunitas game (seperti DnD 2014), katalog layanan bisnis, serta showcase implementasi AI canggih.",
+      "tags": ["identity", "website", "gemuyokai"]
+    },
+    {
+      "question_patterns": ["cara beli", "cara pesan", "pesan jasa", "beli produk", "jasa darma"],
+      "answer": "Jika kamu tertarik untuk menggunakan jasa atau membeli produk, kamu bisa mengunjungi halaman 'Bisnis'. Di sana kamu bisa mencari layanan yang tersedia, menambahkannya ke daftar 'Minat', dan langsung memesannya melalui WhatsApp.",
+      "tags": ["business", "order", "beli"]
+    },
+    {
+      "question_patterns": ["belajar apa saja", "modul belajar", "fitur belajar", "cara belajar"],
+      "answer": "Di GemuYokai, kamu bisa belajar beberapa modul secara interaktif, seperti Bahasa Jepang (Hiragana, Katakana, Kanji), Bahasa Inggris (Grammar, Listening), Matematika, dan Pengetahuan Umum. Sistem akan melacak progress belajarmu jika kamu login atau menggunakan penyimpanan browser lokal.",
+      "tags": ["learning", "belajar"]
+    },
+    {
+      "question_patterns": ["game dnd", "apa itu dnd", "cara main dnd", "game hub"],
+      "answer": "GemuYokai menyediakan Game Hub, salah satunya adalah adaptasi platform tabletop digital Dungeons & Dragons (DnD) 2014. Fitur ini memungkinkan Game Master dan Player bermain dalam room virtual lengkap dengan interactive map, sistem turn-based, dan dice roller 3D.",
+      "tags": ["game", "dnd", "bermain"]
+    },
+    {
+      "question_patterns": ["siapa sabila", "halaman sabila", "folder sabila"],
+      "answer": "Halaman Sabila (sabila/) adalah portfolio profesional milik Sabila Fitriannisaa, yang berfokus pada Administrasi dan Human Resource Development (HRD). Kamu bisa melihat pengalaman magang dan sertifikasinya di sana.",
+      "tags": ["sabila", "portfolio", "hr"]
+    },
+    {
+      "question_patterns": ["edit web", "cara ubah website", "akses owner", "kenapa tidak bisa edit"],
+      "answer": "Fitur 'Edit Web' dan akses manajemen tingkat lanjut (termasuk meminta AI untuk mengubah kode) secara ketat dibatasi hanya untuk Owner (Darma). Tamu tidak dapat melakukan pengeditan atau modifikasi pada website ini.",
+      "tags": ["security", "owner", "edit"]
+    }
+  ]
+}

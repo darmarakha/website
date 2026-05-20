@@ -1,5 +1,16 @@
 <?php
 session_start();
+
+$gemu_base_path = '../';
+$gemu_nav_context = [
+    'mode' => 'game_hub',
+    'brand_text' => 'Gemu Games',
+    'brand_badge' => 'GG',
+    'show_profile' => false,
+    'show_owner_tools' => false,
+    'show_contact' => false,
+    'compact' => true,
+];
 $gemu_base_path = '../';
 $gemu_asset_version = @filemtime(__DIR__ . '/../data.js') ?: time();
 ?>

@@ -1,9 +1,14 @@
-Options -Indexes
-
-<FilesMatch "\.(json|log|bak|tmp)$">
-    Require all denied
+Order Deny,Allow
+Deny from all
+<FilesMatch "^(api|index|cron|gemu\.js|gemu\.css|guide-widget\.js|guide-widget\.css|test_api)\.php$">
+    Allow from all
 </FilesMatch>
-
-<FilesMatch "^(memory|scan-log|brain|owner-tasks|secret)\.(json|php)$">
-    Require all denied
+<FilesMatch "\.(js|css|jpg|png|webp|svg)$">
+    Allow from all
+</FilesMatch>
+<FilesMatch "\.json$">
+    Deny from all
+</FilesMatch>
+<FilesMatch "secret\.php$">
+    Deny from all
 </FilesMatch>

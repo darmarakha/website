@@ -169,7 +169,7 @@
     const viewMode = visibleTableMode();
     const user = currentUser();
     if (state.ui.lobbyInsideRoom && active) return renderRoomInsideTab(active, viewMode, user);
-    if (state.ui.lobbyInsideRoom && !active) state.ui.lobbyInsideRoom = false;
+    if (state.ui.lobbyInsideRoom && !active) { state.ui.lobbyInsideRoom = false; document.body.classList.remove('gemu-dnd-room-active'); }
     const roomsHtml = state.rooms.length
       ? state.rooms.map((room) => {
           const joined = roomAccessAllowed(room);

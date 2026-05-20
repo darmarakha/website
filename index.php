@@ -5,6 +5,16 @@ header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 header("Expires: 0");
+
+$gemu_nav_context = [
+    'mode' => 'portfolio',
+    'brand_text' => 'Darma Rakhaa',
+    'brand_badge' => 'DR',
+    'show_profile' => true,
+    'show_owner_tools' => true,
+    'show_contact' => true,
+    'compact' => false,
+];
 $gemu_asset_version = max(
     @filemtime(__DIR__ . '/index.php') ?: time(),
     @filemtime(__DIR__ . '/app.js') ?: time(),

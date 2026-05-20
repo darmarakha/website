@@ -107,3 +107,10 @@
 .attacks-table tr:hover {
     background: rgba(0,0,0,0.02);
 }
+
+/* Hide global navbar when active inside DnD room */
+body.gemu-dnd-room-active .gemu-site-navbar,
+body.gemu-dnd-room-active #site-side-menu,
+body.gemu-dnd-room-active #site-menu-overlay {
+    display: none !important;
+}
