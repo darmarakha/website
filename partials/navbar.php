@@ -8,6 +8,46 @@ $gemu_base_path = isset($gemu_base_path) ? rtrim((string)$gemu_base_path, '/') .
 $gemu_is_owner = isset($_SESSION['user_role']) && strtolower((string)$_SESSION['user_role']) === 'owner';
 $gemu_user_name = isset($_SESSION['user_name']) ? (string)$_SESSION['user_name'] : '';
 $gemu_user_role = isset($_SESSION['user_role']) ? (string)$_SESSION['user_role'] : 'Member';
+
+// Contextual Navbar Configuration
+if (!isset($gemu_nav_context)) {
+    $gemu_nav_context = [
+        'mode' => 'portfolio', // default mode
+        'brand_text' => 'Darma Rakhaa',
+        'brand_badge' => 'DR',
+        'show_profile' => true,
+        'show_owner_tools' => true,
+        'show_contact' => true,
+        'compact' => false,
+    ];
+}
+
+$nav_mode = $gemu_nav_context['mode'] ?? 'portfolio';
+
+// Override context defaults if missing
+$brand_text = $gemu_nav_context['brand_text'] ?? 'Darma Rakhaa';
+$brand_badge = $gemu_nav_context['brand_badge'] ?? 'DR';
+$show_profile = $gemu_nav_context['show_profile'] ?? true;
+$show_owner_tools = $gemu_nav_context['show_owner_tools'] ?? true;
+$show_contact = $gemu_nav_context['show_contact'] ?? true;
+$is_compact = $gemu_nav_context['compact'] ?? false;
+
+if ($nav_mode === 'hidden') {
+    return; // Do not render navbar
+}
+
+$nav_title = "Menu Website";
+$nav_subtitle = "Navigasi " . $brand_text;
+
+if ($nav_mode === 'learning') {
+    $nav_title = "Menu Belajar";
+} elseif ($nav_mode === 'game_hub' || $nav_mode === 'dnd') {
+    $nav_title = "Menu Game";
+} elseif ($nav_mode === 'business') {
+    $nav_title = "Menu Bisnis";
+} elseif ($nav_mode === 'sabila') {
+    $nav_title = "Menu Sabila";
+}
 ?>
 <style id="gemu-navbar-style">
     :root{--gemu-nav-z:99990;--gemu-panel-z:100000;--gemu-overlay-z:99998}
@@ -72,9 +112,9 @@ $gemu_user_role = isset($_SESSION['user_role']) ? (string)$_SESSION['user_role']
 </style>
 <nav id="site-navbar" class="gemu-site-navbar" aria-label="Navigasi utama">
     <div class="gemu-site-navbar-inner">
-        <a href="#hero" class="gemu-site-brand" aria-label="Ke halaman utama">
-            <span class="gemu-site-brand-badge">DR</span>
-            <span class="gemu-site-brand-text" id="nav-logo-text">Darma Rakhaa</span>
+                <a href="<?php echo $gemu_base_path; ?><?php echo ($nav_mode === 'portfolio') ? '#hero' : ''; ?>" class="gemu-site-brand" aria-label="Ke halaman utama">
+            <span class="gemu-site-brand-badge"><?php echo htmlspecialchars($brand_badge, ENT_QUOTES, 'UTF-8'); ?></span>
+            <span class="gemu-site-brand-text" id="nav-logo-text"><?php echo htmlspecialchars($brand_text, ENT_QUOTES, 'UTF-8'); ?></span>
         </a>
         <button id="site-menu-button" class="gemu-burger-button" type="button" aria-label="Buka menu navigasi" aria-controls="site-side-menu" aria-expanded="false">
             <span class="gemu-sr-only">Menu</span>
@@ -86,9 +126,9 @@ $gemu_user_role = isset($_SESSION['user_role']) ? (string)$_SESSION['user_role']
 <aside id="site-side-menu" class="gemu-side-menu" role="dialog" aria-modal="true" aria-label="Menu navigasi" aria-hidden="true">
     <div class="gemu-side-menu-inner">
         <div class="gemu-menu-head">
-            <div>
-                <div class="gemu-menu-title">Menu Website</div>
-                <div class="gemu-menu-subtitle">Navigasi Darma Rakhaa</div>
+                        <div>
+                <div class="gemu-menu-title"><?php echo htmlspecialchars($nav_title, ENT_QUOTES, 'UTF-8'); ?></div>
+                <div class="gemu-menu-subtitle"><?php echo htmlspecialchars($nav_subtitle, ENT_QUOTES, 'UTF-8'); ?></div>
             </div>
             <button id="site-menu-close" class="gemu-close-button" type="button" aria-label="Tutup menu"></button>
         </div>
@@ -102,38 +142,65 @@ $gemu_user_role = isset($_SESSION['user_role']) ? (string)$_SESSION['user_role']
 
         <div class="gemu-menu-divider"></div>
 
-        <div class="gemu-nav-section">
-            <a href="<?php echo $gemu_base_path; ?>#about" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">👤</span><span data-i18n="nav.about">Tentang</span></a>
-            <a href="<?php echo $gemu_base_path; ?>#experience" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">💼</span><span data-i18n="nav.experience">Pengalaman</span></a>
-            <a href="<?php echo $gemu_base_path; ?>#skills" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">⚡</span><span data-i18n="nav.skills">Keahlian</span></a>
-            <a href="<?php echo $gemu_base_path; ?>#certifications" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">🏅</span><span data-i18n="nav.certificates">Sertifikat</span></a>
-            <a href="<?php echo $gemu_base_path; ?>#projects" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">📁</span><span data-i18n="nav.projects">Proyek</span></a>
-            <a href="<?php echo $gemu_base_path; ?>#github" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">🐙</span><span>GitHub</span></a>
-            <a href="<?php echo $gemu_base_path; ?>Game/index.php" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">🎮</span><span data-i18n="nav.game">Game</span></a>
-            <a href="<?php echo $gemu_base_path; ?>Belajar/Index.php" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">📚</span><span data-i18n="nav.learn">Belajar</span></a>
-            <a href="<?php echo $gemu_base_path; ?>Bisnis/" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">📊</span><span data-i18n="nav.business">Bisnis</span></a>
-            <?php if($gemu_is_owner): ?>
+                <div class="gemu-nav-section">
+            <?php if ($nav_mode === 'portfolio'): ?>
+                <a href="<?php echo $gemu_base_path; ?>#about" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">👤</span><span data-i18n="nav.about">Tentang</span></a>
+                <a href="<?php echo $gemu_base_path; ?>#experience" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">💼</span><span data-i18n="nav.experience">Pengalaman</span></a>
+                <a href="<?php echo $gemu_base_path; ?>#skills" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">⚡</span><span data-i18n="nav.skills">Keahlian</span></a>
+                <a href="<?php echo $gemu_base_path; ?>#certifications" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">🏅</span><span data-i18n="nav.certificates">Sertifikat</span></a>
+                <a href="<?php echo $gemu_base_path; ?>#projects" class="gemu-menu-link nav-link site-menu-link"><span class="gemu-menu-icon">📁</span><span data-i18n="nav.projects">Proyek</span></a>
+            <?php elseif ($nav_mode === 'game_hub' || $nav_mode === 'dnd'): ?>
+                <a href="<?php echo $gemu_base_path; ?>" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">🏠</span><span>Home Portfolio</span></a>
+                <a href="<?php echo $gemu_base_path; ?>Game/index.php" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">🎮</span><span data-i18n="nav.game">Game Hub</span></a>
+                <a href="<?php echo $gemu_base_path; ?>Game/DnD-2014/" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">🎲</span><span>DnD 2014</span></a>
+            <?php elseif ($nav_mode === 'learning'): ?>
+                <a href="<?php echo $gemu_base_path; ?>" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">🏠</span><span>Home Portfolio</span></a>
+                <a href="<?php echo $gemu_base_path; ?>Belajar/Index.php" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">📚</span><span>Dashboard Belajar</span></a>
+                <a href="<?php echo $gemu_base_path; ?>Belajar/Bahasa-Jepang/" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">🇯🇵</span><span>Bahasa Jepang</span></a>
+                <a href="<?php echo $gemu_base_path; ?>Belajar/Bahasa-Inggris/" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">🇬🇧</span><span>Bahasa Inggris</span></a>
+                <a href="<?php echo $gemu_base_path; ?>Belajar/Matematika/" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">➗</span><span>Matematika</span></a>
+                <a href="<?php echo $gemu_base_path; ?>Belajar/Pengetahuan-Umum/" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">🌍</span><span>Pengetahuan Umum</span></a>
+            <?php elseif ($nav_mode === 'business'): ?>
+                <a href="<?php echo $gemu_base_path; ?>" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">🏠</span><span>Home Portfolio</span></a>
+                <a href="<?php echo $gemu_base_path; ?>Bisnis/" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">📊</span><span data-i18n="nav.business">Katalog Bisnis</span></a>
+            <?php elseif ($nav_mode === 'sabila'): ?>
+                <a href="<?php echo $gemu_base_path; ?>" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">🏠</span><span>Home Portfolio</span></a>
+            <?php endif; ?>
+
+            <?php if ($nav_mode !== 'learning' && $nav_mode !== 'game_hub' && $nav_mode !== 'dnd' && $nav_mode !== 'business' && $nav_mode !== 'sabila'): ?>
+                <a href="<?php echo $gemu_base_path; ?>Game/index.php" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">🎮</span><span data-i18n="nav.game">Game</span></a>
+                <a href="<?php echo $gemu_base_path; ?>Belajar/Index.php" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">📚</span><span data-i18n="nav.learn">Belajar</span></a>
+                <a href="<?php echo $gemu_base_path; ?>Bisnis/" class="gemu-menu-link site-menu-link"><span class="gemu-menu-icon">📊</span><span data-i18n="nav.business">Bisnis</span></a>
+            <?php endif; ?>
+
+            <?php if($gemu_is_owner && $show_owner_tools): ?>
+                <div class="gemu-menu-divider"></div>
                 <a href="<?php echo $gemu_base_path; ?>AI/" class="gemu-menu-link gemu-menu-owner site-menu-link"><span class="gemu-menu-icon">🤖</span><span>GEMU AI</span></a>
                 <a href="<?php echo $gemu_base_path; ?>edit/" class="gemu-menu-link gemu-menu-owner site-menu-link"><span class="gemu-menu-icon">✏️</span><span>Edit Web</span></a>
             <?php endif; ?>
         </div>
 
         <div class="gemu-menu-divider"></div>
-        <div class="space-y-3">
-            <a href="#contact" class="gemu-menu-link gemu-menu-primary site-menu-link"><span data-i18n="nav.contactFull">Hubungi Saya</span></a>
-            <?php if($gemu_user_name !== ''): ?>
-                <div class="gemu-user-box">
-                    <div class="gemu-user-mini">
-                        <div class="gemu-user-avatar">DR</div>
-                        <div class="min-w-0">
-                            <div class="gemu-user-name" id="nav-user-name"><?php echo htmlspecialchars($gemu_user_name, ENT_QUOTES, 'UTF-8'); ?></div>
-                            <div class="gemu-user-role"><?php echo htmlspecialchars($gemu_user_role, ENT_QUOTES, 'UTF-8'); ?></div>
+                        <div class="space-y-3">
+            <?php if ($show_contact): ?>
+                <a href="<?php echo $gemu_base_path; ?>#contact" class="gemu-menu-link gemu-menu-primary site-menu-link"><span data-i18n="nav.contactFull">Hubungi Saya</span></a>
+            <?php endif; ?>
+
+            <?php if ($show_profile): ?>
+                <?php if($gemu_user_name !== ''): ?>
+                    <div class="gemu-user-box">
+                        <div class="gemu-user-mini">
+                            <div class="gemu-user-avatar"><?php echo strtoupper(substr($gemu_user_name, 0, 2)); ?></div>
+                            <div class="min-w-0">
+                                <div class="gemu-user-name" id="nav-user-name"><?php echo htmlspecialchars($gemu_user_name, ENT_QUOTES, 'UTF-8'); ?></div>
+                                <div class="gemu-user-role"><?php echo htmlspecialchars($gemu_user_role, ENT_QUOTES, 'UTF-8'); ?></div>
+                            </div>
                         </div>
+                        <a href="<?php echo $gemu_base_path; ?>logout.php" class="gemu-logout">Keluar</a>
                     </div>
-                    <a href="<?php echo $gemu_base_path; ?>logout.php" class="gemu-logout">Keluar</a>
-                </div>
-            <?php else: ?>
-                <button type="button" onclick="if(typeof openAuthModal==='function'){openAuthModal();}" class="gemu-menu-action gemu-menu-danger site-menu-link"><span>Login / Sign Up</span></button>
+                <?php else: ?>
+                    <button type="button" onclick="if(typeof openAuthModal==='function'){openAuthModal();}" class="gemu-menu-action gemu-menu-danger site-menu-link"><span>Login / Sign Up</span></button>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
     </div>

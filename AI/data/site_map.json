@@ -1,0 +1,58 @@
+{
+  "pages": [
+    {
+      "title": "Portfolio Darma Rakhaa",
+      "path": "/",
+      "description": "Halaman utama beranda portfolio, menampilkan pengalaman, sertifikat, keahlian, dan kontak.",
+      "keywords": ["home", "beranda", "portfolio", "profil", "darma"]
+    },
+    {
+      "title": "GemuYokai Game Hub",
+      "path": "Game/index.php",
+      "description": "Hub permainan interaktif, termasuk akses ke DnD 2014.",
+      "keywords": ["game", "hub", "bermain", "dnd", "rpg", "tabletop"]
+    },
+    {
+      "title": "GemuYokai Belajar",
+      "path": "Belajar/Index.php",
+      "description": "Dashboard belajar interaktif dengan berbagai modul pembelajaran.",
+      "keywords": ["belajar", "modul", "dashboard", "edukasi", "learning"]
+    },
+    {
+      "title": "Belajar Bahasa Inggris",
+      "path": "Belajar/Bahasa-Inggris/",
+      "description": "Modul belajar bahasa Inggris terstruktur dari dasar hingga profesional.",
+      "keywords": ["bahasa inggris", "english", "grammar", "listening", "vocabulary"]
+    },
+    {
+      "title": "Belajar Matematika",
+      "path": "Belajar/Matematika/",
+      "description": "Latihan soal dan pemahaman konsep matematika.",
+      "keywords": ["matematika", "math", "hitung", "angka", "rumus"]
+    },
+    {
+      "title": "Belajar Pengetahuan Umum",
+      "path": "Belajar/Pengetahuan-Umum/",
+      "description": "Kuis dan fakta menarik tentang pengetahuan umum dunia dan Indonesia.",
+      "keywords": ["pengetahuan umum", "general knowledge", "fakta", "kuis", "dunia", "sejarah"]
+    },
+    {
+      "title": "Belajar Bahasa Jepang",
+      "path": "Belajar/Bahasa-Jepang/",
+      "description": "Belajar huruf Kana, Kanji, tata bahasa, dan kosakata Jepang.",
+      "keywords": ["jepang", "nihongo", "kanji", "hiragana", "katakana"]
+    },
+    {
+      "title": "Gemu Business Catalog",
+      "path": "Bisnis/index.php",
+      "description": "Katalog bisnis dan layanan yang ditawarkan, dilengkapi fitur Minat Pembeli via WhatsApp.",
+      "keywords": ["bisnis", "layanan", "katalog", "jasa", "beli", "order", "whatsapp"]
+    },
+    {
+      "title": "Portfolio Sabila Fitriannisaa",
+      "path": "sabila/index.php",
+      "description": "Halaman portfolio profesional Sabila Fitriannisaa, fokus pada HR dan Administrasi.",
+      "keywords": ["sabila", "hr", "admin", "administrasi", "portfolio"]
+    }
+  ]
+}

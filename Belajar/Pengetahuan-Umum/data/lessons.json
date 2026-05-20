@@ -1,0 +1,49 @@
+[
+  {
+    "id": "pu-indo-1",
+    "category": "Indonesia",
+    "level": "Dasar",
+    "title": "Pancasila sebagai Dasar Negara",
+    "content": "Pancasila adalah dasar negara dan ideologi resmi bangsa Indonesia. Terdiri dari lima sila yang menjadi pedoman kehidupan berbangsa dan bernegara.",
+    "facts": [
+      "Pancasila memiliki lima sila.",
+      "Sila pertama berbunyi 'Ketuhanan Yang Maha Esa'.",
+      "Burung Garuda adalah lambang negara yang membawa perisai Pancasila."
+    ],
+    "quiz": [
+      {
+        "type": "multiple",
+        "question": "Jumlah sila dalam Pancasila adalah ...",
+        "options": ["3", "4", "5", "6"],
+        "answer": "5",
+        "explanation": "Pancasila terdiri dari lima sila (Panca = lima, Sila = dasar)."
+      },
+      {
+        "type": "boolean",
+        "question": "Sila ketiga berbunyi 'Kemanusiaan yang adil dan beradab'. (Benar/Salah)",
+        "answer": "Salah",
+        "explanation": "Sila ketiga berbunyi 'Persatuan Indonesia'. Kemanusiaan yang adil dan beradab adalah sila kedua."
+      }
+    ]
+  },
+  {
+    "id": "pu-dunia-1",
+    "category": "Dunia",
+    "level": "Dasar",
+    "title": "Benua dan Samudra",
+    "content": "Bumi terdiri dari beberapa benua dan samudra besar. Benua terbesar adalah Asia, sedangkan samudra terdalam adalah Samudra Pasifik.",
+    "facts": [
+      "Ada 7 benua di dunia: Asia, Afrika, Amerika Utara, Amerika Selatan, Antartika, Eropa, dan Australia.",
+      "Samudra Pasifik mencakup sepertiga dari total luas permukaan Bumi."
+    ],
+    "quiz": [
+      {
+        "type": "multiple",
+        "question": "Benua terbesar di dunia adalah ...",
+        "options": ["Eropa", "Afrika", "Asia", "Amerika Utara"],
+        "answer": "Asia",
+        "explanation": "Asia adalah benua terbesar berdasarkan luas daratan dan populasi."
+      }
+    ]
+  }
+]

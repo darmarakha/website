@@ -4,6 +4,15 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 $gemu_base_path = '../../';
+$gemu_nav_context = [
+    'mode' => 'dnd',
+    'brand_text' => 'Gemu Games',
+    'brand_badge' => 'GG',
+    'show_profile' => false,
+    'show_owner_tools' => false,
+    'show_contact' => false,
+    'compact' => true,
+];
 $gemu_js_parts_version = 0;
 foreach (glob(__DIR__ . '/js/dnd-app-part-*.js') ?: [] as $gemu_part_file) {
     $gemu_js_parts_version = max($gemu_js_parts_version, @filemtime($gemu_part_file) ?: 0);

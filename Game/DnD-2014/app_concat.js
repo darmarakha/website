@@ -1215,6 +1215,7 @@
     state.rooms.unshift(room);
     state.activeRoomId = room.id;
     state.ui.lobbyInsideRoom = true;
+    document.body.classList.add('gemu-dnd-room-active');
     state.ui.tab = "lobby";
     state.campaign.name = room.name;
     state.campaign.partyLevel = levelStart;
@@ -1244,6 +1245,7 @@
     room.lastActiveAt = nowIso();
     state.activeRoomId = room.id;
     state.ui.lobbyInsideRoom = true;
+    document.body.classList.add('gemu-dnd-room-active');
     state.ui.tab = "lobby";
     state.campaign.name = room.name;
     saveState(true, 'campaign');
@@ -1260,6 +1262,7 @@
     if (state.activeRoomId === roomId) {
       state.activeRoomId = "";
       state.ui.lobbyInsideRoom = false;
+    document.body.classList.remove('gemu-dnd-room-active');
     }
     saveState(true, 'campaign');
     render();
@@ -1278,6 +1281,7 @@
     if (state.activeRoomId === roomId) {
       state.activeRoomId = state.rooms[0]?.id || "";
       state.ui.lobbyInsideRoom = false;
+    document.body.classList.remove('gemu-dnd-room-active');
     }
     saveState(true, 'campaign');
     render();
@@ -1308,6 +1312,7 @@
     state.rooms.unshift(room);
     state.activeRoomId = room.id;
     state.ui.lobbyInsideRoom = true;
+    document.body.classList.add('gemu-dnd-room-active');
     state.ui.tab = "lobby";
     state.campaign.name = room.name;
     saveState(false, 'campaign');
@@ -1626,6 +1631,7 @@
 
   function backToLobbyRoomList() {
     state.ui.lobbyInsideRoom = false;
+    document.body.classList.remove('gemu-dnd-room-active');
     state.ui.tab = "lobby";
     saveState(false);
     render();
@@ -4443,7 +4449,7 @@
     const viewMode = visibleTableMode();
     const user = currentUser();
     if (state.ui.lobbyInsideRoom && active) return renderRoomInsideTab(active, viewMode, user);
-    if (state.ui.lobbyInsideRoom && !active) state.ui.lobbyInsideRoom = false;
+    if (state.ui.lobbyInsideRoom && !active) { state.ui.lobbyInsideRoom = false; document.body.classList.remove('gemu-dnd-room-active'); }
     const roomsHtml = state.rooms.length
       ? state.rooms.map((room) => {
           const joined = roomAccessAllowed(room);
@@ -5724,7 +5730,7 @@
     }
     return `
       <div class="dnd-section-title"><div><h2>GM Screen</h2><p>Hanya GM yang bisa mengubah HP, XP, item, kondisi, dan approve level.</p></div></div>
-      
+
       <div class="dnd-card" style="margin-bottom: 1.5rem">
         <h3>Narasi & Dialog NPC</h3>
         <p class="dnd-muted">Gunakan Voice-to-Text untuk mendikte cerita atau dialog NPC dengan cepat.</p>
@@ -6185,7 +6191,7 @@
     const field = qs("#gm-narration-input") || qs("#session-dialogue-text");
     const val = field?.value.trim();
     if (!val) return;
-    
+
     state.sessionLog.unshift({
       id: uid("log"),
       mode: state.campaign.playMode || "offline",
@@ -6197,7 +6203,7 @@
       characterId: "",
       createdAt: nowIso()
     });
-    
+
     field.value = "";
     saveState();
     render();
@@ -6227,7 +6233,7 @@
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
-    recognition.lang = 'id-ID'; 
+    recognition.lang = 'id-ID';
     recognition.interimResults = true;
     recognition.continuous = true;
 

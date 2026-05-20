@@ -21,6 +21,79 @@ if (!is_dir($uploadDir)) {
 $products = file_exists($dataFile) ? json_decode(file_get_contents($dataFile), true) : [];
 $uploadResults = [];
 
+// Logika Update Produk
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
+    if (!csrf_verify($_POST['_csrf_token'] ?? '')) {
+        header("Location: index.php?status=csrf_failed");
+        exit();
+    }
+
+    $idToUpdate = (int)$_POST['edit_id'];
+    $existingIndex = -1;
+    foreach ($products as $key => $p) {
+        if ($p['id'] == $idToUpdate) {
+            $existingIndex = $key;
+            break;
+        }
+    }
+
+    if ($existingIndex !== -1) {
+        if (file_exists($dataFile)) {
+            copy($dataFile, 'produk.backup.' . date('Ymd-His') . '.json');
+        }
+
+        $existingProduct = $products[$existingIndex];
+
+        $remainingImages = [];
+        if (isset($_POST['existing_images']) && is_array($_POST['existing_images'])) {
+            $remainingImages = $_POST['existing_images'];
+        }
+
+        $newUploadedFiles = [];
+        if (!empty($_FILES['edit_files']['name'][0])) {
+            foreach ($_FILES['edit_files']['tmp_name'] as $key => $tmp_name) {
+                $fileName = time() . '_' . basename($_FILES['edit_files']['name'][$key]);
+                $targetPath = $uploadDir . $fileName;
+                $fileType = strtolower(pathinfo($targetPath, PATHINFO_EXTENSION));
+
+                if (in_array($fileType, ['jpg', 'jpeg', 'png', 'webp', 'pdf'])) {
+                    if (move_uploaded_file($tmp_name, $targetPath)) {
+                        $newUploadedFiles[] = $targetPath;
+                    }
+                }
+            }
+        }
+
+        $finalImages = array_merge($remainingImages, $newUploadedFiles);
+        $cover = $_POST['edit_cover'] ?? '';
+        if (empty($cover) && !empty($finalImages)) {
+            $cover = basename($finalImages[0]);
+        }
+
+        $products[$existingIndex] = [
+            'id' => $existingProduct['id'],
+            'title' => htmlspecialchars($_POST['title'] ?? '', ENT_QUOTES, 'UTF-8'),
+            'title_en' => htmlspecialchars($_POST['title_en'] ?? '', ENT_QUOTES, 'UTF-8'),
+            'price' => htmlspecialchars($_POST['price'] ?? '', ENT_QUOTES, 'UTF-8'),
+            'price_number' => (int)($_POST['price_number'] ?? 0),
+            'category' => htmlspecialchars($_POST['category'] ?? 'General', ENT_QUOTES, 'UTF-8'),
+            'type' => htmlspecialchars($_POST['type'] ?? 'service', ENT_QUOTES, 'UTF-8'),
+            'status' => htmlspecialchars($_POST['status'] ?? 'published', ENT_QUOTES, 'UTF-8'),
+            'featured' => isset($_POST['featured']) && $_POST['featured'] == '1',
+            'shortDesc' => htmlspecialchars($_POST['shortDesc'] ?? '', ENT_QUOTES, 'UTF-8'),
+            'shortDesc_en' => htmlspecialchars($_POST['shortDesc_en'] ?? '', ENT_QUOTES, 'UTF-8'),
+            'fullDesc' => $_POST['fullDesc'] ?? '',
+            'fullDesc_en' => $_POST['fullDesc_en'] ?? '',
+            'images' => $finalImages,
+            'cover' => $cover
+        ];
+
+        file_put_contents($dataFile, json_encode($products, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        header("Location: index.php?status=updated");
+        exit();
+    }
+}
+
 // Logika Simpan Produk Baru
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_product'])) {
     if (!csrf_verify($_POST['_csrf_token'] ?? '')) {
@@ -30,25 +103,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_product'])) {
 
     $newProduct = [
         'id' => time(),
-        'title' => htmlspecialchars($_POST['title']),
-        'title_en' => htmlspecialchars($_POST['title_en'] ?? ''),
-        'price' => htmlspecialchars($_POST['price']),
-        'shortDesc' => htmlspecialchars($_POST['shortDesc']),
-        'shortDesc_en' => htmlspecialchars($_POST['shortDesc_en'] ?? ''),
-        'fullDesc' => $_POST['fullDesc'], // Bisa berisi HTML
+        'title' => htmlspecialchars($_POST['title'] ?? '', ENT_QUOTES, 'UTF-8'),
+        'title_en' => htmlspecialchars($_POST['title_en'] ?? '', ENT_QUOTES, 'UTF-8'),
+        'price' => htmlspecialchars($_POST['price'] ?? '', ENT_QUOTES, 'UTF-8'),
+        'price_number' => (int)($_POST['price_number'] ?? 0),
+        'category' => htmlspecialchars($_POST['category'] ?? 'General', ENT_QUOTES, 'UTF-8'),
+        'type' => htmlspecialchars($_POST['type'] ?? 'service', ENT_QUOTES, 'UTF-8'),
+        'status' => htmlspecialchars($_POST['status'] ?? 'published', ENT_QUOTES, 'UTF-8'),
+        'featured' => isset($_POST['featured']) && $_POST['featured'] == '1',
+        'shortDesc' => htmlspecialchars($_POST['shortDesc'] ?? '', ENT_QUOTES, 'UTF-8'),
+        'shortDesc_en' => htmlspecialchars($_POST['shortDesc_en'] ?? '', ENT_QUOTES, 'UTF-8'),
+        'fullDesc' => $_POST['fullDesc'] ?? '',
         'fullDesc_en' => $_POST['fullDesc_en'] ?? '',
-        'images' => []
+        'images' => [],
+        'cover' => ''
     ];
 
-    // Proses Unggah File (Banyak file sekaligus)
     if (!empty($_FILES['files']['name'][0])) {
         foreach ($_FILES['files']['tmp_name'] as $key => $tmp_name) {
             $fileName = time() . '_' . basename($_FILES['files']['name'][$key]);
             $targetPath = $uploadDir . $fileName;
             $fileType = strtolower(pathinfo($targetPath, PATHINFO_EXTENSION));
 
-            // Validasi format: jpg, jpeg, pdf
-            if (in_array($fileType, ['jpg', 'jpeg', 'pdf', 'png'])) {
+            if (in_array($fileType, ['jpg', 'jpeg', 'png', 'webp', 'pdf'])) {
                 if (move_uploaded_file($tmp_name, $targetPath)) {
                     $newProduct['images'][] = $targetPath;
                     $uploadResults[] = ['file' => $_FILES['files']['name'][$key], 'ok' => true];
@@ -59,8 +136,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_product'])) {
         }
     }
 
+    if (empty($newProduct['cover']) && !empty($newProduct['images'])) {
+        $newProduct['cover'] = basename($newProduct['images'][0]);
+    }
+
     $products[] = $newProduct;
-    file_put_contents($dataFile, json_encode($products, JSON_PRETTY_PRINT));
+    if (file_exists($dataFile)) {
+        copy($dataFile, 'produk.backup.' . date('Ymd-His') . '.json');
+    }
+    file_put_contents($dataFile, json_encode($products, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
     $_SESSION['upload_results'] = $uploadResults;
     header("Location: index.php?status=success");
     exit();
@@ -153,64 +237,106 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_product'])) {
                     <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
                         <i data-lucide="plus-circle" class="text-red-600"></i> Tambah Produk
                     </h2>
-                    <form action="" method="POST" enctype="multipart/form-data" class="space-y-4">
-                        <?php echo csrf_field(); ?>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nama Produk / Jasa</label>
-                            <input type="text" name="title" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Product / Service Name (EN)</label>
-                            <input type="text" name="title_en" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Product / Service Name (EN)</label>
-                            <input type="text" name="title_en" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Product / Service Name (EN)</label>
-                            <input type="text" name="title_en" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Harga (Teks)</label>
-                            <input type="text" name="price" placeholder="Contoh: Rp 500.000" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Deskripsi Singkat</label>
-                            <textarea name="shortDesc" rows="2" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Short Description (EN)</label>
-                            <textarea name="shortDesc_en" rows="2" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Deskripsi Lengkap (HTML)</label>
-                            <textarea name="fullDesc" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Full Description (EN HTML)</label>
-                            <textarea name="fullDesc_en" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Full Description (EN HTML)</label>
-                            <textarea name="fullDesc_en" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Full Description (EN HTML)</label>
-                            <textarea name="fullDesc_en" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Upload File (JPG, JPEG, PNG, PDF)</label>
-                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:border-red-500 transition-colors relative">
-                                <input type="file" name="files[]" multiple accept=".jpg,.jpeg,.pdf,.png" class="absolute inset-0 opacity-0 cursor-pointer">
-                                <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
-                                <p class="text-xs text-slate-500">Klik atau seret file ke sini</p>
-                                <p class="text-[10px] text-slate-400 mt-1">Cover otomatis pakai file gambar pertama (JPG/JPEG/PNG). Jika semua file PDF, kartu akan tampil sebagai dokumen PDF.</p>
+                                        <form action="" method="POST" enctype="multipart/form-data" class="space-y-6" id="productForm">
+                        <input type="hidden" name="_csrf_token" value="<?php echo csrf_generate(); ?>">
+                        <input type="hidden" name="edit_id" id="edit_id" value="">
+                        <input type="hidden" name="edit_cover" id="edit_cover" value="">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Judul (ID)</label>
+                                <input type="text" name="title" id="form_title" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Judul (EN)</label>
+                                <input type="text" name="title_en" id="form_title_en" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
                             </div>
                         </div>
-                        <button type="submit" name="save_product" class="w-full py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-600/20">
-                            Simpan Produk
-                        </button>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Harga Tampil</label>
+                                <input type="text" name="price" id="form_price" required placeholder="Contoh: Rp 500.000" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Harga Angka</label>
+                                <input type="number" name="price_number" id="form_price_number" placeholder="500000" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Status</label>
+                                <select name="status" id="form_status" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
+                                    <option value="published">Published</option>
+                                    <option value="draft">Draft</option>
+                                    <option value="hidden">Hidden</option>
+                                    <option value="sold_out">Sold Out</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Kategori</label>
+                                <input type="text" name="category" id="form_category" placeholder="Contoh: Jasa Digital" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Tipe</label>
+                                <select name="type" id="form_type" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all">
+                                    <option value="service">Jasa</option>
+                                    <option value="digital">Produk Digital</option>
+                                    <option value="document">Dokumen / PDF</option>
+                                    <option value="package">Paket Layanan</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Deskripsi Singkat (ID)</label>
+                                <textarea name="shortDesc" id="form_shortDesc" required rows="2" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Deskripsi Singkat (EN)</label>
+                                <textarea name="shortDesc_en" id="form_shortDesc_en" rows="2" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Deskripsi Lengkap (HTML)</label>
+                                <textarea name="fullDesc" id="form_fullDesc" required rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold uppercase text-slate-500 mb-1">Full Description (EN HTML)</label>
+                                <textarea name="fullDesc_en" id="form_fullDesc_en" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm focus:ring-2 focus:ring-red-500/20 outline-none transition-all"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 mb-4">
+                            <input type="checkbox" name="featured" id="form_featured" value="1" class="w-4 h-4 text-red-600 rounded border-gray-300 focus:ring-red-500">
+                            <label for="form_featured" class="text-sm font-medium text-slate-700">Rekomendasikan (Featured)</label>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold uppercase text-slate-500 mb-1" id="fileLabel">Upload File Baru (JPG, PNG, WEBP, PDF)</label>
+                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:border-red-500 transition-colors relative">
+                                <input type="file" name="files[]" id="file_input" multiple accept=".jpg,.jpeg,.pdf,.png,.webp" class="absolute inset-0 opacity-0 cursor-pointer" onchange="document.getElementById('file_count').textContent = this.files.length + ' file dipilih'">
+                                <i data-lucide="upload-cloud" class="w-8 h-8 text-slate-400 mx-auto mb-2"></i>
+                                <p class="text-sm font-medium text-slate-700" id="file_count">Klik atau seret file ke sini</p>
+                                <p class="text-xs text-slate-500 mt-1">Maks 5MB per file</p>
+                            </div>
+                            <div id="edit_media_container" class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4 hidden">
+                                <!-- Existing images preview here -->
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button type="submit" name="save_product" id="btnSubmit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-red-500/30 flex justify-center items-center gap-2">
+                                <i data-lucide="plus-circle" class="w-5 h-5"></i> <span id="btnSubmitText">Simpan Produk Baru</span>
+                            </button>
+                            <button type="button" onclick="resetForm()" id="btnCancelEdit" class="hidden w-1/3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-xl transition-colors flex justify-center items-center gap-2">
+                                Batal
+                            </button>
+                        </div>
                     </form>
                     <?php if (!empty($lastUploads)): ?>
                         <div class="mt-5 border-t pt-4">
@@ -272,7 +398,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_product'])) {
                                 </div>
                             </div>
                             <div class="flex flex-col gap-2">
-                                <form method="POST" action="" class="inline" onsubmit="return confirm('Hapus produk ini?')">
+                                                                    <button type="button" onclick="editProduct(<?php echo $p['id']; ?>)" class="text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition-colors" title="Edit Produk">
+                                        <i data-lucide="edit-3" class="w-5 h-5"></i>
+                                    </button>
+                                    <form method="POST" action="" class="inline" onsubmit="return confirm('Hapus produk ini?')">
                                     <?php echo csrf_field(); ?>
                                     <input type="hidden" name="delete_id" value="<?php echo $p['id']; ?>">
                                     <button type="submit" name="delete_product" class="p-2 text-slate-400 hover:text-red-600 transition-colors bg-transparent border-0 cursor-pointer">
@@ -306,6 +435,99 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_product'])) {
         </div>
     </main>
 
-    <script>lucide.createIcons();</script>
+        <script>
+        lucide.createIcons();
+        const products = <?php echo json_encode($products, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+
+        function resetForm() {
+            document.getElementById('productForm').reset();
+            document.getElementById('edit_id').value = '';
+            document.getElementById('edit_cover').value = '';
+            document.getElementById('edit_media_container').classList.add('hidden');
+            document.getElementById('edit_media_container').innerHTML = '';
+
+            document.getElementById('formTitle').innerHTML = '<i data-lucide="plus-circle" class="w-6 h-6 text-red-500"></i> Tambah Produk / Jasa';
+            document.getElementById('btnSubmit').name = 'save_product';
+            document.getElementById('btnSubmitText').textContent = 'Simpan Produk Baru';
+            document.getElementById('btnCancelEdit').classList.add('hidden');
+            document.getElementById('fileLabel').textContent = 'Upload File Baru (JPG, PNG, WEBP, PDF)';
+
+            // Restoring file input
+            document.getElementById('file_input').name = 'files[]';
+            document.getElementById('file_count').textContent = 'Klik atau seret file ke sini';
+
+            lucide.createIcons();
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function editProduct(id) {
+            const p = products.find(x => x.id == id);
+            if (!p) return;
+
+            document.getElementById('edit_id').value = p.id;
+            document.getElementById('form_title').value = p.title || '';
+            document.getElementById('form_title_en').value = p.title_en || '';
+            document.getElementById('form_price').value = p.price || '';
+            document.getElementById('form_price_number').value = p.price_number || '';
+            document.getElementById('form_status').value = p.status || 'published';
+            document.getElementById('form_category').value = p.category || '';
+            document.getElementById('form_type').value = p.type || 'service';
+            document.getElementById('form_shortDesc').value = p.shortDesc || '';
+            document.getElementById('form_shortDesc_en').value = p.shortDesc_en || '';
+            document.getElementById('form_fullDesc').value = p.fullDesc || '';
+            document.getElementById('form_fullDesc_en').value = p.fullDesc_en || '';
+            document.getElementById('form_featured').checked = p.featured ? true : false;
+            document.getElementById('edit_cover').value = p.cover || '';
+
+            const mediaContainer = document.getElementById('edit_media_container');
+            if (p.images && p.images.length > 0) {
+                mediaContainer.classList.remove('hidden');
+                let html = '<div class="col-span-full text-sm font-bold text-slate-700 mb-2">Media Saat Ini:</div>';
+                p.images.forEach(img => {
+                    const fname = img.split('/').pop();
+                    const isCover = p.cover === fname || p.cover === img;
+                    html += `
+                        <div class="relative bg-white rounded border p-1 group">
+                            <input type="hidden" name="existing_images[]" value="${img}">
+                            <img src="uploads/${fname}" class="w-full h-16 object-cover rounded opacity-80 group-hover:opacity-100 transition-opacity" onerror="this.src='https://placehold.co/100x100?text=File'">
+                            ${isCover ? '<div class="absolute top-1 left-1 bg-green-500 text-white text-[10px] px-1 rounded shadow-sm font-bold">COVER</div>' : ''}
+                            <button type="button" onclick="setCover('${fname}')" class="absolute bottom-1 right-1 bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">Jadikan Cover</button>
+                            <button type="button" onclick="this.parentElement.remove()" class="absolute top-1 right-1 bg-red-500 text-white p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="x" class="w-3 h-3"></i></button>
+                        </div>
+                    `;
+                });
+                mediaContainer.innerHTML = html;
+            } else {
+                mediaContainer.classList.add('hidden');
+                mediaContainer.innerHTML = '';
+            }
+
+            document.getElementById('formTitle').innerHTML = '<i data-lucide="edit-3" class="w-6 h-6 text-blue-500"></i> Edit Produk: ' + p.title;
+            document.getElementById('btnSubmit').name = 'update_product';
+            document.getElementById('btnSubmitText').textContent = 'Update Produk';
+            document.getElementById('btnCancelEdit').classList.remove('hidden');
+            document.getElementById('fileLabel').textContent = 'Tambahkan File (Opsional)';
+
+            // Adjust the file input name to differentiate during update
+            document.getElementById('file_input').name = 'edit_files[]';
+
+            lucide.createIcons();
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function setCover(fname) {
+            document.getElementById('edit_cover').value = fname;
+            alert('Cover diatur ke ' + fname + '. Silahkan Simpan untuk mengaplikasikan.');
+            // Re-render visually
+            const id = document.getElementById('edit_id').value;
+            if(id) {
+                const p = products.find(x => x.id == id);
+                if (p) {
+                   p.cover = fname;
+                   editProduct(p.id);
+                }
+            }
+        }
+    </script>
 </body>
 </html>

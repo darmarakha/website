@@ -9,6 +9,16 @@ session_set_cookie_params([
 ]);
 session_start();
 
+$gemu_nav_context = [
+    'mode' => 'learning',
+    'brand_text' => 'GemuYokai Belajar',
+    'brand_badge' => 'GB',
+    'show_profile' => true,
+    'show_owner_tools' => false,
+    'show_contact' => false,
+    'compact' => true,
+];
+
 // ==========================================
 // 1. KONFIGURASI DATABASE SQL (PDO)
 // ==========================================

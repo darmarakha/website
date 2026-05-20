@@ -1,5 +1,27 @@
 <?php
-session_start(); // Wajib untuk melacak status login user
+session_start();
+
+$gemu_base_path = '../';
+$gemu_nav_context = [
+    'mode' => 'business',
+    'brand_text' => 'Gemu Business',
+    'brand_badge' => 'GB',
+    'show_profile' => true,
+    'show_owner_tools' => true,
+    'show_contact' => true,
+    'compact' => false,
+];
+
+// Load products
+$products = file_exists(__DIR__ . '/edit/produk.json') ? json_decode(file_get_contents(__DIR__ . '/edit/produk.json'), true) : [];
+$publishedProducts = array_filter($products, function($p) { return !isset($p['status']) || $p['status'] === 'published'; });
+// Sort slightly: featured first, then by date descending
+usort($publishedProducts, function($a, $b) {
+    if (($a['featured'] ?? false) !== ($b['featured'] ?? false)) {
+        return ($a['featured'] ?? false) ? -1 : 1;
+    }
+    return ($b['id'] ?? 0) <=> ($a['id'] ?? 0);
+});
 ?>
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
@@ -51,49 +73,7 @@ session_start(); // Wajib untuk melacak status login user
 </head>
 <body class="bg-navy-50 text-navy-900 antialiased">
 
-    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/95 backdrop-blur-xl shadow-lg shadow-navy-900/5">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="flex items-center justify-between h-14 sm:h-16 md:h-20">
-                <a href="../index.php" class="flex items-center gap-2 group z-10">
-                    <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-accent-500 flex items-center justify-center flex-shrink-0">
-                        <span class="text-white font-bold text-xs sm:text-sm">DR</span>
-                    </div>
-                    <span class="font-semibold text-base sm:text-lg tracking-tight text-navy-900">Darma Rakhaa</span>
-                </a>
-
-                <div class="hidden md:flex items-center gap-6 lg:gap-8">
-                    <a href="../index.php#about" class="text-sm font-medium text-navy-600 hover:text-navy-900 transition-colors" data-i18n="nav.back">Kembali ke Profil</a>
-                    <div class="flex items-center gap-1 border border-navy-200 rounded-lg p-1 bg-navy-50">
-                        <button class="lang-btn active" data-lang="id" onclick="switchLang('id')">ID</button>
-                        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
-                    </div>
-                    
-                    <?php if(isset($_SESSION['user_name'])): ?>
-                        <?php if(isset($_SESSION['user_role']) && strtolower($_SESSION['user_role']) === 'owner'): ?>
-                            <a href="edit/" class="px-3 py-1.5 bg-red-500/10 text-red-600 text-sm font-bold rounded-lg border border-red-500/30 hover:bg-red-500 hover:text-white transition-colors flex items-center gap-1.5">
-                                <i data-lucide="edit-3" class="w-4 h-4"></i> Edit Katalog
-                            </a>
-                        <?php endif; ?>
-
-                        <div class="flex items-center gap-3 pl-4 border-l border-navy-200">
-                            <div class="text-right">
-                                <p class="text-sm font-bold text-navy-900"><?php echo htmlspecialchars($_SESSION['user_name']); ?></p>
-                                <p class="text-[10px] text-accent-600 font-medium uppercase tracking-wider mt-0.5"><?php echo isset($_SESSION['user_role']) ? htmlspecialchars($_SESSION['user_role']) : 'Member'; ?></p>
-                            </div>
-                            <div class="w-9 h-9 rounded-full bg-accent-50 flex items-center justify-center text-accent-600 border border-accent-200">
-                                <i data-lucide="user" class="w-4 h-4"></i>
-                            </div>
-                            <a href="../logout.php" class="ml-2 text-navy-400 hover:text-red-500 transition-colors" title="Keluar">
-                                <i data-lucide="log-out" class="w-4 h-4"></i>
-                            </a>
-                        </div>
-                    <?php else: ?>
-                        <button onclick="openAuthModal()" class="px-4 py-1.5 border border-navy-200 text-navy-900 text-sm font-medium rounded-lg hover:bg-navy-50 transition-colors duration-200" data-i18n="auth.login">Login / Sign Up</button>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <?php require __DIR__ . '/../partials/navbar.php'; ?>
 
     <section class="pt-28 pb-12 sm:pt-32 sm:pb-16 md:pt-40 md:pb-20 bg-white border-b border-navy-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 text-center">
@@ -107,12 +87,71 @@ session_start(); // Wajib untuk melacak status login user
         </div>
     </section>
 
-    <section class="py-12 sm:py-16 md:py-20 bg-navy-50">
+        <section class="py-12 sm:py-16 md:py-20 bg-navy-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8" id="product-container">
+
+            <div class="flex flex-col md:flex-row gap-4 justify-between items-center mb-8">
+                <div class="relative w-full md:w-96">
+                    <input type="text" id="search-input" placeholder="Cari layanan/produk..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-navy-200 bg-white text-sm focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 outline-none transition-shadow">
+                    <i data-lucide="search" class="w-4 h-4 text-navy-400 absolute left-3.5 top-3"></i>
                 </div>
+                <div class="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
+                    <select id="filter-category" class="px-4 py-2.5 rounded-xl border border-navy-200 bg-white text-sm text-navy-700 outline-none focus:border-accent-500">
+                        <option value="">Semua Kategori</option>
+                    </select>
+                    <select id="filter-type" class="px-4 py-2.5 rounded-xl border border-navy-200 bg-white text-sm text-navy-700 outline-none focus:border-accent-500">
+                        <option value="">Semua Tipe</option>
+                        <option value="digital">Produk Digital</option>
+                        <option value="service">Jasa</option>
+                        <option value="document">Dokumen / PDF</option>
+                        <option value="package">Paket Layanan</option>
+                    </select>
+                    <select id="sort-items" class="px-4 py-2.5 rounded-xl border border-navy-200 bg-white text-sm text-navy-700 outline-none focus:border-accent-500">
+                        <option value="newest">Terbaru</option>
+                        <option value="price_asc">Harga Termurah</option>
+                        <option value="price_desc">Harga Tertinggi</option>
+                        <option value="recommended">Rekomendasi</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex justify-end mb-6">
+                 <button onclick="toggleMinatPanel()" class="flex items-center gap-2 px-4 py-2 bg-navy-800 text-white rounded-xl text-sm font-medium hover:bg-navy-900 transition-colors">
+                     <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                     <span id="minat-count">0</span> Minat
+                 </button>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8" id="product-container">
+            </div>
+
+            <div id="empty-state" class="hidden py-16 text-center">
+                <div class="w-16 h-16 bg-navy-100 text-navy-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="package-x" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-lg font-bold text-navy-900 mb-1">Tidak ada produk ditemukan</h3>
+                <p class="text-sm text-navy-500">Coba ubah kata kunci atau filter pencarian Anda.</p>
+            </div>
         </div>
     </section>
+
+    <!-- Panel Minat -->
+    <div id="minat-panel" class="fixed inset-y-0 right-0 w-full md:w-[400px] bg-white shadow-[-10px_0_30px_rgba(0,0,0,0.1)] z-[100] transform translate-x-full transition-transform duration-300 flex flex-col">
+        <div class="p-4 border-b border-navy-100 flex justify-between items-center bg-navy-50">
+            <h3 class="font-bold text-navy-900 flex items-center gap-2"><i data-lucide="shopping-bag" class="w-5 h-5 text-accent-500"></i> Minat Pembeli</h3>
+            <button onclick="toggleMinatPanel()" class="p-2 hover:bg-navy-200 rounded-lg text-navy-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        <div id="minat-items" class="flex-1 overflow-y-auto p-4 space-y-3">
+        </div>
+        <div class="p-4 border-t border-navy-100 bg-white">
+            <button onclick="checkoutMinat()" class="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors">
+                <i data-lucide="message-circle" class="w-5 h-5"></i> Pesan via WhatsApp
+            </button>
+            <button onclick="clearMinat()" class="w-full mt-2 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg font-medium transition-colors">Kosongkan Daftar</button>
+        </div>
+    </div>
+    <div id="minat-overlay" onclick="toggleMinatPanel()" class="fixed inset-0 bg-navy-900/50 backdrop-blur-sm z-[99] hidden opacity-0 transition-opacity duration-300"></div>
+
 
     <div id="auth-modal" class="lightbox fixed inset-0 z-[100] bg-navy-950/90 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative transition-transform transform scale-95 opacity-0" id="auth-card">
@@ -193,72 +232,211 @@ session_start(); // Wajib untuk melacak status login user
         lucide.createIcons();
 
         // 1. DATA & LOGIKA PRODUK DARI PHP JSON
-        const products = <?php echo file_exists('edit/produk.json') ? file_get_contents('edit/produk.json') : '[]'; ?>;
-        let currentLang = localStorage.getItem('biz-catalog-lang') || 'id';
-        const I18N = {
-            'nav.back': {id:'Kembali ke Profil', en:'Back to Profile'},
-            'auth.login': {id:'Login / Sign Up', en:'Login / Sign Up'},
-            'hero.label': {id:'Layanan & Produk', en:'Services & Products'},
-            'hero.title': {id:'Katalog Bisnis', en:'Business Catalog'},
-            'hero.desc': {id:'Eksplorasi layanan dan produk digital yang saya tawarkan. Dikerjakan dengan dedikasi, presisi, dan standar kualitas terbaik.', en:'Explore the services and digital products I offer. Crafted with dedication, precision, and high quality standards.'},
-            'modal.available': {id:'Tersedia', en:'Available'},
-            'modal.desc': {id:'Deskripsi Produk', en:'Product Description'},
-            'modal.order': {id:'Pesan via WhatsApp', en:'Order via WhatsApp'},
-            'card.detail': {id:'Lihat Detail', en:'View Details'},
-            'card.empty': {id:'Belum ada produk yang ditambahkan.', en:'No products have been added yet.'},
-            'card.noFile': {id:'Tidak ada file/gambar', en:'No file/image available'},
-            'card.file': {id:'File', en:'File'},
-            'card.pdf': {id:'Dokumen PDF', en:'PDF Document'},
-            'footer.copy': {id:'© 2026 Darma Alif Rakhaa. Divisi Bisnis & Layanan Profesional.', en:'© 2026 Darma Alif Rakhaa. Business Division & Professional Services.'}
-        };
-        const tr = key => (I18N[key]?.[currentLang] || I18N[key]?.id || key);
-        const pickLang = (p, key) => p[`${key}_en`] && currentLang === 'en' ? p[`${key}_en`] : (p[key] || '');
+        const products = <?php echo json_encode(array_values($publishedProducts), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+                let currentLang = localStorage.getItem('biz-catalog-lang') || 'id';
+        function tr(key) { const dictionary = window.dic || window.translations || {}; return currentLang === 'en' && dictionary[key]?.en ? dictionary[key].en : (dictionary[key]?.id || key); }
+        function pickLang(obj, field) { return currentLang === 'en' && obj[field+'_en'] ? obj[field+'_en'] : (obj[field] || ''); }
 
-        const container = document.getElementById('product-container');
-        
-        function renderProducts() {
-            if (products.length === 0) {
-            container.innerHTML = `<div class="col-span-full text-center py-10 text-navy-400 font-medium">${tr('card.empty')}</div>`;
+        // Cart State
+        const BUSINESS_INTEREST_KEY = 'gy_business_interest_v1';
+        let minatList = JSON.parse(localStorage.getItem(BUSINESS_INTEREST_KEY) || '[]');
+
+        function updateMinatCount() {
+            document.getElementById('minat-count').textContent = minatList.length;
+        }
+
+        function toggleMinatPanel() {
+            const panel = document.getElementById('minat-panel');
+            const overlay = document.getElementById('minat-overlay');
+            if (panel.classList.contains('translate-x-full')) {
+                panel.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+                renderMinatItems();
             } else {
-            container.innerHTML = products.map(p => {
-                // Menentukan gambar cover (atau icon PDF)
-                let coverImg = '';
-                if (p.images && p.images.length > 0) {
-                    const coverPath = p.images.find(f => !f.toLowerCase().endsWith('.pdf')) || p.images[0];
-                    const ext = coverPath.split('.').pop().toLowerCase();
-                    if (ext === 'pdf') {
-                        // Jika cover adalah PDF, tampilkan placeholder cantik
-                        coverImg = `
-                            <div class="w-full h-full flex flex-col items-center justify-center bg-navy-100 text-navy-400">
-                                <i data-lucide="file-text" class="w-12 h-12 mb-2"></i>
-                                <span class="text-xs font-bold uppercase tracking-widest">${tr('card.pdf')}</span>
-                            </div>`;
+                panel.classList.add('translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        function addToMinat(id) {
+            const prod = products.find(p => p.id === id);
+            if (!prod) return;
+            if (!minatList.find(i => i.id === id)) {
+                minatList.push(prod);
+                localStorage.setItem(BUSINESS_INTEREST_KEY, JSON.stringify(minatList));
+                updateMinatCount();
+
+                // Animate button
+                const btn = document.querySelector(`.btn-minat-${id}`);
+                if (btn) {
+                    btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Tersimpan`;
+                    btn.classList.add('bg-green-500', 'text-white', 'border-transparent');
+                    btn.classList.remove('bg-white', 'text-navy-700', 'hover:bg-navy-50');
+                    lucide.createIcons();
+                }
+            }
+        }
+
+        function removeFromMinat(id) {
+            minatList = minatList.filter(i => i.id !== id);
+            localStorage.setItem(BUSINESS_INTEREST_KEY, JSON.stringify(minatList));
+            updateMinatCount();
+            renderMinatItems();
+            renderProducts(); // refresh buttons
+        }
+
+        function clearMinat() {
+            if(confirm('Kosongkan semua daftar minat?')) {
+                minatList = [];
+                localStorage.setItem(BUSINESS_INTEREST_KEY, JSON.stringify(minatList));
+                updateMinatCount();
+                renderMinatItems();
+                renderProducts();
+            }
+        }
+
+        function checkoutMinat() {
+            if(minatList.length === 0) return alert('Daftar minat masih kosong.');
+            const itemsText = minatList.map(i => `- ${i.title} (${i.price})`).join('%0A');
+            const msg = `Halo Darma, saya tertarik dengan layanan/produk berikut:%0A%0A${itemsText}%0A%0AMohon informasi lebih lanjut. Terima kasih.`;
+            window.open(`https://wa.me/6285810518855?text=${msg}`, '_blank');
+        }
+
+        function renderMinatItems() {
+            const container = document.getElementById('minat-items');
+            if (minatList.length === 0) {
+                container.innerHTML = '<div class="text-center py-10 text-navy-400 text-sm">Belum ada item yang ditambahkan.</div>';
+                return;
+            }
+            container.innerHTML = minatList.map(item => `
+                <div class="flex gap-3 bg-white border border-navy-100 p-3 rounded-xl shadow-sm">
+                    <img src="edit/${item.cover || (item.images && item.images[0]) || 'placeholder.jpg'}" class="w-16 h-16 object-cover rounded-lg bg-navy-100" onerror="this.src='https://placehold.co/100x100?text=No+Image'">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-bold text-navy-900 text-sm truncate">${item.title}</h4>
+                        <p class="text-accent-600 font-medium text-xs mt-1">${item.price}</p>
+                    </div>
+                    <button onclick="removeFromMinat(${item.id})" class="text-red-400 hover:text-red-600 p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        // Setup filter options
+        function setupFilters() {
+            const cats = new Set();
+            products.forEach(p => { if(p.category) cats.add(p.category); });
+            const catSelect = document.getElementById('filter-category');
+            cats.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c; opt.textContent = c;
+                catSelect.appendChild(opt);
+            });
+        }
+
+        function getFilteredProducts() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const cat = document.getElementById('filter-category').value;
+            const type = document.getElementById('filter-type').value;
+            const sort = document.getElementById('sort-items').value;
+
+            let filtered = products.filter(p => {
+                const matchSearch = (p.title||'').toLowerCase().includes(search) || (p.title_en||'').toLowerCase().includes(search);
+                const matchCat = cat === '' || p.category === cat;
+                const matchType = type === '' || p.type === type;
+                return matchSearch && matchCat && matchType;
+            });
+
+            filtered.sort((a, b) => {
+                if (sort === 'price_asc') return (a.price_number || 0) - (b.price_number || 0);
+                if (sort === 'price_desc') return (b.price_number || 0) - (a.price_number || 0);
+                if (sort === 'recommended') {
+                    if ((a.featured||false) !== (b.featured||false)) return (a.featured||false) ? -1 : 1;
+                }
+                return (b.id||0) - (a.id||0); // newest default
+            });
+
+            return filtered;
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('product-container');
+            const emptyState = document.getElementById('empty-state');
+            const filtered = getFilteredProducts();
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            container.innerHTML = filtered.map(prod => {
+                const tTitle = pickLang(prod,'title');
+                const tShort = pickLang(prod,'shortDesc');
+                const cover = prod.cover || (prod.images && prod.images.length > 0 ? prod.images[0] : null);
+                let imgHtml = '';
+                if(cover) {
+                    const ext = cover.split('.').pop().toLowerCase();
+                    if(ext === 'pdf') {
+                        imgHtml = `<div class="w-full h-full bg-navy-800 flex flex-col items-center justify-center text-white p-4">
+                                       <i data-lucide="file-text" class="w-10 h-10 mb-2 opacity-50"></i>
+                                       <span class="text-xs font-medium opacity-70">Dokumen PDF</span>
+                                   </div>`;
                     } else {
-                        coverImg = `<img src="edit/${coverPath}" alt="${pickLang(p,'title')}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">`;
+                        imgHtml = `<img src="edit/${cover}" alt="${tTitle}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://placehold.co/400x300?text=No+Image'">`;
                     }
                 } else {
-                    coverImg = `<div class="w-full h-full bg-navy-200"></div>`;
+                    imgHtml = `<div class="w-full h-full bg-navy-100 flex items-center justify-center text-navy-400"><i data-lucide="image" class="w-10 h-10 opacity-30"></i></div>`;
                 }
 
+                const badgeHtml = (prod.featured) ? `<div class="absolute top-3 left-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm">RECOMMENDED</div>` : '';
+                const isSaved = minatList.find(i => i.id === prod.id);
+                const btnSave = isSaved
+                    ? `<button class="btn-minat-${prod.id} p-2 rounded-lg bg-green-500 text-white flex-1 flex justify-center items-center gap-1.5 text-xs font-bold transition-colors"><i data-lucide="check" class="w-4 h-4"></i> Tersimpan</button>`
+                    : `<button onclick="addToMinat(${prod.id})" class="btn-minat-${prod.id} p-2 rounded-lg border border-navy-200 bg-white text-navy-700 hover:bg-navy-50 flex-1 flex justify-center items-center gap-1.5 text-xs font-bold transition-colors"><i data-lucide="shopping-bag" class="w-4 h-4"></i> Minat</button>`;
+
                 return `
-                <div class="product-card bg-white border border-navy-100 rounded-2xl overflow-hidden flex flex-col cursor-pointer" onclick="openProduct(${p.id})">
-                    <div class="aspect-[4/3] bg-navy-50 relative overflow-hidden group">
-                        ${coverImg}
-                        ${p.images && p.images.length > 1 ? `<div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1"><i data-lucide="images" class="w-3 h-3"></i> ${p.images.length} ${tr('card.file')}</div>` : ''}
+                <div class="product-card bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(10,25,41,0.04)] border border-navy-100 flex flex-col">
+                    <div class="aspect-[4/3] bg-navy-50 relative overflow-hidden group cursor-pointer" onclick="openProduct(${prod.id})">
+                        ${imgHtml}
+                        ${badgeHtml}
+                        <div class="absolute inset-0 bg-navy-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <span class="bg-white/90 backdrop-blur-sm text-navy-900 text-sm font-bold px-4 py-2 rounded-xl flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform">
+                                Lihat Detail <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </span>
+                        </div>
                     </div>
                     <div class="p-5 flex-1 flex flex-col">
-                        <h3 class="text-lg font-bold text-navy-900 mb-1 line-clamp-1">${pickLang(p,'title')}</h3>
-                        <p class="text-accent-600 font-bold mb-3">${p.price}</p>
-                        <p class="text-sm text-navy-500 leading-relaxed mb-4 flex-1 line-clamp-2">${pickLang(p,'shortDesc')}</p>
-                        <div class="pt-4 border-t border-navy-50 text-sm font-semibold text-navy-900 flex items-center gap-2 group-hover:text-accent-600 transition-colors">${tr('card.detail')} <i data-lucide="arrow-right" class="w-4 h-4"></i></div>
+                        <div class="flex items-start justify-between gap-3 mb-2">
+                            <h3 class="font-bold text-navy-900 text-base leading-snug line-clamp-2">${tTitle}</h3>
+                        </div>
+                        <p class="text-accent-600 font-bold text-lg mb-3">${prod.price || 'Gratis'}</p>
+                        <p class="text-navy-600 text-sm line-clamp-2 mb-4 flex-1">${tShort}</p>
+
+                        <div class="flex items-center gap-2 mt-auto">
+                            ${btnSave}
+                        </div>
                     </div>
                 </div>
                 `;
             }).join('');
             lucide.createIcons();
-            }
         }
-        renderProducts();
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupFilters();
+            renderProducts();
+            updateMinatCount();
+
+            // Bind filters
+            document.getElementById('search-input').addEventListener('input', renderProducts);
+            document.getElementById('filter-category').addEventListener('change', renderProducts);
+            document.getElementById('filter-type').addEventListener('change', renderProducts);
+            document.getElementById('sort-items').addEventListener('change', renderProducts);
+        });
 
         // 2. LOGIKA MODAL PRODUK
         const pModal = document.getElementById('product-modal');

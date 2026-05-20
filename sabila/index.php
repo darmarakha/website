@@ -1,5 +1,16 @@
 <?php
-session_start(); // Wajib di baris pertama untuk melacak status login user
+session_start();
+
+$gemu_base_path = '../';
+$gemu_nav_context = [
+    'mode' => 'sabila',
+    'brand_text' => 'Sabila Fitriannisaa',
+    'brand_badge' => 'SF',
+    'show_profile' => false,
+    'show_owner_tools' => false,
+    'show_contact' => false,
+    'compact' => true,
+];
 ?>
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
@@ -73,162 +84,62 @@ session_start(); // Wajib di baris pertama untuk melacak status login user
 </head>
 <body class="bg-white text-navy-900 antialiased">
 
-    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="flex items-center justify-between h-14 sm:h-16 md:h-20">
-                <a href="#hero" class="flex items-center gap-2 group z-10">
-                    <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-accent-500 flex items-center justify-center flex-shrink-0">
-                        <span class="text-white font-bold text-xs sm:text-sm">SF</span>
+    <?php require __DIR__ . '/../partials/navbar.php'; ?>
+
+        <section id="hero" class="hero-gradient min-h-screen min-h-[100dvh] flex items-center relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-accent-500/10 rounded-full blur-[100px] mix-blend-screen pointer-events-none translate-x-1/3 -translate-y-1/3"></div>
+        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-[80px] mix-blend-screen pointer-events-none -translate-x-1/3 translate-y-1/3"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 w-full relative z-10 pt-20">
+            <div class="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+                <div class="max-w-2xl text-center lg:text-left mx-auto lg:mx-0">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-500/10 border border-accent-500/20 text-accent-400 text-sm font-semibold mb-6 animate-fade-in-up">
+                        <span class="w-2 h-2 rounded-full bg-accent-400 pulse-dot"></span>
+                        <span data-i18n="hero.status">Admin & HR Professional</span>
                     </div>
-                    <span class="font-semibold text-base sm:text-lg tracking-tight text-white transition-colors duration-300" id="nav-logo-text">Sabila Fitriannisaa</span>
-                </a>
-
-                <div class="hidden md:flex items-center gap-6 lg:gap-8">
-                    <a href="#about" class="nav-link text-sm font-medium text-white/80 hover:text-white transition-colors" data-i18n="nav.about">Tentang</a>
-                    <a href="#experience" class="nav-link text-sm font-medium text-white/80 hover:text-white transition-colors" data-i18n="nav.experience">Pengalaman</a>
-                    <a href="#skills" class="nav-link text-sm font-medium text-white/80 hover:text-white transition-colors" data-i18n="nav.skills">Keahlian</a>
-                    <a href="#certifications" class="nav-link text-sm font-medium text-white/80 hover:text-white transition-colors" data-i18n="nav.certificates">Sertifikat</a>
-
-                    <div class="lang-toggle" id="lang-toggle-desktop">
-                        <button class="lang-btn" data-lang="id" onclick="switchLang('id')">ID</button>
-                        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+                    <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl/tight font-bold text-white mb-6">
+                        <span class="block text-navy-200 text-2xl sm:text-3xl lg:text-4xl mb-2 font-sans font-medium" data-i18n="hero.greeting">Halo, saya</span>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-accent-100 to-accent-300">Sabila Fitriannisaa</span>
+                    </h1>
+                    <p class="text-base sm:text-lg text-navy-200 mb-10 leading-relaxed font-light" data-i18n="hero.desc">
+                        Lulusan S1 Manajemen Universitas IPWIJA dengan minat besar di bidang Administrasi dan HRD. Memiliki pengalaman yang kuat dalam pengelolaan operasional, siap mendukung perusahaan dengan kemampuan komunikasi dan kerja sama tim yang baik.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                        <a href="#contact" class="px-8 py-3.5 bg-accent-500 hover:bg-accent-400 text-white rounded-xl font-semibold shadow-[0_8px_20px_rgba(14,165,233,0.25)] hover:shadow-[0_12px_25px_rgba(14,165,233,0.35)] transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                            <i data-lucide="mail" class="w-5 h-5"></i>
+                            <span data-i18n="hero.ctaPrimary">Hubungi Saya</span>
+                        </a>
+                        <a href="#about" class="px-8 py-3.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 backdrop-blur-sm">
+                            <span data-i18n="hero.ctaSecondary">Lihat Profil</span>
+                            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        </a>
                     </div>
 
-                    <a href="#contact" class="px-5 py-2 bg-accent-500 text-white text-sm font-medium rounded-lg hover:bg-accent-600 transition-colors duration-200 shadow-lg shadow-accent-500/25" data-i18n="nav.contact">Hubungi</a>
-
-                    <?php if(isset($_SESSION['user_name'])): ?>
-                        <?php if(isset($_SESSION['user_role']) && strtolower($_SESSION['user_role']) === 'owner'): ?>
-                            <a href="edit/" class="px-3 py-1.5 bg-red-500/20 text-red-100 text-sm font-bold rounded-lg border border-red-500/50 hover:bg-red-500 hover:text-white transition-colors flex items-center gap-1.5 backdrop-blur-sm" title="Dashboard Owner">
-                                <i data-lucide="edit-3" class="w-4 h-4"></i> Edit Web
-                            </a>
-                        <?php endif; ?>
-
-                        <div class="flex items-center gap-3 pl-4 border-l border-white/20" id="nav-user-profile">
-                            <div class="text-right">
-                                <p class="text-sm font-bold text-white transition-colors" id="nav-user-name"><?php echo htmlspecialchars($_SESSION['user_name']); ?></p>
-                                <p class="text-[10px] text-accent-400 font-medium uppercase tracking-wider mt-0.5"><?php echo isset($_SESSION['user_role']) ? htmlspecialchars($_SESSION['user_role']) : 'Member'; ?></p>
-                            </div>
-                            <div class="w-9 h-9 rounded-full bg-accent-500/20 flex items-center justify-center text-accent-400 border border-accent-500/30">
-                                <i data-lucide="user" class="w-4 h-4"></i>
-                            </div>
-                            <a href="logout.php" class="ml-2 text-white/50 hover:text-red-400 transition-colors" title="Keluar">
-                                <i data-lucide="log-out" class="w-4 h-4"></i>
-                            </a>
+                    <!-- Quick stats / highlights -->
+                    <div class="mt-12 pt-8 border-t border-white/10 grid grid-cols-2 sm:grid-cols-3 gap-6 text-left opacity-90">
+                        <div>
+                            <div class="text-accent-400 font-bold text-xl mb-1">S1 Manajemen</div>
+                            <div class="text-navy-300 text-xs font-medium uppercase tracking-wider">Pendidikan</div>
                         </div>
-                    <?php else: ?>
-                        <button onclick="openAuthModal()" id="nav-login-btn" class="px-4 py-1.5 border border-white/20 text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-colors duration-200" data-i18n="nav.login">Login / Sign Up</button>
-                    <?php endif; ?>
-                </div>
-
-                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 flex items-center justify-center rounded-lg text-white hover:bg-white/10 active:bg-white/20 transition-colors z-10" aria-label="Menu">
-                    <i data-lucide="menu" class="w-5 h-5" id="menu-icon-open"></i>
-                    <i data-lucide="x" class="w-5 h-5 hidden" id="menu-icon-close"></i>
-                </button>
-            </div>
-        </div>
-
-        <div id="mobile-menu-overlay" class="md:hidden fixed inset-0 bg-black/50 z-40 hidden opacity-0 transition-opacity duration-300"></div>
-        <div id="mobile-menu" class="md:hidden fixed top-0 right-0 bottom-0 w-[280px] max-w-[80vw] bg-navy-950 z-50 transform translate-x-full transition-transform duration-300 ease-in-out shadow-2xl">
-            <div class="pt-20 pb-6 px-6 h-full flex flex-col">
-                <div class="flex justify-center mb-4">
-                    <div class="lang-toggle" id="lang-toggle-mobile">
-                        <button class="lang-btn" data-lang="id" onclick="switchLang('id')">ID</button>
-                        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
-                    </div>
-                </div>
-                <div class="w-full h-px bg-white/10 mb-3"></div>
-                <div class="space-y-1 flex-1">
-                    <a href="#about" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
-                        <span class="flex items-center gap-3"><i data-lucide="user" class="w-4 h-4 opacity-50"></i><span data-i18n="nav.about">Tentang</span></span>
-                    </a>
-                    <a href="#experience" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
-                        <span class="flex items-center gap-3"><i data-lucide="briefcase" class="w-4 h-4 opacity-50"></i><span data-i18n="nav.experience">Pengalaman</span></span>
-                    </a>
-                    <a href="#skills" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
-                        <span class="flex items-center gap-3"><i data-lucide="zap" class="w-4 h-4 opacity-50"></i><span data-i18n="nav.skills">Keahlian</span></span>
-                    </a>
-                    <a href="#certifications" class="mobile-link block px-4 py-3.5 text-white/80 hover:text-white active:bg-white/10 rounded-xl transition-colors text-sm font-medium">
-                        <span class="flex items-center gap-3"><i data-lucide="award" class="w-4 h-4 opacity-50"></i><span data-i18n="nav.certificates">Sertifikat</span></span>
-                    </a>
-                </div>
-                
-                <div class="space-y-3 pt-6 border-t border-white/10">
-                    <a href="#contact" class="mobile-link flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-accent-500 text-white font-semibold rounded-xl active:bg-accent-600 transition-colors text-sm">
-                        <i data-lucide="mail" class="w-4 h-4"></i>
-                        <span data-i18n="nav.contactFull">Hubungi Saya</span>
-                    </a>
-
-                    <?php if(isset($_SESSION['user_name'])): ?>
-                        <?php if(isset($_SESSION['user_role']) && strtolower($_SESSION['user_role']) === 'owner'): ?>
-                            <a href="edit/" class="flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-red-600/20 text-red-400 font-semibold rounded-xl border border-red-500/30 active:bg-red-600/40 transition-colors text-sm mt-3">
-                                <i data-lucide="edit-3" class="w-4 h-4"></i> Edit Web
-                            </a>
-                        <?php endif; ?>
-
-                        <div class="flex items-center justify-between px-4 py-3 bg-white/5 rounded-xl border border-white/10 mt-3">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-accent-500/20 flex items-center justify-center text-accent-400">
-                                    <i data-lucide="user" class="w-4 h-4"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold text-white leading-tight"><?php echo htmlspecialchars($_SESSION['user_name']); ?></p>
-                                    <p class="text-[10px] text-accent-400 uppercase tracking-wider"><?php echo isset($_SESSION['user_role']) ? htmlspecialchars($_SESSION['user_role']) : 'Member'; ?></p>
-                                </div>
-                            </div>
-                            <a href="logout.php" class="p-2 text-white/50 hover:text-red-400 transition-colors">
-                                <i data-lucide="log-out" class="w-4 h-4"></i>
-                            </a>
+                        <div>
+                            <div class="text-accent-400 font-bold text-xl mb-1">HR & Admin</div>
+                            <div class="text-navy-300 text-xs font-medium uppercase tracking-wider">Fokus Karir</div>
                         </div>
-                    <?php else: ?>
-                        <button onclick="openAuthModal(); toggleMenu(false);" class="mobile-link flex items-center justify-center gap-2 w-full px-6 py-3.5 border border-white/20 text-white font-semibold rounded-xl active:bg-white/10 transition-colors text-sm mt-3">
-                            <i data-lucide="log-in" class="w-4 h-4"></i>
-                            <span data-i18n="nav.login">Login / Sign Up</span>
-                        </button>
-                    <?php endif; ?>
+                        <div class="hidden sm:block">
+                            <div class="text-accent-400 font-bold text-xl mb-1">Bekasi</div>
+                            <div class="text-navy-300 text-xs font-medium uppercase tracking-wider">Lokasi</div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </nav>
 
-    <section id="hero" class="hero-gradient min-h-screen min-h-[100dvh] flex items-center relative">
-        <div id="particles" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-28 pb-20 sm:pt-32 sm:pb-24 md:pt-40 md:pb-32 relative z-10 w-full">
-            <div class="max-w-3xl">
-                <div class="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm mb-6 sm:mb-8 reveal">
-                    <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-accent-400 pulse-dot"></span>
-                    <span class="text-xs sm:text-sm text-navy-200 font-medium i18n-fade" data-i18n="hero.badge">Terbuka untuk Kesempatan</span>
-                </div>
-                <p class="text-accent-400 font-medium text-base sm:text-lg md:text-xl mb-3 sm:mb-4 reveal i18n-fade" style="transition-delay:.1s" data-i18n="hero.greeting">Halo, saya</p>
-                <h1 class="font-serif text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight leading-[1.1] mb-4 sm:mb-6 reveal" style="transition-delay:.2s">
-                    Sabila<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-300 via-accent-400 to-accent-500">Fitriannisaa</span>
-                </h1>
-                <p class="text-base sm:text-lg md:text-xl text-navy-300 leading-relaxed max-w-xl mb-8 sm:mb-10 reveal i18n-fade" style="transition-delay:.3s" data-i18n="hero.desc">Lulusan S1 Manajemen dari Universitas IPWIJA yang berdedikasi tinggi untuk berkembang di bidang <span class="text-white font-medium">Human Resources</span> dan <span class="text-white font-medium">Administrasi</span>.</p>
-                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 reveal" style="transition-delay:.4s">
-                    <a href="#certifications" class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-accent-500 text-white font-semibold rounded-xl active:scale-[0.98] transition-all duration-200 shadow-xl shadow-accent-500/25 text-sm sm:text-base">
-                        <i data-lucide="award" class="w-4 h-4 sm:w-5 sm:h-5"></i>
-                        <span data-i18n="hero.cta1">Lihat Sertifikat</span>
-                    </a>
-                    <a href="#contact" class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-white/5 border border-white/20 text-white font-semibold rounded-xl active:scale-[0.98] transition-all duration-200 backdrop-blur-sm text-sm sm:text-base">
-                        <i data-lucide="mail" class="w-4 h-4 sm:w-5 sm:h-5"></i>
-                        <span data-i18n="hero.cta2">Hubungi Saya</span>
-                    </a>
-                </div>
-                <div class="flex gap-6 sm:gap-8 mt-10 sm:mt-14 pt-6 sm:pt-8 border-t border-white/10 reveal" style="transition-delay:.5s">
-                    <div>
-                        <p class="text-2xl sm:text-3xl md:text-4xl font-bold text-white">3</p>
-                        <p class="text-xs sm:text-sm text-navy-400 mt-0.5 sm:mt-1 i18n-fade" data-i18n="hero.stat1">Sertifikat</p>
-                    </div>
-                    <div>
-                        <p class="text-2xl sm:text-3xl md:text-4xl font-bold text-white">1</p>
-                        <p class="text-xs sm:text-sm text-navy-400 mt-0.5 sm:mt-1 i18n-fade" data-i18n="hero.stat2">Pengalaman</p>
+                <div class="relative max-w-md mx-auto lg:mr-0 lg:ml-auto w-full aspect-square hidden md:block">
+                    <!-- Subtle decorative background element for the right side -->
+                    <div class="absolute inset-0 bg-gradient-to-tr from-accent-500/20 to-transparent rounded-full border border-white/5 backdrop-blur-3xl animate-[spin_60s_linear_infinite]"></div>
+                    <div class="absolute inset-4 bg-navy-900/50 rounded-full border border-white/10 flex flex-col items-center justify-center overflow-hidden">
+                        <i data-lucide="sparkles" class="w-16 h-16 text-accent-500/30 mb-4"></i>
+                        <p class="text-center px-8 text-navy-300 font-serif italic">"Dedikasi dan ketelitian dalam setiap tugas administratif."</p>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 text-navy-400">
-            <span class="text-[10px] sm:text-xs font-medium tracking-widest uppercase">Scroll</span>
-            <div class="w-5 h-7 sm:w-5 sm:h-8 border-2 border-navy-500 rounded-full flex justify-center pt-1">
-                <div class="w-1 h-1.5 sm:h-2 bg-accent-400 rounded-full animate-bounce"></div>
             </div>
         </div>
     </section>

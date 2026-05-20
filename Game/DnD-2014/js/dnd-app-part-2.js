@@ -58,6 +58,7 @@
     state.rooms.unshift(room);
     state.activeRoomId = room.id;
     state.ui.lobbyInsideRoom = true;
+    document.body.classList.add('gemu-dnd-room-active');
     state.ui.tab = "lobby";
     state.campaign.name = room.name;
     state.campaign.partyLevel = levelStart;
@@ -87,6 +88,7 @@
     room.lastActiveAt = nowIso();
     state.activeRoomId = room.id;
     state.ui.lobbyInsideRoom = true;
+    document.body.classList.add('gemu-dnd-room-active');
     state.ui.tab = "lobby";
     state.campaign.name = room.name;
     saveState(true, 'campaign');
@@ -103,6 +105,7 @@
     if (state.activeRoomId === roomId) {
       state.activeRoomId = "";
       state.ui.lobbyInsideRoom = false;
+    document.body.classList.remove('gemu-dnd-room-active');
     }
     saveState(true, 'campaign');
     render();
@@ -121,6 +124,7 @@
     if (state.activeRoomId === roomId) {
       state.activeRoomId = state.rooms[0]?.id || "";
       state.ui.lobbyInsideRoom = false;
+    document.body.classList.remove('gemu-dnd-room-active');
     }
     saveState(true, 'campaign');
     render();
@@ -151,6 +155,7 @@
     state.rooms.unshift(room);
     state.activeRoomId = room.id;
     state.ui.lobbyInsideRoom = true;
+    document.body.classList.add('gemu-dnd-room-active');
     state.ui.tab = "lobby";
     state.campaign.name = room.name;
     saveState(false, 'campaign');
@@ -469,6 +474,7 @@
 
   function backToLobbyRoomList() {
     state.ui.lobbyInsideRoom = false;
+    document.body.classList.remove('gemu-dnd-room-active');
     state.ui.tab = "lobby";
     saveState(false);
     render();
