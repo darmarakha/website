@@ -19,7 +19,7 @@
       state.maps.unshift(map);
       state.activeMapId = map.id;
       if (currentRoom()) currentRoom().activeMapId = map.id;
-      saveState(true);
+      saveState(true, 'world');
       toast("Gambar map AI berhasil dibuat.");
       render();
     } catch (error) {
@@ -118,7 +118,7 @@
     if (currentRoom()) currentRoom().activeMapId = map.id;
     state.mapUploadDraft = "";
     state.mapUploadDraftName = "";
-    saveState(true);
+    saveState(true, 'world');
     render();
     toast("Map upload berhasil dipasang.");
   }
@@ -356,7 +356,7 @@
     state.maps = state.maps.filter((m) => m.id !== map.id);
     state.activeMapId = roomMaps(state.activeRoomId)[0]?.id || "";
     if (currentRoom()) currentRoom().activeMapId = state.activeMapId;
-    saveState(true);
+    saveState(true, 'world');
     render();
   }
 
@@ -364,7 +364,7 @@
     const map = activeMap();
     if (!map) return;
     map.notes = qs("#map-notes")?.value.trim() || "";
-    saveState(true);
+    saveState(true, 'world');
   }
 
   function addSessionLog() {
@@ -399,7 +399,7 @@
       createdAt: nowIso()
     });
     state.sessionLog = state.sessionLog.slice(0, 120);
-    saveState(true);
+    saveState(true, 'world');
     render();
   }
 
@@ -420,7 +420,7 @@
     };
     state.npcs.push(npc);
     state.ui.selectedNpcId = npc.id;
-    saveState(true);
+    saveState(true, 'world');
     render();
   }
 
@@ -431,7 +431,7 @@
       m.npcs = (m.npcs || []).filter((p) => p.npcId !== id);
     });
     if (state.ui.selectedNpcId === id) state.ui.selectedNpcId = "";
-    saveState(true);
+    saveState(true, 'world');
     render();
   }
 
@@ -449,7 +449,7 @@
     }
     map.npcs = map.npcs || [];
     map.npcs.push({ id: uid("pos"), npcId: npc.id, x: tileX, y: tileY });
-    saveState(true);
+    saveState(true, 'world');
     render();
   }
 
@@ -481,7 +481,7 @@
     } else {
       map.characters.push({ id: uid("charpos"), characterId: character.id, x: Number(tileX), y: Number(tileY), updatedAt: nowIso() });
     }
-    saveState(true);
+    saveState(true, 'world');
     render();
     toast("Token karakter dipindahkan.");
     return true;
@@ -501,7 +501,7 @@
     }
     character.updatedAt = nowIso();
     state.rollLog.unshift({ id: uid("gm"), label: "GM Adjust", total: character.hpCurrent, detail: `${character.name}: HP ${signed(hp)}, XP ${signed(xp)}`, user: currentUser().name, createdAt: nowIso() });
-    saveState(true);
+    saveState(true, 'world');
     render();
   }
 
@@ -513,7 +513,7 @@
     character.requestedLevel = "";
     character.hpMax = computeMaxHp(classById(character.className), character.abilities, character.level);
     character.hpCurrent = clamp(character.hpCurrent, 1, character.hpMax);
-    saveState(true);
+    saveState(true, 'world');
     render();
   }
 
@@ -525,7 +525,7 @@
     character.inventory = character.inventory || [];
     character.inventory.push(itemName);
     character.ac = computeAc(character.inventory, character.abilities);
-    saveState(true);
+    saveState(true, 'world');
     render();
   }
 
@@ -540,7 +540,7 @@
     };
     if (!item.name) return toast("Nama item wajib diisi.");
     state.customItems.push(item);
-    saveState(true);
+    saveState(true, 'world');
     render();
   }
 
@@ -549,7 +549,7 @@
     if (!note) return;
     state.aiNotes.unshift({ id: uid("note"), text: note, createdAt: nowIso(), user: currentUser()?.name || "Guest" });
     state.aiNotes = state.aiNotes.slice(0, 40);
-    saveState(true);
+    saveState(true, 'world');
     render();
   }
 
@@ -557,13 +557,13 @@
     const question = (qs("#ai-question")?.value || "").trim();
     if (!question) return;
     state.ui.aiAnswer = localAiAnswer(question);
-    saveState();
+    saveState(false, 'world');
     render();
   }
 
   function runAiAudit() {
     state.ui.aiAnswer = auditRules().map((w) => `${w.level.toUpperCase()}: ${w.text}`).join("\n\n") || "Tidak ada pelanggaran besar yang terdeteksi. Tetap gunakan keputusan GM untuk konteks cerita.";
-    saveState();
+    saveState(false, 'world');
     render();
   }
 
@@ -584,7 +584,7 @@
       warnings: auditRules()
     };
     state.ui.aiAnswer = "Catatan bug siap dikirim ke pengembang:\n\n" + JSON.stringify(report, null, 2);
-    saveState();
+    saveState(false, 'world');
     render();
   }
 

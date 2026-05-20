@@ -22,7 +22,7 @@
     state.activeCharacterId = character.id;
     state.ui.characterDraft = null;
     state.ui.characterStep = "race";
-    saveState(true);
+    saveState(true, 'world');
     toast(isExisting ? "Character sheet diperbarui." : "Karakter dibuat dan disimpan.");
     render();
   }
@@ -551,7 +551,7 @@
       const parsed = JSON.parse(raw);
       state = mergeState(defaultState(), parsed);
       state.ui.showImport = false;
-      saveState();
+      saveState(false, 'world');
       toast("Save berhasil dimuat.");
       render();
     } catch (error) {
@@ -584,7 +584,7 @@
       createdAt: nowIso()
     });
     state.rollLog = state.rollLog.slice(0, 80);
-    saveState();
+    saveState(false, 'world');
     animateDice(result, label);
   }
 
@@ -605,7 +605,7 @@
       createdAt: nowIso()
     });
     state.rollLog = state.rollLog.slice(0, 80);
-    saveState();
+    saveState(false, 'world');
     animateDice(total, "d100 percentile");
   }
 
@@ -632,7 +632,7 @@
       createdAt: nowIso()
     });
     state.rollLog = state.rollLog.slice(0, 80);
-    saveState();
+    saveState(false, 'world');
     animateDice(total, skill.label);
   }
 
@@ -676,7 +676,7 @@
       createdAt: nowIso()
     });
     state.rollLog = state.rollLog.slice(0, 80);
-    saveState();
+    saveState(false, 'world');
     animateDice(total, label);
   }
 
@@ -684,7 +684,7 @@
     const c = state.characters.find(x => x.id === charId);
     if (!c) return;
     c.inspiration = c.inspiration ? 0 : 1;
-    saveState();
+    saveState(false, 'world');
     render();
   }
 
@@ -755,7 +755,7 @@
     state.ui.abilityRollLog = { mode, values, rolls, details, createdAt: nowIso() };
     state.ui.abilityPickAssignments = {};
     updateCharacterBuilderGuide();
-    saveState(false);
+    saveState(false, 'world');
     render();
     toast(mode === "standard" ? "Standard array muncul. Pilih angka untuk tiap stat." : "Hasil dice muncul. Pilih angka untuk STR/DEX/CON/INT/WIS/CHA secara bebas.");
   }
@@ -996,7 +996,7 @@
     state.maps.unshift(map);
     state.activeMapId = map.id;
     if (currentRoom()) currentRoom().activeMapId = map.id;
-    saveState(true);
+    saveState(true, 'world');
     toast("Map detail dibuat dan disimpan.");
     render();
   }

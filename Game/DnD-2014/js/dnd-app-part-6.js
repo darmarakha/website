@@ -897,7 +897,7 @@
       createdAt: nowIso()
     });
     state.ui.showReward = false;
-    saveState(true);
+    saveState(true, 'world');
     render();
     toast("Reward berhasil diberikan.");
   }
@@ -951,7 +951,7 @@
     });
     
     field.value = "";
-    saveState();
+    saveState(false, 'world');
     render();
     toast("Narasi dikirim ke log.");
   }

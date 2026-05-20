@@ -612,7 +612,7 @@
     if (!CHARACTER_STEP_IDS.includes(step)) return;
     preserveCharacterDraftFromForm();
     state.ui.characterStep = step;
-    saveState(false);
+    saveState(false, 'world');
     render();
   }
 

@@ -19,7 +19,7 @@
       room.activeMapId = map.id;
       room.lastActiveAt = nowIso();
     }
-    saveState(true);
+    saveState(true, 'world');
     render();
     toast("Map aktif room diperbarui untuk GM dan Player.");
   }
@@ -76,7 +76,7 @@
     room.turn.updatedAt = nowIso();
     room.turn.updatedBy = currentUser()?.name || "GM";
     room.lastActiveAt = nowIso();
-    saveState(true);
+    saveState(true, 'world');
     render();
     toast(characterId ? "Giliran aktif diperbarui." : "Giliran dikosongkan. Player tidak bisa melakukan aksi.");
   }
@@ -95,7 +95,7 @@
     room.turn.updatedAt = nowIso();
     room.turn.updatedBy = currentUser()?.name || "GM";
     room.lastActiveAt = nowIso();
-    saveState(true);
+    saveState(true, 'world');
     render();
     toast(`Giliran: ${chars[nextIndex].name}.`);
   }
@@ -106,7 +106,7 @@
     if (!room) return toast("Pilih room dulu.");
     room.turn = { round: room.turn?.round || 1, activeCharacterId: "", updatedAt: nowIso(), updatedBy: currentUser()?.name || "GM" };
     room.lastActiveAt = nowIso();
-    saveState(true);
+    saveState(true, 'world');
     render();
     toast("Giliran dikunci. Player hanya bisa melihat sheet/stat/item.");
   }

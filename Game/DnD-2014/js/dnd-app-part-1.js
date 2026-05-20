@@ -214,7 +214,7 @@
     }
     if (target.id === "selected-npc-select") {
       state.ui.selectedNpcId = target.value;
-      saveState();
+      saveState(false, 'world');
       render();
     }
   });
@@ -497,7 +497,7 @@
       }
       return next;
     });
-    if (changed && !bootingFromSql) saveState(false);
+    if (changed && !bootingFromSql) saveState(false, 'world');
   }
 
   function defaultState() {
@@ -513,6 +513,7 @@
       characterDetails: {},
       dirtyCharacter: false,
       dirtyCampaign: false,
+      dirtyState: false,
       maps: [],
       npcs: [],
       customItems: [],
@@ -594,7 +595,7 @@
     state.currentUserId = account.id;
     if (!owner && !existingGmActive && state.ui.tab === "gm") state.ui.tab = "lobby";
     normalizeSqlOnlyIdentity();
-    if (!bootingFromSql) saveState(false);
+    if (!bootingFromSql) saveState(false, 'world');
   }
 
   function seedSystemAiNotes() {
@@ -632,7 +633,7 @@
       changed = true;
     });
     if (!changed || bootingFromSql) return;
-    saveState(false);
+    saveState(false, 'world');
   }
 
   function saveState(show = false, type = 'character') {
@@ -644,9 +645,12 @@
         state.dirtyCharacter = true;
     } else if (type === 'campaign') {
         state.dirtyCampaign = true;
+    } else if (type === 'world' || type === 'state') {
+        state.dirtyState = true;
     } else {
         state.dirtyCharacter = true;
         state.dirtyCampaign = true;
+        state.dirtyState = true;
     }
 
     if (hasWebsiteSession()) {
@@ -772,27 +776,51 @@
     addBootLog('boot', 'Starting DnD table...');
     addBootLog('session', 'Website session detected: ' + (sessionAccountName || 'Active'));
 
-    // Show loading overlay
-    const loadingOverlay = document.getElementById("dnd-loading-overlay");
-    if (loadingOverlay) {
+    // Ensure loading overlay exists and show it
+    let loadingOverlay = document.getElementById("dnd-loading-overlay");
+    if (!loadingOverlay) {
+        loadingOverlay = document.createElement("div");
+        loadingOverlay.id = "dnd-loading-overlay";
+        loadingOverlay.style.position = "fixed";
+        loadingOverlay.style.top = "0";
+        loadingOverlay.style.left = "0";
+        loadingOverlay.style.width = "100%";
+        loadingOverlay.style.height = "100%";
+        loadingOverlay.style.backgroundColor = "rgba(10, 15, 30, 0.9)";
+        loadingOverlay.style.zIndex = "9999";
         loadingOverlay.style.display = "flex";
-        const contentEl = document.getElementById("dnd-loading-content");
-        if (contentEl) {
-            contentEl.innerHTML = `
-              <div class="dnd-loading-spinner"></div>
-              <p style="margin-top: 15px; font-weight: 500; color: var(--dnd-color-parchment);">Memuat data karakter...</p>
-              <div id="dnd-boot-console" class="dnd-boot-console">
-                <div class="dnd-boot-console__header">◆ DnD Sync Console</div>
-                <div id="dnd-boot-console-rows" class="dnd-boot-console__rows"></div>
-              </div>
-              <div id="dnd-loading-actions" style="margin-top: 15px; display: none; text-align: center;">
-                 <p style="color: var(--dnd-color-danger); margin-bottom: 10px; font-size: 14px;" id="dnd-loading-error-text"></p>
-                 <button class="dnd-btn dnd-btn--primary" onclick="window.dndRetryLoad()">Coba Muat Ulang</button>
-                 <button class="dnd-btn" style="margin-top: 5px;" onclick="window.location.reload()">Refresh Halaman</button>
-              </div>
-            `;
-            renderBootLog();
+        loadingOverlay.style.justifyContent = "center";
+        loadingOverlay.style.alignItems = "center";
+
+        const contentEl = document.createElement("div");
+        contentEl.id = "dnd-loading-content";
+        contentEl.style.textAlign = "center";
+        loadingOverlay.appendChild(contentEl);
+        document.body.appendChild(loadingOverlay);
+    }
+
+    loadingOverlay.style.display = "flex";
+    const contentEl = document.getElementById("dnd-loading-content");
+    if (contentEl) {
+        contentEl.innerHTML = `
+          <div class="dnd-loading-spinner"></div>
+          <p style="margin-top: 15px; font-weight: 500; color: var(--dnd-color-parchment);">Memuat data karakter...</p>
+          <div id="dnd-boot-console" class="dnd-boot-console">
+            <div class="dnd-boot-console__header">◆ DnD Sync Console</div>
+            <div id="dnd-boot-console-rows" class="dnd-boot-console__rows"></div>
+          </div>
+          <div id="dnd-loading-actions" style="margin-top: 15px; display: none; text-align: center;">
+             <p style="color: var(--dnd-color-danger); margin-bottom: 10px; font-size: 14px;" id="dnd-loading-error-text"></p>
+             <button class="dnd-btn dnd-btn--primary" id="dnd-btn-retry">Coba Muat Ulang</button>
+             <button class="dnd-btn" style="margin-top: 5px;" onclick="window.location.reload()">Refresh Halaman</button>
+          </div>
+        `;
+
+        const retryBtn = document.getElementById("dnd-btn-retry");
+        if (retryBtn) {
+            retryBtn.addEventListener("click", window.dndRetryLoad);
         }
+        renderBootLog();
     }
 
     try {
@@ -924,11 +952,12 @@
           state.dirtyCampaign = false;
       }
 
-      if (!savedAnything) {
+      if (!savedAnything || state.dirtyState) {
         const data = await dndApi("save", { state: sanitizeStateForSql(state), snapshot_name: "Autosave DND 2014" });
         if (show) toast(data.message || "DND tersimpan ke SQL.");
         state.dirtyCharacter = false;
         state.dirtyCampaign = false;
+        state.dirtyState = false;
       }
       syncWarned = false;
     } catch (error) {

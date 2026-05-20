@@ -62,7 +62,7 @@
     state.campaign.name = room.name;
     state.campaign.partyLevel = levelStart;
     state.campaign.playMode = room.playMode;
-    saveState(true, 'campaign');
+    saveState(true, 'world');
     render();
     toast("Room campaign dibuat.");
   }
@@ -89,7 +89,7 @@
     state.ui.lobbyInsideRoom = true;
     state.ui.tab = "lobby";
     state.campaign.name = room.name;
-    saveState(true, 'campaign');
+    saveState(true, 'world');
     render();
     toast("Room aktif.");
   }
@@ -104,7 +104,7 @@
       state.activeRoomId = "";
       state.ui.lobbyInsideRoom = false;
     }
-    saveState(true, 'campaign');
+    saveState(true, 'world');
     render();
     toast("Keluar dari room.");
   }
@@ -122,7 +122,7 @@
       state.activeRoomId = state.rooms[0]?.id || "";
       state.ui.lobbyInsideRoom = false;
     }
-    saveState(true, 'campaign');
+    saveState(true, 'world');
     render();
     toast("Room dihapus.");
   }
@@ -153,7 +153,7 @@
     state.ui.lobbyInsideRoom = true;
     state.ui.tab = "lobby";
     state.campaign.name = room.name;
-    saveState(false, 'campaign');
+    saveState(false, 'world');
     if (showToast) toast("Room cepat GM siap untuk map.");
     return true;
   }
@@ -165,7 +165,7 @@
     }
     ensureGmRoomForMap(true);
     state.ui.tab = "map";
-    saveState(false);
+    saveState(false, 'world');
     render();
   }
 
@@ -470,7 +470,7 @@
   function backToLobbyRoomList() {
     state.ui.lobbyInsideRoom = false;
     state.ui.tab = "lobby";
-    saveState(false);
+    saveState(false, 'world');
     render();
     toast("Keluar game. Kembali ke tampilan utama lobby.");
   }
@@ -489,14 +489,14 @@
     const next = prompt("Isi announcement berjalan untuk player:", current);
     if (next === null) return;
     state.campaign.announcementText = String(next).trim() || "Selamat bermain. Tidak ada announcement khusus dari owner.";
-    saveState(true, 'campaign');
+    saveState(true, 'world');
     render();
     toast("Announcement owner diperbarui.");
   }
 
   function ownerDatabaseRefresh() {
     if (!userIsOwner(currentUser())) return toast("Hanya Owner yang bisa membuka database panel.");
-    saveState(true, 'campaign');
+    saveState(true, 'world');
     render();
     toast("Database panel disinkronkan ke MySQL.");
   }
@@ -527,7 +527,7 @@
       account.gmGrantedBy = "";
     }
     account.updatedAt = nowIso();
-    saveState(true, 'campaign');
+    saveState(true, 'world');
     render();
     toast(role === "gm" ? `Role GM aktif${days ? " selama " + days + " hari" : " tanpa timer"}.` : "Role akun dikembalikan menjadi Player.");
   }
@@ -542,7 +542,7 @@
     state.ui.characterDraft = JSON.parse(JSON.stringify(character));
     state.ui.abilityRollLog = null;
     state.ui.abilityPickAssignments = {};
-    saveState(false);
+    saveState(false, 'world');
     render();
     toast("Mode edit Owner dibuka. Detail karakter bisa dikoreksi manual.");
   }
@@ -557,7 +557,7 @@
       map.npcs = (map.npcs || []).filter((token) => token.characterId !== character.id);
     });
     if (state.activeCharacterId === character.id) state.activeCharacterId = state.characters[0]?.id || "";
-    saveState(true, 'campaign');
+    saveState(true, 'world');
     render();
     toast("Karakter dihapus dari state dan akan diarsipkan di MySQL saat autosave.");
   }
@@ -585,7 +585,7 @@
       createdAt: nowIso()
     });
     state.chatLog = state.chatLog.slice(0, 160);
-    saveState(true, 'campaign');
+    saveState(true, 'world');
     render();
   }
 
@@ -606,7 +606,7 @@
       createdAt: nowIso()
     });
     state.roomEvents = state.roomEvents.slice(0, 160);
-    saveState(true, 'campaign');
+    saveState(true, 'world');
     render();
   }
 
@@ -616,7 +616,7 @@
     const room = currentRoom();
     const context = room ? `Room aktif: ${room.name}. ` : "";
     state.ui.aiAnswer = context + localAiAnswer(question);
-    saveState();
+    saveState(false, 'world');
     render();
   }
 
@@ -681,7 +681,7 @@
     } else {
       state.ui.tab = tab;
     }
-    saveState();
+    saveState(false, 'world');
     render();
   }
 
@@ -751,7 +751,7 @@
     state.campaign.startingCustomItems = qs("#campaign-starting-items")?.value.trim() || "Healing Potion";
     const room = currentRoom();
     if (room) { room.name = state.campaign.name; room.lastActiveAt = nowIso(); }
-    saveState(true, 'campaign');
+    saveState(true, 'world');
     render();
   }
 
@@ -764,7 +764,7 @@
     state.ui.abilityPickAssignments = {};
     state.characterPortraitDraft = "";
     state.characterPortraitDraftName = "";
-    saveState();
+    saveState(false, 'world');
     render();
   }
 
@@ -783,7 +783,7 @@
     state.ui.abilityPickAssignments = {};
     state.characterPortraitDraft = clone.portrait || "";
     state.characterPortraitDraftName = clone.portraitName || "";
-    saveState();
+    saveState(false, 'world');
     render();
     toast("Karakter berhasil diduplikat! Jangan lupa klik Simpan Karakter.");
   }
@@ -798,7 +798,7 @@
     state.maps.forEach((map) => {
       map.npcs = (map.npcs || []).filter((token) => token.characterId !== id);
     });
-    saveState(true);
+    saveState(true, 'world');
     render();
   }
 

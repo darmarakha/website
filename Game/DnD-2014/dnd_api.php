@@ -585,17 +585,21 @@ try {
         $saved_at = null;
         $force_snapshot = !empty($input['force_snapshot']);
 
-        // Fallback or force logic
-        if ($force_snapshot || empty($state['accounts'])) {
-            $snapshot_lookup_start = microtime(true);
-            $stmt = $pdo->prepare('SELECT state_json, created_at FROM dnd_save_snapshots WHERE campaign_id = :cid ORDER BY id DESC LIMIT 1');
-            $stmt->execute([':cid' => $campaignId]);
-            $row = $stmt->fetch();
-            dnd_add_timing_log('snapshot_lookup', $snapshot_lookup_start);
+        // Fetch snapshot to preserve non-character state (rooms, maps, chat, etc.) across reloads
+        // We always need to fetch it to keep the world state, but we only overwrite accounts/characters if fallback.
+        $snapshot_lookup_start = microtime(true);
+        $stmt = $pdo->prepare('SELECT state_json, created_at FROM dnd_save_snapshots WHERE campaign_id = :cid ORDER BY id DESC LIMIT 1');
+        $stmt->execute([':cid' => $campaignId]);
+        $row = $stmt->fetch();
+        dnd_add_timing_log('snapshot_lookup', $snapshot_lookup_start);
+
+        $snapshot_state = $row ? json_decode($row['state_json'], true) : null;
+
+        if (is_array($snapshot_state)) {
+            $saved_at = $row['created_at'] ?? null;
             
-            $snapshot_state = $row ? json_decode($row['state_json'], true) : null;
-            if (is_array($snapshot_state)) {
-                $saved_at = $row['created_at'] ?? null;
+            // Fallback for full state (e.g. legacy recovery or forced snapshot)
+            if ($force_snapshot || empty($state['accounts'])) {
                 $snapshot_state['accounts'] = $state['accounts'] ?? ($snapshot_state['accounts'] ?? []);
                 $snapshot_state['characters'] = $state['characters'] ?? [];
 
@@ -604,6 +608,26 @@ try {
                 }
                 $state = $snapshot_state;
                 $state['_snapshot_fallback_used'] = true;
+            } else {
+                // Normal load: Keep normalized characters, accounts, and campaign,
+                // but merge in world state (rooms, maps, chat, log, npcs, etc.) from snapshot
+                $state['activeRoomId'] = $snapshot_state['activeRoomId'] ?? '';
+                $state['activeMapId'] = $snapshot_state['activeMapId'] ?? '';
+                $state['rooms'] = $snapshot_state['rooms'] ?? [];
+                $state['maps'] = $snapshot_state['maps'] ?? [];
+                $state['npcs'] = $snapshot_state['npcs'] ?? [];
+                $state['customItems'] = $snapshot_state['customItems'] ?? [];
+                $state['rollLog'] = $snapshot_state['rollLog'] ?? [];
+                $state['sessionLog'] = $snapshot_state['sessionLog'] ?? [];
+                $state['chatLog'] = $snapshot_state['chatLog'] ?? [];
+                $state['roomEvents'] = $snapshot_state['roomEvents'] ?? [];
+                $state['aiNotes'] = $snapshot_state['aiNotes'] ?? [];
+
+                // Carefully merge UI state to not lose turn order or lobby state, but respect normalized activeCharacterId
+                $snapshot_ui = $snapshot_state['ui'] ?? [];
+                if (is_array($snapshot_ui)) {
+                    $state['ui'] = array_merge($state['ui'] ?? [], $snapshot_ui);
+                }
             }
         }
 
@@ -641,6 +665,11 @@ try {
 
         $ownerId = ($userId && $rowUserId === $userId) ? 'php-session-user' : ('sql-user-' . $rowUserId);
 
+        $abilityScores = dnd_decode_json_field($row['ability_scores_json'] ?? null, []);
+        $skillProficiencies = dnd_decode_json_field($row['skill_proficiencies_json'] ?? null, []);
+        $raceTraits = dnd_decode_json_field($row['race_traits_json'] ?? null, []);
+        $inventory = dnd_decode_json_field($row['inventory_json'] ?? null, []);
+
         $character = [
             'id' => $row['local_character_id'] ?: ('sql-char-' . (int)$row['id']),
             'ownerId' => $ownerId,
@@ -665,12 +694,16 @@ try {
             'gmNotes' => $row['gm_notes'] ?: '',
             'status' => $row['status'] ?: 'active',
             'languages' => dnd_decode_json_field($row['languages_json'] ?? null, []),
-            'raceTraits' => dnd_decode_json_field($row['race_traits_json'] ?? null, []),
+            'raceTraits' => $raceTraits,
+            'traits' => $raceTraits, // alias
             'personalityTraits' => dnd_decode_json_field($row['personality_traits_json'] ?? null, []),
-            'abilityScores' => dnd_decode_json_field($row['ability_scores_json'] ?? null, []),
-            'skillProficiencies' => dnd_decode_json_field($row['skill_proficiencies_json'] ?? null, []),
+            'abilityScores' => $abilityScores,
+            'abilities' => $abilityScores, // alias
+            'skillProficiencies' => $skillProficiencies,
+            'skills' => $skillProficiencies, // alias
             'appearance' => dnd_decode_json_field($row['appearance_json'] ?? null, []),
-            'inventory' => dnd_decode_json_field($row['inventory_json'] ?? null, []),
+            'inventory' => $inventory,
+            'startingChoice' => empty($inventory) ? 'gold' : 'equipment', // compatibility fallback
             'attacks' => dnd_decode_json_field($row['attacks_json'] ?? null, []),
             'lockedFields' => dnd_decode_json_field($row['locked_fields_json'] ?? null, []),
             'updatedAt' => $row['updated_at'] ?? date('c'),
