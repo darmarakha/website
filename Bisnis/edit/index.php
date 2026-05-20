@@ -38,20 +38,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
     }
 
     if ($existingIndex !== -1) {
-        // Backup before update
         if (file_exists($dataFile)) {
             copy($dataFile, 'produk.backup.' . date('Ymd-His') . '.json');
         }
 
         $existingProduct = $products[$existingIndex];
 
-        // Handle files removal
         $remainingImages = [];
         if (isset($_POST['existing_images']) && is_array($_POST['existing_images'])) {
             $remainingImages = $_POST['existing_images'];
         }
 
-        // Process new uploads
         $newUploadedFiles = [];
         if (!empty($_FILES['edit_files']['name'][0])) {
             foreach ($_FILES['edit_files']['tmp_name'] as $key => $tmp_name) {
@@ -75,17 +72,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
 
         $products[$existingIndex] = [
             'id' => $existingProduct['id'],
-            'title' => htmlspecialchars($_POST['title']),
-            'title_en' => htmlspecialchars($_POST['title_en'] ?? ''),
-            'price' => htmlspecialchars($_POST['price']),
+            'title' => htmlspecialchars($_POST['title'] ?? '', ENT_QUOTES, 'UTF-8'),
+            'title_en' => htmlspecialchars($_POST['title_en'] ?? '', ENT_QUOTES, 'UTF-8'),
+            'price' => htmlspecialchars($_POST['price'] ?? '', ENT_QUOTES, 'UTF-8'),
             'price_number' => (int)($_POST['price_number'] ?? 0),
-            'category' => htmlspecialchars($_POST['category'] ?? 'General'),
-            'type' => htmlspecialchars($_POST['type'] ?? 'service'),
-            'status' => htmlspecialchars($_POST['status'] ?? 'published'),
+            'category' => htmlspecialchars($_POST['category'] ?? 'General', ENT_QUOTES, 'UTF-8'),
+            'type' => htmlspecialchars($_POST['type'] ?? 'service', ENT_QUOTES, 'UTF-8'),
+            'status' => htmlspecialchars($_POST['status'] ?? 'published', ENT_QUOTES, 'UTF-8'),
             'featured' => isset($_POST['featured']) && $_POST['featured'] == '1',
-            'shortDesc' => htmlspecialchars($_POST['shortDesc']),
-            'shortDesc_en' => htmlspecialchars($_POST['shortDesc_en'] ?? ''),
-            'fullDesc' => $_POST['fullDesc'],
+            'shortDesc' => htmlspecialchars($_POST['shortDesc'] ?? '', ENT_QUOTES, 'UTF-8'),
+            'shortDesc_en' => htmlspecialchars($_POST['shortDesc_en'] ?? '', ENT_QUOTES, 'UTF-8'),
+            'fullDesc' => $_POST['fullDesc'] ?? '',
             'fullDesc_en' => $_POST['fullDesc_en'] ?? '',
             'images' => $finalImages,
             'cover' => $cover
@@ -106,25 +103,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_product'])) {
 
     $newProduct = [
         'id' => time(),
-        'title' => htmlspecialchars($_POST['title']),
-        'title_en' => htmlspecialchars($_POST['title_en'] ?? ''),
-        'price' => htmlspecialchars($_POST['price']),
-        'shortDesc' => htmlspecialchars($_POST['shortDesc']),
-        'shortDesc_en' => htmlspecialchars($_POST['shortDesc_en'] ?? ''),
-        'fullDesc' => $_POST['fullDesc'], // Bisa berisi HTML
+        'title' => htmlspecialchars($_POST['title'] ?? '', ENT_QUOTES, 'UTF-8'),
+        'title_en' => htmlspecialchars($_POST['title_en'] ?? '', ENT_QUOTES, 'UTF-8'),
+        'price' => htmlspecialchars($_POST['price'] ?? '', ENT_QUOTES, 'UTF-8'),
+        'price_number' => (int)($_POST['price_number'] ?? 0),
+        'category' => htmlspecialchars($_POST['category'] ?? 'General', ENT_QUOTES, 'UTF-8'),
+        'type' => htmlspecialchars($_POST['type'] ?? 'service', ENT_QUOTES, 'UTF-8'),
+        'status' => htmlspecialchars($_POST['status'] ?? 'published', ENT_QUOTES, 'UTF-8'),
+        'featured' => isset($_POST['featured']) && $_POST['featured'] == '1',
+        'shortDesc' => htmlspecialchars($_POST['shortDesc'] ?? '', ENT_QUOTES, 'UTF-8'),
+        'shortDesc_en' => htmlspecialchars($_POST['shortDesc_en'] ?? '', ENT_QUOTES, 'UTF-8'),
+        'fullDesc' => $_POST['fullDesc'] ?? '',
         'fullDesc_en' => $_POST['fullDesc_en'] ?? '',
-        'images' => []
+        'images' => [],
+        'cover' => ''
     ];
 
-    // Proses Unggah File (Banyak file sekaligus)
     if (!empty($_FILES['files']['name'][0])) {
         foreach ($_FILES['files']['tmp_name'] as $key => $tmp_name) {
             $fileName = time() . '_' . basename($_FILES['files']['name'][$key]);
             $targetPath = $uploadDir . $fileName;
             $fileType = strtolower(pathinfo($targetPath, PATHINFO_EXTENSION));
 
-            // Validasi format: jpg, jpeg, pdf
-            if (in_array($fileType, ['jpg', 'jpeg', 'pdf', 'png'])) {
+            if (in_array($fileType, ['jpg', 'jpeg', 'png', 'webp', 'pdf'])) {
                 if (move_uploaded_file($tmp_name, $targetPath)) {
                     $newProduct['images'][] = $targetPath;
                     $uploadResults[] = ['file' => $_FILES['files']['name'][$key], 'ok' => true];
@@ -135,8 +136,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_product'])) {
         }
     }
 
+    if (empty($newProduct['cover']) && !empty($newProduct['images'])) {
+        $newProduct['cover'] = basename($newProduct['images'][0]);
+    }
+
     $products[] = $newProduct;
-    if (file_exists($dataFile)) copy($dataFile, 'produk.backup.' . date('Ymd-His') . '.json'); file_put_contents($dataFile, json_encode($products, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    if (file_exists($dataFile)) {
+        copy($dataFile, 'produk.backup.' . date('Ymd-His') . '.json');
+    }
+    file_put_contents($dataFile, json_encode($products, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
     $_SESSION['upload_results'] = $uploadResults;
     header("Location: index.php?status=success");
     exit();
@@ -443,6 +451,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_product'])) {
             document.getElementById('btnSubmitText').textContent = 'Simpan Produk Baru';
             document.getElementById('btnCancelEdit').classList.add('hidden');
             document.getElementById('fileLabel').textContent = 'Upload File Baru (JPG, PNG, WEBP, PDF)';
+
+            // Restoring file input
+            document.getElementById('file_input').name = 'files[]';
+            document.getElementById('file_count').textContent = 'Klik atau seret file ke sini';
 
             lucide.createIcons();
             window.scrollTo({top: 0, behavior: 'smooth'});

@@ -232,7 +232,7 @@ usort($publishedProducts, function($a, $b) {
         lucide.createIcons();
 
         // 1. DATA & LOGIKA PRODUK DARI PHP JSON
-        const products = <?php echo file_exists('edit/produk.json') ? file_get_contents('edit/produk.json') : '[]'; ?>;
+        const products = <?php echo json_encode(array_values($publishedProducts), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
                 let currentLang = localStorage.getItem('biz-catalog-lang') || 'id';
         function tr(key) { const dictionary = window.dic || window.translations || {}; return currentLang === 'en' && dictionary[key]?.en ? dictionary[key].en : (dictionary[key]?.id || key); }
         function pickLang(obj, field) { return currentLang === 'en' && obj[field+'_en'] ? obj[field+'_en'] : (obj[field] || ''); }
