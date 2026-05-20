@@ -357,10 +357,8 @@ function dnd_sync_accounts(PDO $pdo, int $campaignId, array $state, ?int $ownerU
     }
 }
 
-function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $userId, bool $isOwner): void {
-    // dnd_ensure_character_columns removed for performance
-    $characters = is_array($state['characters'] ?? null) ? $state['characters'] : [];
-    if (!$characters) return;
+function dnd_upsert_single_character(PDO $pdo, int $campaignId, array $character, ?int $userId, bool $isOwner): void {
+    if (!is_array($character)) return;
 
     $stmtUpsert = $pdo->prepare('INSERT INTO dnd_characters
         (campaign_id, local_character_id, user_id, name, race, subrace, languages_json, race_traits_json, class_name, level, background, alignment, personality_traits_json, ideal, bond, flaw, ability_scores_json, skill_proficiencies_json, appearance_json, inventory_json, gold, attacks_json, hp_max, hp_current, ac, speed, locked_fields_json, gm_notes, status, inspiration, hit_dice)
@@ -369,64 +367,74 @@ function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $user
         ON DUPLICATE KEY UPDATE
         user_id=VALUES(user_id), name=VALUES(name), race=VALUES(race), subrace=VALUES(subrace), languages_json=VALUES(languages_json), race_traits_json=VALUES(race_traits_json), class_name=VALUES(class_name), level=VALUES(level), background=VALUES(background), alignment=VALUES(alignment), personality_traits_json=VALUES(personality_traits_json), ideal=VALUES(ideal), bond=VALUES(bond), flaw=VALUES(flaw), ability_scores_json=VALUES(ability_scores_json), skill_proficiencies_json=VALUES(skill_proficiencies_json), appearance_json=VALUES(appearance_json), inventory_json=VALUES(inventory_json), gold=VALUES(gold), attacks_json=VALUES(attacks_json), hp_max=VALUES(hp_max), hp_current=VALUES(hp_current), ac=VALUES(ac), speed=VALUES(speed), locked_fields_json=VALUES(locked_fields_json), gm_notes=VALUES(gm_notes), status=VALUES(status), inspiration=VALUES(inspiration), hit_dice=VALUES(hit_dice), updated_at=CURRENT_TIMESTAMP');
 
+    $localId = trim((string)($character['id'] ?? ''));
+    if ($localId === '') $localId = 'char_' . substr(sha1(json_encode($character)), 0, 18);
+    $ownerRaw = $character['ownerId'] ?? null;
+    $ownerId = null;
+    if (is_numeric($ownerRaw)) {
+        $ownerId = (int)$ownerRaw;
+    } elseif (is_string($ownerRaw) && preg_match('/^sql-user-(\d+)$/', $ownerRaw, $m)) {
+        $ownerId = (int)$m[1];
+    } elseif (isset($character['websiteUserId']) && is_numeric($character['websiteUserId'])) {
+        $ownerId = (int)$character['websiteUserId'];
+    } elseif (isset($character['sqlUserId']) && is_numeric($character['sqlUserId'])) {
+        $ownerId = (int)$character['sqlUserId'];
+    } else {
+        $ownerId = $userId;
+    }
+
+    // If not Owner/Admin/GM, force the saving user's ID
+    if (!$isOwner && $userId) {
+        $ownerId = $userId;
+    }
+
+    $stmtUpsert->execute([
+        ':campaign_id' => $campaignId,
+        ':local_character_id' => mb_substr($localId, 0, 80),
+        ':user_id' => $ownerId,
+        ':name' => mb_substr(trim((string)($character['name'] ?? 'Nameless Adventurer')), 0, 140),
+        ':race' => mb_substr((string)($character['race'] ?? 'human'), 0, 80),
+        ':subrace' => mb_substr((string)($character['subrace'] ?? ''), 0, 80) ?: null,
+        ':languages_json' => dnd_json_value($character['languages'] ?? []),
+        ':race_traits_json' => dnd_json_value($character['raceTraits'] ?? $character['traits'] ?? []),
+        ':class_name' => mb_substr((string)($character['className'] ?? 'fighter'), 0, 80),
+        ':level' => max(1, min(20, (int)($character['level'] ?? 1))),
+        ':background' => mb_substr((string)($character['background'] ?? 'Folk Hero'), 0, 120),
+        ':alignment' => mb_substr((string)($character['alignment'] ?? 'True Neutral'), 0, 80),
+        ':personality_traits_json' => dnd_json_value($character['personalityTraits'] ?? []),
+        ':ideal' => mb_substr((string)($character['ideal'] ?? ''), 0, 2000) ?: null,
+        ':bond' => mb_substr((string)($character['bond'] ?? ''), 0, 2000) ?: null,
+        ':flaw' => mb_substr((string)($character['flaw'] ?? ''), 0, 2000) ?: null,
+        ':ability_scores_json' => dnd_json_value($character['abilities'] ?? $character['abilityScores'] ?? []),
+        ':skill_proficiencies_json' => dnd_json_value($character['skills'] ?? $character['skillProficiencies'] ?? []),
+        ':appearance_json' => dnd_json_value($character['appearance'] ?? []),
+        ':inventory_json' => dnd_json_value($character['inventory'] ?? []),
+        ':gold' => max(0, (int)($character['gold'] ?? 0)),
+        ':attacks_json' => dnd_json_value($character['attacks'] ?? []),
+        ':hp_max' => max(1, (int)($character['hpMax'] ?? 1)),
+        ':hp_current' => max(0, (int)($character['hpCurrent'] ?? ($character['hpMax'] ?? 1))),
+        ':ac' => max(1, (int)($character['ac'] ?? 10)),
+        ':speed' => max(0, (int)($character['speed'] ?? 30)),
+        ':locked_fields_json' => dnd_json_value($character['lockedFields'] ?? $character['startingChoice'] ?? []),
+        ':gm_notes' => mb_substr((string)($character['gmNotes'] ?? ''), 0, 2000),
+        ':status' => 'active',
+        ':inspiration' => !empty($character['inspiration']) ? 1 : 0,
+        ':hit_dice' => mb_substr((string)($character['hitDice'] ?? ''), 0, 20),
+    ]);
+}
+
+function dnd_sync_characters(PDO $pdo, int $campaignId, array $state, ?int $userId, bool $isOwner): void {
+    $characters = is_array($state['characters'] ?? null) ? $state['characters'] : [];
+    if (!$characters) return;
+
     $seen = [];
     foreach ($characters as $character) {
         if (!is_array($character)) continue;
         $localId = trim((string)($character['id'] ?? ''));
         if ($localId === '') $localId = 'char_' . substr(sha1(json_encode($character)), 0, 18);
         $seen[] = $localId;
-        $ownerRaw = $character['ownerId'] ?? null;
-        $ownerId = null;
-        if (is_numeric($ownerRaw)) {
-            $ownerId = (int)$ownerRaw;
-        } elseif (is_string($ownerRaw) && preg_match('/^sql-user-(\d+)$/', $ownerRaw, $m)) {
-            $ownerId = (int)$m[1];
-        } elseif (isset($character['websiteUserId']) && is_numeric($character['websiteUserId'])) {
-            $ownerId = (int)$character['websiteUserId'];
-        } elseif (isset($character['sqlUserId']) && is_numeric($character['sqlUserId'])) {
-            $ownerId = (int)$character['sqlUserId'];
-        } else {
-            $ownerId = $userId;
-        }
-
-        // If not Owner/Admin/GM, force the saving user's ID
-        if (!$isOwner && $userId) {
-            $ownerId = $userId;
-        }
-
-        $stmtUpsert->execute([
-            ':campaign_id' => $campaignId,
-            ':local_character_id' => mb_substr($localId, 0, 80),
-            ':user_id' => $ownerId,
-            ':name' => mb_substr(trim((string)($character['name'] ?? 'Nameless Adventurer')), 0, 140),
-            ':race' => mb_substr((string)($character['race'] ?? 'human'), 0, 80),
-            ':subrace' => mb_substr((string)($character['subrace'] ?? ''), 0, 80) ?: null,
-            ':languages_json' => dnd_json_value($character['languages'] ?? []),
-            ':race_traits_json' => dnd_json_value($character['raceTraits'] ?? $character['traits'] ?? []),
-            ':class_name' => mb_substr((string)($character['className'] ?? 'fighter'), 0, 80),
-            ':level' => max(1, min(20, (int)($character['level'] ?? 1))),
-            ':background' => mb_substr((string)($character['background'] ?? 'Folk Hero'), 0, 120),
-            ':alignment' => mb_substr((string)($character['alignment'] ?? 'True Neutral'), 0, 80),
-            ':personality_traits_json' => dnd_json_value($character['personalityTraits'] ?? []),
-            ':ideal' => mb_substr((string)($character['ideal'] ?? ''), 0, 2000) ?: null,
-            ':bond' => mb_substr((string)($character['bond'] ?? ''), 0, 2000) ?: null,
-            ':flaw' => mb_substr((string)($character['flaw'] ?? ''), 0, 2000) ?: null,
-            ':ability_scores_json' => dnd_json_value($character['abilities'] ?? $character['abilityScores'] ?? []),
-            ':skill_proficiencies_json' => dnd_json_value($character['skills'] ?? $character['skillProficiencies'] ?? []),
-            ':appearance_json' => dnd_json_value($character['appearance'] ?? []),
-            ':inventory_json' => dnd_json_value($character['inventory'] ?? []),
-            ':gold' => max(0, (int)($character['gold'] ?? 0)),
-            ':attacks_json' => dnd_json_value($character['attacks'] ?? []),
-            ':hp_max' => max(1, (int)($character['hpMax'] ?? 1)),
-            ':hp_current' => max(0, (int)($character['hpCurrent'] ?? ($character['hpMax'] ?? 1))),
-            ':ac' => max(1, (int)($character['ac'] ?? 10)),
-            ':speed' => max(0, (int)($character['speed'] ?? 30)),
-            ':locked_fields_json' => dnd_json_value($character['lockedFields'] ?? []),
-            ':gm_notes' => mb_substr((string)($character['gmNotes'] ?? ''), 0, 2000),
-            ':status' => 'active',
-            ':inspiration' => !empty($character['inspiration']) ? 1 : 0,
-            ':hit_dice' => mb_substr((string)($character['hitDice'] ?? ''), 0, 20),
-        ]);
+        $character['id'] = $localId;
+        dnd_upsert_single_character($pdo, $campaignId, $character, $userId, $isOwner);
     }
 
     if ($seen) {
@@ -648,8 +656,16 @@ try {
             dnd_json(['ok' => false, 'message' => 'ID karakter tidak valid.'], 400);
         }
         $detail_query_start = microtime(true);
+
+        $idNum = 0;
+        if (is_numeric($character_id)) {
+            $idNum = (int)$character_id;
+        } elseif (preg_match('/^sql-char-(\d+)$/', $character_id, $m)) {
+            $idNum = (int)$m[1];
+        }
+
         $stmt = $pdo->prepare('SELECT * FROM dnd_characters WHERE campaign_id = :cid AND (local_character_id = :id OR id = :id_num) LIMIT 1');
-        $stmt->execute([':cid' => $campaignId, ':id' => $character_id, ':id_num' => is_numeric($character_id) ? (int)$character_id : 0]);
+        $stmt->execute([':cid' => $campaignId, ':id' => $character_id, ':id_num' => $idNum]);
         $row = $stmt->fetch();
         dnd_add_timing_log('character_detail_query', $detail_query_start);
 
@@ -703,7 +719,7 @@ try {
             'skills' => $skillProficiencies, // alias
             'appearance' => dnd_decode_json_field($row['appearance_json'] ?? null, []),
             'inventory' => $inventory,
-            'startingChoice' => empty($inventory) ? 'gold' : 'equipment', // compatibility fallback
+            'startingChoice' => dnd_decode_json_field($row['locked_fields_json'] ?? null, []), // compatibility fallback alias
             'attacks' => dnd_decode_json_field($row['attacks_json'] ?? null, []),
             'lockedFields' => dnd_decode_json_field($row['locked_fields_json'] ?? null, []),
             'updatedAt' => $row['updated_at'] ?? date('c'),
@@ -733,7 +749,7 @@ try {
         }
 
         $pdo->beginTransaction();
-        dnd_sync_characters($pdo, $campaignId, ['characters' => [$character]], $userId, $isOwner);
+        dnd_upsert_single_character($pdo, $campaignId, $character, $userId, $isOwner);
         $pdo->commit();
 
         $response_ready_start = microtime(true);
@@ -743,6 +759,9 @@ try {
     }
 
     if ($action === 'save_campaign') {
+        if (!$isOwner) {
+            dnd_json(['ok' => false, 'message' => 'Hanya Owner/Admin/GM yang boleh menyimpan campaign.'], 403);
+        }
         $campaign = $input['campaign'] ?? null;
         if (!is_array($campaign)) {
             dnd_json(['ok' => false, 'message' => 'Data campaign tidak valid.'], 400);
