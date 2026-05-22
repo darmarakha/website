@@ -135,7 +135,7 @@ function createRPG(config) {
         save();
         const hintBox = document.getElementById('rpgHintBox');
         if (hintBox) hintBox.classList.remove('hidden');
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function answerStage(selectedIdx, btn) {
@@ -175,7 +175,7 @@ function createRPG(config) {
             return;
         }
         nextBtn.classList.remove('hidden');
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function nextStage() {
@@ -237,7 +237,7 @@ function createRPG(config) {
             save();
             render();
         }, 1500);
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function resetProgress() {
@@ -318,7 +318,7 @@ function createRPG(config) {
             <div class="mt-6 text-center">
                 <button class="text-xs text-[#777] hover:text-white transition underline" onclick="game.resetProgress()">Reset Progress Game</button>
             </div>`;
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function renderBattle(container) {
@@ -369,7 +369,7 @@ function createRPG(config) {
                 <div id="rpgFeedback" class="hidden mt-4 p-3 rounded-xl text-sm border"></div>
                 <button id="rpgNextBtn" class="hidden mt-4 w-full py-3 bg-[#b89cff] hover:bg-[#a68af2] text-[#12161d] font-bold rounded-xl transition text-sm" onclick="game.nextStage()">Stage Selanjutnya <i data-lucide="arrow-right" class="w-4 h-4 inline"></i></button>
             </div>`;
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function renderBossIntro(container) {
@@ -398,7 +398,7 @@ function createRPG(config) {
                 <button class="px-8 py-3 bg-gradient-to-r from-rose-500 to-[#b89cff] hover:from-rose-400 hover:to-[#b89cff] text-white font-bold rounded-xl transition-all shadow-lg shadow-rose-500/20 text-lg" onclick="game.startBossBattle()">⚔️ Lawan Boss!</button>
                 <button class="block mx-auto mt-3 text-xs text-[#777] hover:text-white transition underline" onclick="game.leaveDungeon()">Mundur dulu...</button>
             </div>`;
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function renderBossBattle(container) {
@@ -440,7 +440,7 @@ function createRPG(config) {
                 <div class="space-y-2">${optionsHtml}</div>
                 <div id="rpgBossFeedback" class="hidden mt-4 p-3 rounded-xl text-sm border"></div>
             </div>`;
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function renderBossVictory(container) {
@@ -474,7 +474,7 @@ function createRPG(config) {
                 </div>
                 <button class="px-8 py-3 bg-[#b89cff] hover:bg-[#a68af2] text-[#12161d] font-bold rounded-xl transition" onclick="game.leaveDungeon()">Kembali ke Lobby</button>
             </div>`;
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function renderGameOver() {
@@ -495,7 +495,7 @@ function createRPG(config) {
                     Pulihkan HP & Kembali
                 </button>
             </div>`;
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     // ---- Game object ----

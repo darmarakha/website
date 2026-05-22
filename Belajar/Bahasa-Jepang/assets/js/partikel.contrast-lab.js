@@ -645,6 +645,12 @@ function markContrastDone(id) {
     if (!contrastLabProgress.includes(id)) {
         contrastLabProgress.push(id);
         saveContrastLabProgress();
+        if (typeof userProgress !== 'undefined' && typeof saveProgress === 'function') {
+            if (!userProgress.kontrasSelesai.includes(id)) {
+                userProgress.kontrasSelesai.push(id);
+                saveProgress();
+            }
+        }
         renderContrastLab();
         if (typeof showToast === 'function') {
             showToast('Paham!', 'Perbandingan partikel ditandai.');

@@ -847,7 +847,7 @@ const contrastData = [
 ];
 
 function renderContrastTrainer() {
-    const container = document.getElementById('contrastContainer');
+    const container = document.getElementById('contrastTrainerContainer');
     if(!container) return;
 
     let html = '';

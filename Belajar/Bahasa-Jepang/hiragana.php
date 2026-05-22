@@ -304,7 +304,7 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
             <div class="flex flex-col md:items-end gap-3 w-full md:w-auto">
                 <?php if($isLoggedIn): ?>
                     <div class="flex items-center gap-3 bg-white/[.04] px-4 py-2.5 rounded-2xl border border-white/[.08] self-end w-full md:w-auto justify-end">
-                        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-sakura-400 to-orange-400 flex items-center justify-center text-xs font-bold text-white shrink-0"><?php echo strtoupper(substr($userName,0,1)); ?></div>
+                        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-sakura-400 to-orange-400 flex items-center justify-center text-xs font-bold text-white shrink-0"><?php echo strtoupper(htmlspecialchars(mb_substr($userName,0,1))); ?></div>
                         <div class="text-right">
                             <p class="text-[11px] text-neutral-500 uppercase tracking-wider">Masuk sebagai</p>
                             <p class="text-sm text-white font-bold"><?php echo htmlspecialchars($userName); ?></p>

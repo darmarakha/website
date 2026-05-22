@@ -76,19 +76,21 @@
         <?php if (!empty($_SESSION['user_name'])): ?>
             <div class="hidden sm:flex items-center gap-3 text-sm text-white font-medium bg-white/5 px-4 py-2 rounded-xl border border-white/10">
                 <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-sakura-400 to-orange-400 flex items-center justify-center text-xs font-bold text-white">
-                   <?php echo strtoupper(substr($_SESSION['user_name'], 0, 1)); ?>
+                   <?php echo strtoupper(htmlspecialchars(mb_substr($_SESSION['user_name'] ?? '', 0, 1))); ?>
                 </div>
                 Hai, <?php echo htmlspecialchars($_SESSION['user_name']); ?>
             </div>
-            <a href="?logout=1" class="btn-secondary text-sm font-semibold text-white px-5 py-2.5 rounded-xl border border-rose-500/30 hover:border-rose-500/80 hover:bg-rose-500/20 hidden sm:block">
-                Keluar
-            </a>
+            <form method="post" style="display:inline">
+                <input type="hidden" name="logout" value="1">
+                <input type="hidden" name="_csrf" value="<?php echo htmlspecialchars($_SESSION['_csrf'] ?? ''); ?>">
+                <button type="submit" class="btn-secondary text-sm font-semibold text-white px-5 py-2.5 rounded-xl border border-rose-500/30 hover:border-rose-500/80 hover:bg-rose-500/20 hidden sm:block cursor-pointer">Keluar</button>
+            </form>
         <?php else: ?>
-            <a href="../Index.php" class="hidden sm:flex items-center gap-2 text-sm text-neutral-300 hover:text-white px-4 py-2 rounded-xl border border-white/10 hover:border-white/20 transition-all">
+            <a href="/Index.php" class="hidden sm:flex items-center gap-2 text-sm text-neutral-300 hover:text-white px-4 py-2 rounded-xl border border-white/10 hover:border-white/20 transition-all">
                 <i data-lucide="user" class="w-4 h-4"></i>
                 Masuk
             </a>
-            <a href="../Index.php" class="btn-primary text-sm font-semibold text-white px-5 py-2.5 rounded-xl hidden sm:flex items-center justify-center">
+            <a href="/Index.php" class="btn-primary text-sm font-semibold text-white px-5 py-2.5 rounded-xl hidden sm:flex items-center justify-center">
                 Daftar Gratis
             </a>
         <?php endif; ?>
@@ -109,7 +111,7 @@
     <?php if (!empty($_SESSION['user_name'])): ?>
         <div class="text-center mb-4">
             <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-tr from-sakura-400 to-orange-400 flex items-center justify-center text-2xl font-bold text-white mb-2">
-                <?php echo strtoupper(substr($_SESSION['user_name'], 0, 1)); ?>
+                <?php echo strtoupper(htmlspecialchars(mb_substr($_SESSION['user_name'] ?? '', 0, 1))); ?>
             </div>
             <p class="text-xl font-semibold text-white"><?php echo htmlspecialchars($_SESSION['user_name']); ?></p>
         </div>
@@ -125,9 +127,13 @@
     </a>
     
     <?php if (!empty($_SESSION['user_name'])): ?>
-        <a href="?logout=1" class="btn-secondary text-lg font-semibold text-rose-400 hover:text-white px-8 py-3 rounded-xl mt-4 border border-rose-500/30 text-center block">Keluar</a>
+        <form method="post">
+            <input type="hidden" name="logout" value="1">
+            <input type="hidden" name="_csrf" value="<?php echo htmlspecialchars($_SESSION['_csrf'] ?? ''); ?>">
+            <button type="submit" class="btn-secondary text-lg font-semibold text-rose-400 hover:text-white px-8 py-3 rounded-xl mt-4 border border-rose-500/30 text-center block w-full cursor-pointer">Keluar</button>
+        </form>
     <?php else: ?>
-        <a href="../Index.php" class="btn-primary text-lg font-semibold text-white px-8 py-3 rounded-xl mt-4 text-center block">Masuk / Daftar Gratis</a>
+        <a href="/Index.php" class="btn-primary text-lg font-semibold text-white px-8 py-3 rounded-xl mt-4 text-center block">Masuk / Daftar Gratis</a>
     <?php endif; ?>
   </div>
 

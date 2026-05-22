@@ -301,7 +301,7 @@
                         class="flex items-center gap-3 bg-white/[.02] px-4 py-2.5 rounded-2xl border border-white/[.05] self-end w-full md:w-auto justify-end">
                         <div
                             class="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-400 to-emerald-400 flex items-center justify-center text-xs font-bold text-white shrink-0">
-                            <?php echo strtoupper(substr($userName, 0, 1)); ?></div>
+                            <?php echo strtoupper(htmlspecialchars(mb_substr($userName, 0, 1))); ?></div>
                         <div class="text-right">
                             <p class="text-[11px] text-neutral-500 uppercase tracking-wider">Masuk sebagai</p>
                             <p class="text-sm text-white font-bold"><?php echo htmlspecialchars($userName); ?></p>

@@ -56,12 +56,12 @@
         <?php if (!empty($_SESSION['user_name'])): ?>
             <div class="hidden sm:flex items-center gap-3 text-sm text-white font-medium bg-white/5 px-4 py-2 rounded-xl border border-white/10">
                 <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-400 to-orange-400 flex items-center justify-center text-xs font-bold text-white">
-                   <?php echo strtoupper(mb_substr($_SESSION['user_name'] ?? '?', 0, 1)); ?>
+                   <?php echo strtoupper(htmlspecialchars(mb_substr($_SESSION['user_name'] ?? '?', 0, 1))); ?>
                 </div>
                 Hai, <?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?>
             </div>
         <?php else: ?>
-            <a href="../index.php" class="hidden sm:flex items-center gap-2 text-sm text-neutral-300 hover:text-white px-4 py-2 rounded-xl border border-white/10 hover:border-white/20 transition-all">
+            <a href="/Index.php" class="hidden sm:flex items-center gap-2 text-sm text-neutral-300 hover:text-white px-4 py-2 rounded-xl border border-white/10 hover:border-white/20 transition-all">
                 <i data-lucide="user" class="w-4 h-4"></i>
                 Masuk
             </a>
@@ -357,6 +357,8 @@
           <p class="text-neutral-400">Memuat perbandingan...</p>
         </div>
       </div>
+
+      <div id="contrastTrainerContainer" class="mt-12"></div>
     </div>
   </section>
 
@@ -415,6 +417,44 @@
           <h3 class="text-2xl font-bold mb-2">Mainkan Puzzle</h3>
           <p class="text-neutral-400 mb-6">Game visual interaktif untuk merangkai kalimat dengan partikel yang tepat.</p>
           <button id="btnStartPuzzle" class="px-8 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/30 transition">Mulai Main</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION: BUILDER ========== -->
+  <section class="py-16 px-6 lg:px-12 bg-dark-800/20 border-t border-white/5">
+    <div class="max-w-4xl mx-auto text-center mb-12">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-semibold mb-6">
+        <i data-lucide="shuffle" class="w-4 h-4"></i> Sentence Builder
+      </div>
+      <h2 class="text-3xl font-bold mb-4">Bangun Kalimat</h2>
+      <p class="text-neutral-400">Susun kata menjadi kalimat yang benar dengan partikel yang tepat.</p>
+    </div>
+    <div class="max-w-3xl mx-auto glass-card rounded-3xl p-8 border border-white/10" id="builderContainer">
+      <div class="text-center py-10" id="builderStartMenu">
+        <i data-lucide="shuffle" class="w-16 h-16 text-emerald-400 mx-auto mb-4"></i>
+        <h3 class="text-2xl font-bold mb-2">Susun Kalimat</h3>
+        <p class="text-neutral-400 mb-6">Seret atau pilih kata-kata untuk membentuk kalimat yang benar.</p>
+        <button id="btnStartBuilder" class="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition">Mulai Builder</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION: HIGHLIGHTER ========== -->
+  <section class="py-16 px-6 lg:px-12 bg-dark-800/20 border-t border-white/5">
+    <div class="max-w-4xl mx-auto text-center mb-12">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm font-semibold mb-6">
+        <i data-lucide="highlighter" class="w-4 h-4"></i> Highlighter
+      </div>
+      <h2 class="text-3xl font-bold mb-4">Sorot Partikel</h2>
+      <p class="text-neutral-400">Identifikasi dan sorot partikel yang benar dalam kalimat.</p>
+    </div>
+    <div class="max-w-3xl mx-auto glass-card rounded-3xl p-8 border border-white/10" id="highlighterContainer">
+      <div class="text-center py-10" id="highlighterStartMenu">
+        <i data-lucide="highlighter" class="w-16 h-16 text-amber-400 mx-auto mb-4"></i>
+        <h3 class="text-2xl font-bold mb-2">Mulai Highlighter</h3>
+        <p class="text-neutral-400 mb-6">Sorot partikel yang tepat dalam setiap kalimat.</p>
+        <button id="btnStartHighlighter" class="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-lg shadow-amber-500/30 transition">Mulai Highlighter</button>
       </div>
     </div>
   </section>

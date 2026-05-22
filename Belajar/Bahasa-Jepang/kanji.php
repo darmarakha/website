@@ -8,6 +8,10 @@ session_set_cookie_params([
     'samesite' => 'Lax',
 ]);
 session_start();
+// CSRF token
+if (empty($_SESSION['_csrf'])) {
+    $_SESSION['_csrf'] = bin2hex(random_bytes(32));
+}
 
 // Logika Logout — hanya via POST untuk mencegah CSRF
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
@@ -18,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
     }
     session_unset();
     session_destroy();
-    header('Location: ../index.php');
+    header('Location: /Index.php');
     exit;
 }
 

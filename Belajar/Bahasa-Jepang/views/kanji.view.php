@@ -114,9 +114,13 @@ $prog = max(0, min(100, (int)($prog_kanji ?? 0)));
       <div class="nav-actions">
         <a class="btn ghost" href="index.php">← Menu Bahasa Jepang</a>
         <?php if (!empty($_SESSION['user_name'])): ?>
-          <a class="btn ghost" href="?logout=1">Keluar</a>
+          <form method="post" style="display:inline">
+            <input type="hidden" name="logout" value="1">
+            <input type="hidden" name="_csrf" value="<?php echo htmlspecialchars($_SESSION['_csrf'] ?? ''); ?>">
+            <button type="submit" class="btn ghost">Keluar</button>
+          </form>
         <?php else: ?>
-          <a class="btn" href="../Index.php">Masuk</a>
+          <a class="btn" href="/Index.php">Masuk</a>
         <?php endif; ?>
       </div>
     </div>
@@ -636,7 +640,7 @@ function replayImage(item){
     };
 
     // --- Mode 1: Tebak Arti ---
-    let qTotal = 5; let qCur = 0; let qScore = 0; let qPool = [];
+    let qCur = 0; let qScore = 0; let qPool = [];
     function startTebakArti() {
         userProgress.gameStats.meaningQuiz.played++;
         saveProgress();
