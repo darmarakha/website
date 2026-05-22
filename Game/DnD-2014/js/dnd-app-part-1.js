@@ -152,6 +152,7 @@
   render();
   syncLoadFromSql().finally(() => {
     bootingFromSql = false;
+    render();
   });
 
   document.addEventListener("click", function (event) {
@@ -770,29 +771,37 @@
 
     resetBootLog();
     addBootLog('boot', 'Starting DnD table...');
-    addBootLog('session', 'Website session detected: ' + (sessionAccountName || 'Active'));
+    addBootLog('session', 'Website session detected: ' + (sessionName || 'Active'));
 
-    // Show loading overlay
-    const loadingOverlay = document.getElementById("dnd-loading-overlay");
-    if (loadingOverlay) {
-        loadingOverlay.style.display = "flex";
-        const contentEl = document.getElementById("dnd-loading-content");
-        if (contentEl) {
-            contentEl.innerHTML = `
-              <div class="dnd-loading-spinner"></div>
-              <p style="margin-top: 15px; font-weight: 500; color: var(--dnd-color-parchment);">Memuat data karakter...</p>
-              <div id="dnd-boot-console" class="dnd-boot-console">
-                <div class="dnd-boot-console__header">◆ DnD Sync Console</div>
-                <div id="dnd-boot-console-rows" class="dnd-boot-console__rows"></div>
-              </div>
-              <div id="dnd-loading-actions" style="margin-top: 15px; display: none; text-align: center;">
-                 <p style="color: var(--dnd-color-danger); margin-bottom: 10px; font-size: 14px;" id="dnd-loading-error-text"></p>
-                 <button class="dnd-btn dnd-btn--primary" onclick="window.dndRetryLoad()">Coba Muat Ulang</button>
-                 <button class="dnd-btn" style="margin-top: 5px;" onclick="window.location.reload()">Refresh Halaman</button>
-              </div>
-            `;
-            renderBootLog();
-        }
+    // Show loading overlay (create if not in DOM)
+    let loadingOverlay = document.getElementById("dnd-loading-overlay");
+    if (!loadingOverlay) {
+        loadingOverlay = document.createElement('div');
+        loadingOverlay.id = 'dnd-loading-overlay';
+        loadingOverlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,6,2,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+        loadingOverlay.innerHTML = '<div id="dnd-loading-content" style="text-align:center;max-width:640px;width:92%;"></div>';
+        document.body.appendChild(loadingOverlay);
+        const styleEl = document.createElement('style');
+        styleEl.textContent = '@keyframes dnd-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}.dnd-loading-spinner{width:48px;height:48px;border:4px solid rgba(230,194,122,0.3);border-top-color:#e6c27a;border-radius:50%;animation:dnd-spin .8s linear infinite;margin:0 auto}';
+        document.head.appendChild(styleEl);
+    }
+    loadingOverlay.style.display = "flex";
+    const contentEl = document.getElementById("dnd-loading-content");
+    if (contentEl) {
+        contentEl.innerHTML = `
+          <div class="dnd-loading-spinner"></div>
+          <p style="margin-top: 15px; font-weight: 500; color: var(--dnd-color-parchment);">Memuat data karakter...</p>
+          <div id="dnd-boot-console" class="dnd-boot-console">
+            <div class="dnd-boot-console__header">◆ DnD Sync Console</div>
+            <div id="dnd-boot-console-rows" class="dnd-boot-console__rows"></div>
+          </div>
+          <div id="dnd-loading-actions" style="margin-top: 15px; display: none; text-align: center;">
+             <p style="color: var(--dnd-color-danger); margin-bottom: 10px; font-size: 14px;" id="dnd-loading-error-text"></p>
+             <button class="dnd-btn dnd-btn--primary" onclick="window.dndRetryLoad()">Coba Muat Ulang</button>
+             <button class="dnd-btn" style="margin-top: 5px;" onclick="window.location.reload()">Refresh Halaman</button>
+          </div>
+        `;
+        renderBootLog();
     }
 
     try {
