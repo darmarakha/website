@@ -1,1 +1,0 @@
-# Pengetahuan-Umum
