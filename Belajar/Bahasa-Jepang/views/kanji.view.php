@@ -310,7 +310,7 @@ $prog = max(0, min(100, (int)($prog_kanji ?? 0)));
         const strokeCounter = document.getElementById('strokeCounter');
 
         svg.innerHTML = '';
-        clearInterval(svgAnimTimer);
+        clearTimeout(svgAnimTimer);
         svgIsPlaying = false;
 
         const paths = SVG_DATA[item.k];
@@ -480,7 +480,8 @@ $prog = max(0, min(100, (int)($prog_kanji ?? 0)));
     document.getElementById('speedBtn').addEventListener('click', changeSpeed);
 
 
-function replayImage(item){ initSvgPlayer(item); return;
+function replayImage(item){
+      initSvgPlayer(item);
       writerFallback.hidden = true;
       strokeImg.hidden = false;
       strokeImg.onerror = () => showFallbackWriter(item);
@@ -528,7 +529,7 @@ function replayImage(item){ initSvgPlayer(item); return;
       modal.setAttribute('aria-hidden','false');
       document.body.style.overflow = 'hidden';
     }
-    function closeModal(){ clearInterval(svgAnimTimer);
+    function closeModal(){ clearTimeout(svgAnimTimer);
       modal.classList.remove('show');
       modal.setAttribute('aria-hidden','true');
       document.body.style.overflow = '';
@@ -974,7 +975,10 @@ function replayImage(item){ initSvgPlayer(item); return;
                 let wrongM = isK1 ? trap.m2 : trap.m1;
                 q = `Apa arti dari kanji <span class="jp" style="font-size:32px;color:var(--amber)">${targetK}</span> ?`;
                 a = targetM;
-                let others = shuffleArr(KANJI.filter(x => x.meaning !== targetM && x.meaning !== wrongM)).slice(0, 2).map(x=>x.meaning);
+                let others = shuffleArr(KANJI.filter(x => {
+                    const m = x.meaning;
+                    return m !== targetM && m !== wrongM && !m.startsWith(targetM + ';') && !m.startsWith(wrongM + ';');
+                })).slice(0, 2).map(x=>x.meaning);
                 kqQuestions.push({ q, a, opts: shuffleArr([a, wrongM, ...others]) });
                 continue;
             }

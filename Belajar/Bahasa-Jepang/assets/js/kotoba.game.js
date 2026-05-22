@@ -8,6 +8,7 @@ let kotobaVocab = [];
 const KOTOBA_DUNGEONS = [
     { id: 'Angka', name: 'Gua Angka', desc: 'Angka & hitungan: いち, に, さん...', icon: 'hash' },
     { id: 'Waktu', name: 'Menara Waktu', desc: 'Waktu & hari: きょう, あした, まいにち...', icon: 'clock' },
+    { id: 'Orang', name: 'Kampung Orang', desc: 'Keluarga & orang: おとうさん, せんせい, ともだち...', icon: 'users' },
     { id: 'Benda', name: 'Gudang Benda', desc: 'Benda sehari-hari: ほん, くるま, いえ...', icon: 'package' },
     { id: 'Kata Kerja', name: 'Halaman Aksi', desc: 'Kata kerja dasar: たべる, いく, みる...', icon: 'zap' },
     { id: 'Kata Sifat', name: 'Kastil Sifat', desc: 'Kata sifat: おおきい, ちいさい, あたらしい...', icon: 'sparkles' },

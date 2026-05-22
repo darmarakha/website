@@ -9,11 +9,16 @@ session_set_cookie_params([
 ]);
 session_start();
 
-// Logika Logout opsional jika user menekan tombol logout dari halaman ini
-if (isset($_GET['logout'])) {
+// Logika Logout — hanya via POST untuk mencegah CSRF
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
+    $token = $_POST['_csrf'] ?? '';
+    if (!isset($_SESSION['_csrf']) || !hash_equals($_SESSION['_csrf'], $token)) {
+        http_response_code(403);
+        exit('CSRF token invalid.');
+    }
     session_unset();
     session_destroy();
-    header('Location: ../Index.php'); // Arahkan kembali ke halaman utama setelah logout
+    header('Location: ../index.php');
     exit;
 }
 
@@ -27,8 +32,7 @@ $user_id = 0;
 $prog_angka = 0;
 
 if (!empty($_SESSION['user_name'])) {
-    $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 1;
-    // Bisa tambahkan logika database di sini nanti jika diperlukan
+    $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
 }
 
 // Load view

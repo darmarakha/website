@@ -121,9 +121,19 @@ ruby {
 }
 rt {
     font-size: 0.55em;
-    color: #94a3b8; /* neutral-400 */
+    color: #94a3b8;
     font-family: 'Noto Sans JP', sans-serif;
     font-weight: normal;
     letter-spacing: 0;
     transform: translateY(-0.1em);
+}
+@keyframes wrong-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+.animate-wrong-shake {
+    animation: wrong-shake 0.4s ease-in-out;
 }

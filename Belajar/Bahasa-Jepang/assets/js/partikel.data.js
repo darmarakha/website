@@ -68,14 +68,6 @@ function getRandomItem(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function shuffleArray(arr) {
-    let a = [...arr];
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-}
 
 function generateQuestions(amount) {
     let generated = [];
@@ -266,7 +258,7 @@ const partikelData = [
         },
         subkategori: 'subjek',
         label: 'Partikel Subjek / Identifikasi',
-        penjelasanSingkap: 'Menandai subjek kalimat, terutama untuk informasi baru atau identifikasi.',
+        penjelasanSingkat: 'Menandai subjek kalimat, terutama untuk informasi baru atau identifikasi.',
         semuaFungsi: [
             {
                 judul: 'Penanda Subjek Informasi Baru',
@@ -335,7 +327,7 @@ const partikelData = [
         diagram: { tipe: 'ilustrasi', label: 'を sebagai panah ke objek' },
         jlptQuestions: [
             { soal: '毎朝、新聞 ___ 読みます。', opsi: ['を', 'が', 'に', 'で'], jawaban: 0, penjelasan: 'Membaca (読む) adalah transitif, koran adalah objek.' },
-            { soal: 'このバスは駅前 ___ 通ります。', opsi: 'を/が/に/で', jawaban: 0, penjelasan: '通る (melewati) adalah kata kerja pergerakan, を untuk rute.' }
+            { soal: 'このバスは駅前 ___ 通ります。', opsi: ['を', 'が', 'に', 'で'], jawaban: 0, penjelasan: '通る (melewati) adalah kata kerja pergerakan, を untuk rute.' }
         ]
     },
     {

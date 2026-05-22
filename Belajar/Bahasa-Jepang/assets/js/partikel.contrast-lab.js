@@ -502,7 +502,7 @@ function renderContrastLab() {
         let isCompleted = contrastLabProgress.includes(c.id);
         let compIcon = isCompleted
             ? '<i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>'
-            : `<button onclick="markContrastDone('${c.id}')" class="text-xs px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[#a9a29a] hover:text-white transition" title="Tandai sudah dipahami"><i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Paham</button>`;
+            : `<button onclick="markContrastDone('${c.id.replace(/'/g, "\\'")}')" class="text-xs px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[#a9a29a] hover:text-white transition" title="Tandai sudah dipahami"><i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Paham</button>`;
 
         let leftKeysHtml = '';
         if (c.left) {

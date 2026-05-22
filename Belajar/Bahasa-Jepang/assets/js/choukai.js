@@ -142,10 +142,10 @@
     $$('#choukai-quiz .quiz-opt').forEach((btn) => {
       btn.addEventListener('click', () => {
         const idx = Number(btn.getAttribute('data-idx'));
-        const correct = Number(q.answer);
+        const correct = q.answer !== undefined ? Number(q.answer) : NaN;
         const el = $('#quiz-result');
         if (!el) return;
-        if (idx === correct) {
+        if (!isNaN(correct) && idx === correct) {
           el.className = 'mt-3 text-sm text-emerald-300 font-bold';
           el.textContent = '✅ Benar!';
         } else {

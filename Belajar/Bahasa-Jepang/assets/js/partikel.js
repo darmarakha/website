@@ -1,7 +1,9 @@
 // Progress State Tracking
 let userProgress = {
-    partikelSelesai: [], // array of IDs like 'wa', 'ga'
-    kontrasSelesai: [],  // array of IDs
+    partikelSelesai: [],
+    kontrasSelesai: [],
+    latihanSelesai: false,
+    puzzleSelesai: false,
     quizSelesai: false,
     highlighterSelesai: false,
     builderSelesai: false,
@@ -14,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadProgress();
     renderPartikelGrid();
     updateUIProgress();
+    if (typeof renderContrastTrainer === 'function') renderContrastTrainer();
 });
 
 function loadProgress() {
@@ -38,8 +41,9 @@ function getJumlahPartikel() {
 }
 
 function getJumlahKontras() {
-    if (typeof partikelData === 'undefined') return 3;
-    return partikelData.filter(p => p.perbandinganDetail && p.perbandinganDetail.length > 0).length || 3;
+    if (typeof contrastLabData !== 'undefined') return contrastLabData.length;
+    if (typeof partikelData === 'undefined') return 12;
+    return 12;
 }
 
 function updateUIProgress() {
@@ -68,7 +72,7 @@ function updateUIProgress() {
     let progQuiz = document.getElementById('progQuiz');
     if (progQuiz) {
         let qCount = (userProgress.latihanSelesai ? 1 : 0) + (userProgress.puzzleSelesai ? 1 : 0) + (userProgress.quizSelesai ? 1 : 0) + (userProgress.highlighterSelesai ? 1 : 0) + (userProgress.builderSelesai ? 1 : 0) + (userProgress.slotTrainerSelesai ? 1 : 0);
-        progQuiz.innerText = qCount + '/5';
+        progQuiz.innerText = qCount + '/6';
     }
 
     const badgeIcon = document.getElementById('badgeIcon');
@@ -121,7 +125,8 @@ function renderPartikelGrid() {
         let filterHtml = `<button class="px-3 py-1.5 rounded-full text-xs font-bold transition ${partikelFilterKategori === 'semua' ? 'bg-[#b89cff] text-[#12161d]' : 'bg-white/5 text-[#a9a29a] hover:bg-white/10'}" onclick="setFilterKategori('semua')">Semua</button>`;
         kategoris.forEach(k => {
             let label = k.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-            filterHtml += `<button class="px-3 py-1.5 rounded-full text-xs font-bold transition ${partikelFilterKategori === k ? 'bg-[#b89cff] text-[#12161d]' : 'bg-white/5 text-[#a9a29a] hover:bg-white/10'}" onclick="setFilterKategori('${k}')">${label}</button>`;
+            let safe = k.replace(/'/g, "\\'");
+            filterHtml += `<button class="px-3 py-1.5 rounded-full text-xs font-bold transition ${partikelFilterKategori === k ? 'bg-[#b89cff] text-[#12161d]' : 'bg-white/5 text-[#a9a29a] hover:bg-white/10'}" onclick="setFilterKategori('${safe}')">${label}</button>`;
         });
         filterBar.innerHTML = filterHtml;
     }
@@ -235,7 +240,7 @@ function openPartikelModal(id) {
     let miniPracticeHtml = '';
     if (p.miniPractice) {
         let optionsHtml = p.miniPractice.options.map(opt =>
-            `<button onclick="checkMiniPractice(this, '${opt}', '${p.miniPractice.jawaban}')" class="px-3 py-1 rounded bg-[#161b22] border border-white/10 hover:bg-white/10 text-[#f4efe7] transition-colors">${opt}</button>`
+            `<button onclick="checkMiniPractice(this, '${opt.replace(/'/g, "\\'")}', '${String(p.miniPractice.jawaban).replace(/'/g, "\\'")}')" class="px-3 py-1 rounded bg-[#161b22] border border-white/10 hover:bg-white/10 text-[#f4efe7] transition-colors">${opt}</button>`
         ).join('');
         miniPracticeHtml = `
             <div class="mt-5 p-4 rounded-xl bg-[#0a0d12] border border-white/10">
@@ -314,6 +319,7 @@ function openPartikelModal(id) {
         </div>
     `;
 
+    modal.setAttribute('data-particle-id', id);
     lucide.createIcons();
     modal.classList.remove('hidden');
     setTimeout(() => {
@@ -375,14 +381,12 @@ function checkJlptSample(btn, qIdx, selectedIdx) {
     const allBtns = container.querySelectorAll('button');
     allBtns.forEach(b => b.disabled = true);
 
-    // Find the particle
+    // Find the particle via data attribute
     const modal = document.getElementById('partikelModal');
-    const content = document.getElementById('modalContent');
-    const idFromHeader = content ? content.querySelector('h3')?.textContent || '' : '';
     let p = null;
-    const possibleId = idFromHeader.toLowerCase().replace('partikel ', '').trim();
-    if (typeof partikelData !== 'undefined') {
-        p = partikelData.find(x => x.romaji === possibleId || x.id === possibleId);
+    if (modal && typeof partikelData !== 'undefined') {
+        const pid = modal.getAttribute('data-particle-id');
+        p = partikelData.find(x => x.id === pid);
     }
     if (!p || !p.jlptQuestions || !p.jlptQuestions[qIdx]) return;
 

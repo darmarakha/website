@@ -56,12 +56,12 @@
         <?php if (!empty($_SESSION['user_name'])): ?>
             <div class="hidden sm:flex items-center gap-3 text-sm text-white font-medium bg-white/5 px-4 py-2 rounded-xl border border-white/10">
                 <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-400 to-orange-400 flex items-center justify-center text-xs font-bold text-white">
-                   <?php echo strtoupper(substr($_SESSION['user_name'], 0, 1)); ?>
+                   <?php echo strtoupper(mb_substr($_SESSION['user_name'] ?? '?', 0, 1)); ?>
                 </div>
-                Hai, <?php echo htmlspecialchars($_SESSION['user_name']); ?>
+                Hai, <?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?>
             </div>
         <?php else: ?>
-            <a href="../Index.php" class="hidden sm:flex items-center gap-2 text-sm text-neutral-300 hover:text-white px-4 py-2 rounded-xl border border-white/10 hover:border-white/20 transition-all">
+            <a href="../index.php" class="hidden sm:flex items-center gap-2 text-sm text-neutral-300 hover:text-white px-4 py-2 rounded-xl border border-white/10 hover:border-white/20 transition-all">
                 <i data-lucide="user" class="w-4 h-4"></i>
                 Masuk
             </a>

@@ -4,6 +4,10 @@ session_set_cookie_params([
     'httponly' => true, 'samesite' => 'Lax',
 ]);
 session_start();
+// CSRF token
+if (empty($_SESSION['_csrf'])) {
+    $_SESSION['_csrf'] = bin2hex(random_bytes(32));
+}
 require_once __DIR__ . '/../../config.php';
 
 // =========================================================================
@@ -11,13 +15,21 @@ require_once __DIR__ . '/../../config.php';
 // =========================================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($input)) $input = [];
+    
+    // Validasi CSRF
+    $token = $input['_csrf'] ?? '';
+    if (!hash_equals($_SESSION['_csrf'], $token)) {
+        echo json_encode(['status' => 'error', 'message' => 'CSRF token invalid.']);
+        exit;
+    }
     
     // 1. Logika Update Progress (Skor Katakana)
     if (isset($input['update_progress']) && !empty($_SESSION['user_id'])) {
         try {
             $pdo = gemu_pdo();
             
-            $points = (int)$input['points'];
+            $points = max(0, min(100, (int)$input['points']));
             $userId = $_SESSION['user_id'];
             
             // Cek progress saat ini

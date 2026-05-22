@@ -253,9 +253,11 @@
     </style>
 </head>
 
+<?php $csrfToken = htmlspecialchars($_SESSION['_csrf'] ?? ''); ?>
 <body class="text-white min-h-screen selection:bg-cyan-500 selection:text-white pb-20"
     data-logged-in="<?php echo $isLoggedIn ? 'true' : 'false'; ?>"
-    data-ai-level="<?php echo htmlspecialchars($aiLevel); ?>">
+    data-ai-level="<?php echo htmlspecialchars($aiLevel); ?>"
+    data-csrf="<?php echo $csrfToken; ?>">
 
     <div class="tech-particle" style="left:15%;animation:techFall 8s linear infinite"></div>
     <div class="tech-particle" style="left:30%;animation:techFall 6s linear infinite;animation-delay:2s"></div>
@@ -420,6 +422,9 @@
 
     <script>
         const isLoggedIn = document.body.getAttribute('data-logged-in') === 'true';
+        function getCsrfToken() {
+            return document.body.getAttribute('data-csrf') || '';
+        }
 
         // ====================================================================
         // 1. API SQL & MACHINE LEARNING UTILITIES (NLP & ADAPTIVE)
@@ -429,14 +434,30 @@
             fetch('', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ update_progress: true, points: points, material: 'katakana' })
+                body: JSON.stringify({ update_progress: true, points: points, material: 'katakana', _csrf: getCsrfToken() })
             })
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success') console.log('SQL Progress tersimpan: ' + data.new_score + '%');
-                }).catch(err => console.error('Gagal menyimpan skor ke SQL:', err));
+                    else console.warn('Gagal simpan skor:', data.message);
+                }).catch(err => {
+                    console.error('Gagal menyimpan skor ke SQL:', err);
+                    showNotif('Gagal menyimpan skor', 'error');
+                });
         }
-
+        function showNotif(msg, type) {
+            const el = document.getElementById('notifKatakana') || (() => {
+                const d = document.createElement('div');
+                d.id = 'notifKatakana';
+                d.className = 'fixed bottom-6 right-6 z-[999] px-5 py-3 rounded-2xl text-sm font-bold shadow-2xl border transition-all duration-500 translate-y-24 opacity-0';
+                document.body.appendChild(d);
+                return d;
+            })();
+            el.textContent = msg;
+            el.className = `fixed bottom-6 right-6 z-[999] px-5 py-3 rounded-2xl text-sm font-bold shadow-2xl border transition-all duration-500 ${type === 'error' ? 'bg-rose-500/20 border-rose-500/30 text-rose-300' : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300'}`;
+            setTimeout(() => { el.classList.remove('translate-y-24', 'opacity-0'); }, 50);
+            setTimeout(() => { el.classList.add('translate-y-24', 'opacity-0'); }, 3000);
+        }
         function saveAILevel(newLevel) {
             if (aiUserLevel === newLevel) return;
             aiUserLevel = newLevel;
@@ -444,8 +465,11 @@
             fetch('', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ update_level: true, level: newLevel, material: 'katakana' })
-            }).catch(err => console.error('Gagal menyimpan level AI:', err));
+                body: JSON.stringify({ update_level: true, level: newLevel, material: 'katakana', _csrf: getCsrfToken() })
+            }).catch(err => {
+                console.error('Gagal menyimpan level AI:', err);
+                showNotif('Gagal menyimpan level AI', 'error');
+            });
         }
 
         // ML ALGORITHM 1: Levenshtein Distance (NLP)

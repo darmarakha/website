@@ -4,6 +4,10 @@ session_set_cookie_params([
     'httponly' => true, 'samesite' => 'Lax',
 ]);
 session_start();
+// CSRF token
+if (empty($_SESSION['_csrf'])) {
+    $_SESSION['_csrf'] = bin2hex(random_bytes(32));
+}
 require_once __DIR__ . '/../../config.php';
 
 // =========================================================================
@@ -11,13 +15,21 @@ require_once __DIR__ . '/../../config.php';
 // =========================================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($input)) $input = [];
+    
+    // Validasi CSRF
+    $token = $input['_csrf'] ?? '';
+    if (!hash_equals($_SESSION['_csrf'], $token)) {
+        echo json_encode(['status' => 'error', 'message' => 'CSRF token invalid.']);
+        exit;
+    }
     
     // 1. Logika Update Progress (Skor)
     if (isset($input['update_progress']) && !empty($_SESSION['user_id'])) {
         try {
             $pdo = gemu_pdo();
             
-            $points = (int)$input['points'];
+            $points = max(0, min(100, (int)$input['points']));
             $userId = $_SESSION['user_id'];
             
             // Cek progress saat ini
@@ -67,7 +79,6 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
     <title>Belajar Hiragana Lengkap & AI Membaca</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -262,7 +273,7 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
         }
     </style>
 </head>
-<body class="bg-dark-900 text-white min-h-screen selection:bg-sakura-500 selection:text-white pb-20" data-logged-in="<?php echo $isLoggedIn?'true':'false'; ?>" data-ai-level="<?php echo htmlspecialchars($aiLevel); ?>">
+    <body class="bg-dark-900 text-white min-h-screen selection:bg-sakura-500 selection:text-white pb-20" data-logged-in="<?php echo $isLoggedIn?'true':'false'; ?>" data-ai-level="<?php echo htmlspecialchars($aiLevel); ?>" data-csrf="<?php echo htmlspecialchars($_SESSION['_csrf']); ?>">
 
     <div class="sakura-petal" style="left:5%;top:0;animation:fall1 12s linear infinite"></div>
     <div class="sakura-petal" style="left:20%;top:0;animation:fall2 10s linear infinite;animation-delay:3s"></div>
@@ -414,7 +425,7 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
         window.setUILanguage = function(lang) {
             currentUILang = lang === 'en' ? 'en' : 'id';
             localStorage.setItem('hiragana_ui_lang', currentUILang);
-            const activeTab = document.querySelector('nav button[class*="gradient"]')?.id?.replace('tab-', '') || 'materi';
+            const activeTab = document.querySelector('nav button[data-tab-active]')?.getAttribute('data-tab') || 'materi';
             switchTab(activeTab);
         };
 
@@ -503,29 +514,10 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
             window.speechSynthesis.speak(utterance);
         }
 
-        const USE_LOCAL_MP3_FIRST = false;
-
         function playKanaSound(kana, romaji, event) {
             if (event) { event.preventDefault(); event.stopPropagation(); }
             stopAllKanaAudio();
-
-            const key = normalizeRomajiForAudio(romaji);
-            if (!USE_LOCAL_MP3_FIRST || !key) {
-                speakKanaWithJapaneseVoice(kana, romaji);
-                return;
-            }
-
-            const src = `${kanaAudioBasePath}${key}.mp3`;
-            let audio = kanaAudioCache[key];
-            if (!audio) {
-                audio = new Audio(src);
-                audio.preload = 'auto';
-                kanaAudioCache[key] = audio;
-            }
-
-            audio.currentTime = 0;
-            audio.onerror = () => speakKanaWithJapaneseVoice(kana, romaji);
-            audio.play().catch(() => speakKanaWithJapaneseVoice(kana, romaji));
+            speakKanaWithJapaneseVoice(kana, romaji);
         }
 
         function playCurrentKanaSound(event) {
@@ -540,19 +532,38 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
         // ====================================================================
         // 1. API SQL & MACHINE LEARNING UTILITIES (NLP & ADAPTIVE)
         // ====================================================================
+        function getCsrfToken() {
+            return document.body.getAttribute('data-csrf') || '';
+        }
         function sendScore(correct, wrong, points) {
             if (!isLoggedIn) return;
             fetch('', { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ update_progress: true, points: points, material: 'hiragana' }) 
+                body: JSON.stringify({ update_progress: true, points: points, material: 'hiragana', _csrf: getCsrfToken() }) 
             })
             .then(res => res.json())
             .then(data => {
                 if(data.status === 'success') console.log('SQL Progress tersimpan: ' + data.new_score + '%');
-            }).catch(err => console.error('Gagal menyimpan skor ke SQL:', err));
+                else console.warn('Gagal simpan skor:', data.message);
+            }).catch(err => {
+                console.error('Gagal menyimpan skor ke SQL:', err);
+                showNotif('Gagal menyimpan skor', 'error');
+            });
         }
-
+        function showNotif(msg, type) {
+            const el = document.getElementById('notif') || (() => {
+                const d = document.createElement('div');
+                d.id = 'notif';
+                d.className = 'fixed bottom-6 right-6 z-[999] px-5 py-3 rounded-2xl text-sm font-bold shadow-2xl border transition-all duration-500 translate-y-24 opacity-0';
+                document.body.appendChild(d);
+                return d;
+            })();
+            el.textContent = msg;
+            el.className = `fixed bottom-6 right-6 z-[999] px-5 py-3 rounded-2xl text-sm font-bold shadow-2xl border transition-all duration-500 ${type === 'error' ? 'bg-rose-500/20 border-rose-500/30 text-rose-300' : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300'}`;
+            setTimeout(() => { el.classList.remove('translate-y-24', 'opacity-0'); }, 50);
+            setTimeout(() => { el.classList.add('translate-y-24', 'opacity-0'); }, 3000);
+        }
         function saveAILevel(newLevel) {
             if (aiUserLevel === newLevel) return;
             aiUserLevel = newLevel;
@@ -560,8 +571,11 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
             fetch('', { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ update_level: true, level: newLevel, material: 'hiragana' }) 
-            }).catch(err => console.error('Gagal menyimpan level AI:', err));
+                body: JSON.stringify({ update_level: true, level: newLevel, material: 'hiragana', _csrf: getCsrfToken() }) 
+            }).catch(err => {
+                console.error('Gagal menyimpan level AI:', err);
+                showNotif('Gagal menyimpan level AI', 'error');
+            });
         }
 
         // ML ALGORITHM 1: Levenshtein Distance (NLP) untuk deteksi typo
@@ -700,8 +714,14 @@ $aiLevel = isset($_SESSION['ai_level']) ? $_SESSION['ai_level'] : 'pemula';
             ['materi','flashcard','ai'].forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if(!btn) return;
-                if(t===tab) btn.className = t==='ai' ? "flex-1 min-w-[120px] py-3 px-3 rounded-xl font-bold text-sm transition-all bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/20" : "flex-1 min-w-[120px] py-3 px-3 rounded-xl font-bold text-sm transition-all bg-gradient-to-r from-sakura-500 to-sakura-600 text-white shadow-lg shadow-sakura-500/20";
-                else btn.className = t==='ai' ? "flex-1 min-w-[120px] py-3 px-3 rounded-xl font-bold text-sm transition-all text-orange-400 bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20" : "flex-1 min-w-[120px] py-3 px-3 rounded-xl font-bold text-sm transition-all text-neutral-400 hover:text-white hover:bg-white/[.05]";
+                if(t===tab) {
+                    btn.className = t==='ai' ? "flex-1 min-w-[120px] py-3 px-3 rounded-xl font-bold text-sm transition-all bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/20" : "flex-1 min-w-[120px] py-3 px-3 rounded-xl font-bold text-sm transition-all bg-gradient-to-r from-sakura-500 to-sakura-600 text-white shadow-lg shadow-sakura-500/20";
+                    btn.setAttribute('data-tab-active', 'true');
+                    btn.setAttribute('data-tab', t);
+                } else {
+                    btn.className = t==='ai' ? "flex-1 min-w-[120px] py-3 px-3 rounded-xl font-bold text-sm transition-all text-orange-400 bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20" : "flex-1 min-w-[120px] py-3 px-3 rounded-xl font-bold text-sm transition-all text-neutral-400 hover:text-white hover:bg-white/[.05]";
+                    btn.removeAttribute('data-tab-active');
+                }
             });
             if(tab==='materi') renderMateri();
             if(tab==='flashcard'){ initFCWeights(); getNextFlashcard(); renderFlashcard(); }

@@ -9,11 +9,7 @@ function escapeHtml(unsafe) {
 }
 
 function shuffleArray(array) {
-    let currentIndex = array.length, randomIndex;
-    while (currentIndex != 0) {
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex--;
-        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-    }
-    return array;
+    let a = [...array], i = a.length, j;
+    while (i) { j = Math.floor(Math.random() * i); i--; [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
 }

@@ -9,7 +9,157 @@ document.addEventListener('DOMContentLoaded', () => {
     if(btnStartLatihan) {
         btnStartLatihan.addEventListener('click', startLatihan);
     }
+    const btnStartUjian = document.getElementById('btnStartUjian');
+    if(btnStartUjian) {
+        btnStartUjian.addEventListener('click', startUjianJLPT);
+    }
 });
+
+function startUjianJLPT() {
+    const container = document.getElementById('ujianStartMenu');
+    if (!container) return;
+    const soalList = generateUjianSoal(20);
+    localStorage.setItem('gy_jp_ujian_soal', JSON.stringify(soalList));
+    localStorage.setItem('gy_jp_ujian_idx', '0');
+    localStorage.setItem('gy_jp_ujian_score', '0');
+    renderUjianSoal(0);
+}
+
+function generateUjianSoal(count) {
+    let pool = [];
+    if (typeof partikelData === 'undefined') return [];
+    partikelData.forEach(p => {
+        if (p.jlptQuestions && p.jlptQuestions.length > 0) {
+            p.jlptQuestions.forEach(q => {
+                pool.push({ ...q, partikelId: p.id, partikelChar: p.char });
+            });
+        }
+    });
+    if (pool.length === 0) return [];
+    for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    return pool.slice(0, count);
+}
+
+function renderUjianSoal(idx) {
+    const saved = localStorage.getItem('gy_jp_ujian_soal');
+    const soalList = saved ? JSON.parse(saved) : [];
+    if (!soalList || idx >= soalList.length) {
+        renderUjianHasil();
+        return;
+    }
+    const q = soalList[idx];
+    const container = document.getElementById('ujianStartMenu');
+    if (!container) return;
+    const isEssay = !q.opsi || q.opsi.length === 0;
+    let opsiHtml = '';
+    if (q.opsi && q.opsi.length > 0) {
+        opsiHtml = q.opsi.map((opt, i) =>
+            `<button class="ujian-option w-full text-left p-4 rounded-xl border border-white/10 bg-[#0d1117] hover:bg-white/5 font-medium mb-3 transition" onclick="jawabUjian(${i}, ${idx})">${opt}</button>`
+        ).join('');
+    }
+    container.innerHTML = `
+        <div class="text-center py-6">
+            <div class="text-sm text-neutral-500 mb-4">Soal ${idx + 1} dari ${soalList.length}</div>
+            <p class="text-xl font-jp mb-6">${q.soal}</p>
+            ${q.partikelChar ? `<div class="inline-block px-3 py-1 rounded-full bg-white/5 text-sm text-neutral-400 mb-4">Partikel: ${q.partikelChar}</div>` : ''}
+            ${opsiHtml ? `<div class="max-w-md mx-auto">${opsiHtml}</div>` : `
+                <div class="max-w-md mx-auto">
+                    <input type="text" id="ujianEssayInput" class="w-full p-4 rounded-xl bg-[#0d1117] border border-white/10 text-center text-xl font-jp" placeholder="Ketik partikel..." autofocus>
+                    <button class="mt-4 px-8 py-3 bg-[#b89cff] hover:bg-[#a88aee] text-black font-bold rounded-xl transition" onclick="jawabUjianEssay(${idx})">Jawab</button>
+                </div>
+            `}
+        </div>
+    `;
+    if (typeof wanakana !== 'undefined' && document.getElementById('ujianEssayInput')) {
+        wanakana.bind(document.getElementById('ujianEssayInput'));
+    }
+}
+
+function jawabUjian(selected, idx) {
+    const saved = localStorage.getItem('gy_jp_ujian_soal');
+    const soalList = saved ? JSON.parse(saved) : [];
+    const q = soalList[idx];
+    if (!q) return;
+    const benar = selected === q.jawaban;
+    if (benar) {
+        let score = parseInt(localStorage.getItem('gy_jp_ujian_score') || '0');
+        localStorage.setItem('gy_jp_ujian_score', String(score + 1));
+    }
+    const feedback = document.createElement('div');
+    feedback.className = `mt-4 p-3 rounded-xl text-center font-bold ${benar ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`;
+    feedback.textContent = benar ? 'Benar! ' + (q.penjelasan || '') : 'Salah. Jawaban: ' + (q.opsi ? q.opsi[q.jawaban] : '?');
+    const container = document.getElementById('ujianStartMenu');
+    if (!container) return;
+    const btns = container.querySelectorAll('.ujian-option');
+    btns.forEach((b, i) => {
+        b.style.borderColor = i === q.jawaban ? '#34d399' : (i === selected ? '#ef4444' : '');
+        b.disabled = true;
+    });
+    container.querySelector('.text-center')?.appendChild(feedback);
+    localStorage.setItem('gy_jp_ujian_idx', String(idx + 1));
+    setTimeout(() => renderUjianSoal(idx + 1), 1500);
+}
+
+function jawabUjianEssay(idx) {
+    const input = document.getElementById('ujianEssayInput');
+    if (!input) return;
+    const saved = localStorage.getItem('gy_jp_ujian_soal');
+    const soalList = saved ? JSON.parse(saved) : [];
+    const q = soalList[idx];
+    if (!q) return;
+    const jawab = input.value.trim();
+    const benar = jawab === q.opsi?.[q.jawaban] || jawab === q.opsi?.[0];
+    if (benar) {
+        let score = parseInt(localStorage.getItem('gy_jp_ujian_score') || '0');
+        localStorage.setItem('gy_jp_ujian_score', String(score + 1));
+    }
+    const feedback = document.createElement('div');
+    feedback.className = `mt-4 p-3 rounded-xl text-center font-bold ${benar ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`;
+    feedback.textContent = benar ? 'Benar! ' + (q.penjelasan || '') : 'Salah. Jawaban: ' + (q.opsi ? q.opsi[q.jawaban] : '?');
+    const container = document.getElementById('ujianStartMenu');
+    if (!container) return;
+    container.querySelector('.text-center')?.appendChild(feedback);
+    input.disabled = true;
+    localStorage.setItem('gy_jp_ujian_idx', String(idx + 1));
+    setTimeout(() => renderUjianSoal(idx + 1), 1500);
+}
+
+function renderUjianHasil() {
+    const score = parseInt(localStorage.getItem('gy_jp_ujian_score') || '0');
+    const saved = localStorage.getItem('gy_jp_ujian_soal');
+    const total = saved ? JSON.parse(saved).length : 0;
+    const container = document.getElementById('ujianStartMenu');
+    if (!container) return;
+    const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+    userProgress.quizSelesai = true;
+    saveProgress();
+    container.innerHTML = `
+        <div class="text-center py-10">
+            <i data-lucide="award" class="w-16 h-16 text-orange-400 mx-auto mb-4"></i>
+            <h3 class="text-2xl font-bold mb-2">Ujian Selesai!</h3>
+            <p class="text-4xl font-bold text-[#b89cff] my-4">${score}/${total}</p>
+            <p class="text-neutral-400 mb-2">${pct >= 80 ? 'Luar biasa! 🎉' : pct >= 60 ? 'Bagus, terus belajar!' : 'Ayo coba lagi!'}</p>
+            <button class="mt-6 px-8 py-3 bg-[#b89cff] hover:bg-[#a88aee] text-black font-bold rounded-xl transition" onclick="renderUjianStartMenu()">Coba Lagi</button>
+        </div>
+    `;
+    lucide.createIcons();
+}
+
+function renderUjianStartMenu() {
+    const container = document.getElementById('ujianStartMenu');
+    if (!container) return;
+    container.innerHTML = `
+        <i data-lucide="graduation-cap" class="w-16 h-16 text-orange-400 mx-auto mb-4"></i>
+        <h3 class="text-2xl font-bold mb-2">Simulasi JLPT N5 Partikel</h3>
+        <p class="text-neutral-400 mb-6">Ujian komprehensif. Keyboard akan otomatis mengubah huruf Romaji menjadi Hiragana pada sesi essai.</p>
+        <button id="btnStartUjian" class="px-8 py-3 bg-gradient-to-r from-orange-500 to-sakura-500 hover:from-orange-600 hover:to-sakura-600 text-white font-bold rounded-xl shadow-lg transition">Mulai Ujian JLPT</button>
+    `;
+    document.getElementById('btnStartUjian')?.addEventListener('click', startUjianJLPT);
+    lucide.createIcons();
+}
 
 function startLatihan() {
     currentLatihanIndex = 0;
@@ -151,7 +301,8 @@ function answerLatihanEssay() {
         }
     }
 
-    const btnSubmit = document.querySelector('.latihan-essay-input').parentElement.nextElementSibling;
+    const inputEl = document.getElementById('latihanEssayInput') || document.querySelector('.latihan-essay-input');
+    const btnSubmit = inputEl?.parentElement?.nextElementSibling;
     if (btnSubmit) btnSubmit.classList.add('hidden');
 
     if (isCorrect) {
@@ -785,6 +936,4 @@ function resetContrast(id) {
     feedback.classList.add('hidden');
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    renderContrastTrainer();
-});
+// renderContrastTrainer dipanggil dari partikel.js setelah loadProgress()

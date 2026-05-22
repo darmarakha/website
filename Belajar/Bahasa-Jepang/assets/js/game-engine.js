@@ -18,10 +18,6 @@ function renderHpBar(hp, maxHp) {
     return { pct, color };
 }
 
-function formatOptions(options) {
-    return options.map((o, i) => `${String.fromCharCode(65 + i)}. ${o}`);
-}
-
 function shuffleArray(arr) {
     let a = [...arr], i = a.length, j;
     while (i) { j = Math.floor(Math.random() * i); i--; [a[i], a[j]] = [a[j], a[i]]; }
@@ -99,11 +95,15 @@ function createRPG(config) {
 
     function enterDungeon(idx) {
         if (!state || idx >= state.unlockedDungeons) return;
+        state.dungeonStages = C.questionGenerator(C.dungeons[idx].id, C.stagesCount);
+        if (!state.dungeonStages || state.dungeonStages.length === 0) {
+            showToast('Tidak ada soal tersedia untuk dungeon ini.', 'error');
+            return;
+        }
         state.currentDungeonIdx = idx;
         state.currentStage = 0;
         state.bossMode = false;
         state.lastResult = null;
-        state.dungeonStages = C.questionGenerator(C.dungeons[idx].id, C.stagesCount);
         save();
         render();
     }
@@ -140,6 +140,7 @@ function createRPG(config) {
 
     function answerStage(selectedIdx, btn) {
         if (state.lastResult) return;
+        if (state.player.hp <= 0) return;
         const stage = state.dungeonStages[state.currentStage];
         if (!stage) return;
         const isCorrect = selectedIdx === stage.jawaban;
@@ -197,6 +198,7 @@ function createRPG(config) {
 
     function answerBoss(selectedIdx, btn) {
         if (state.lastResult) return;
+        if (state.player.hp <= 0) return;
         const stage = state.dungeonStages[state.currentStage];
         if (!stage) return;
         const isCorrect = selectedIdx === stage.jawaban;
@@ -489,7 +491,7 @@ function createRPG(config) {
                     <p class="text-xs text-[#777]">Level saat ini: <span class="text-[#f4efe7] font-bold">${state.player.level}</span></p>
                     <p class="text-xs text-[#777]">XP: <span class="text-[#f4efe7] font-bold">${state.player.xp}</span></p>
                 </div>
-                <button class="px-8 py-3 bg-[#b89cff] hover:bg-[#a68af2] text-[#12161d] font-bold rounded-xl transition" onclick="game.healPlayer(); game.leaveDungeon();">
+                <button class="px-8 py-3 bg-[#b89cff] hover:bg-[#a68af2] text-[#12161d] font-bold rounded-xl transition" onclick="game.healPlayer();">
                     Pulihkan HP & Kembali
                 </button>
             </div>`;
