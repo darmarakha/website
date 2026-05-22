@@ -1,0 +1,16 @@
+/* Particle Quest RPG — Game Styles */
+[id$="GameContainer"] .rpg-option:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+[id$="GameContainer"] button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+@keyframes rpg-hp-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+.rpg-hp-critical {
+    animation: rpg-hp-pulse 1s ease-in-out infinite;
+}

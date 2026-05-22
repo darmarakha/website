@@ -10,6 +10,9 @@ $cats = ['Orang', 'Tempat', 'Benda', 'Kata Kerja', 'Kata Sifat', 'Waktu', 'Angka
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kotoba N5 - GemuYokai Nihongo</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+JP:wght@500;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="assets/css/games.css">
   <style>
     :root {
       --bg: #0a0a0a;
@@ -507,6 +510,30 @@ $cats = ['Orang', 'Tempat', 'Benda', 'Kata Kerja', 'Kata Sifat', 'Waktu', 'Angka
     showScreen('intro');
   };
 </script>
+
+<!-- ========== KOTOBA DUNGEON RPG ========== -->
+<section style="padding: 60px 20px; background: #0a0a0a; border-top: 1px solid rgba(255,255,255,0.1);">
+  <div class="wrap" style="width:min(1120px,calc(100% - 32px));margin:auto;">
+    <div class="text-center" style="margin-bottom: 48px;">
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:#6ee7b7;font-size:14px;font-weight:700;margin-bottom:24px;">
+        <i data-lucide="swords" style="width:16px;height:16px"></i> RPG Game
+      </div>
+      <h2 style="font-size:30px;font-weight:800;margin-bottom:16px;color:#f5f1ea;">Kotoba Dungeon</h2>
+      <p style="color:#a3a3a3;font-size:14px;">Jelajahi 8 dungeon, kalahkan monster kosakata, dan kuasai semua kata!</p>
+    </div>
+    <div id="kotobaGameContainer" style="border-radius:24px;background:linear-gradient(135deg,#161b22,rgba(22,27,34,0.4));border:1px solid rgba(255,255,255,0.1);padding:24px;">
+      <div style="text-align:center;padding:40px 0;">
+        <div style="animation:spin 1s linear infinite;width:32px;height:32px;border:3px solid rgba(16,185,129,0.2);border-top-color:#10b981;border-radius:50%;margin:0 auto 16px;"></div>
+        <p style="color:#a3a3a3;">Memuat data kosakata...</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="assets/js/partikel.utils.js"></script>
+<script src="assets/js/game-engine.js"></script>
+<script src="assets/js/kotoba.game.js"></script>
+<script>document.addEventListener('DOMContentLoaded', function() { lucide.createIcons(); });</script>
 
 </body>
 </html>

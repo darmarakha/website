@@ -33,8 +33,19 @@ function saveProgress() {
     updateUIProgress();
 }
 
+function getJumlahPartikel() {
+    return typeof partikelData !== 'undefined' ? partikelData.length : 40;
+}
+
+function getJumlahKontras() {
+    if (typeof partikelData === 'undefined') return 3;
+    return partikelData.filter(p => p.perbandinganDetail && p.perbandinganDetail.length > 0).length || 3;
+}
+
 function updateUIProgress() {
-    let totalItems = 5 + 3 + 5; // simplified calculation: 5 dasar, 3 kontras, 5 practice
+    let totalPartikel = getJumlahPartikel();
+    let totalKontras = getJumlahKontras();
+    let totalItems = totalPartikel + totalKontras + 5;
     let completed = userProgress.partikelSelesai.length + userProgress.kontrasSelesai.length + (userProgress.latihanSelesai ? 1 : 0) + (userProgress.puzzleSelesai ? 1 : 0) + (userProgress.quizSelesai ? 1 : 0);
     if (userProgress.highlighterSelesai) completed++;
     if (userProgress.builderSelesai) completed++;
@@ -49,10 +60,10 @@ function updateUIProgress() {
     if(elBar) elBar.style.width = percentage + '%';
 
     let progDasar = document.getElementById('progDasar');
-    if(progDasar) progDasar.innerText = userProgress.partikelSelesai.length + '/5';
+    if(progDasar) progDasar.innerText = userProgress.partikelSelesai.length + '/' + totalPartikel;
 
     let progKontras = document.getElementById('progKontras');
-    if(progKontras) progKontras.innerText = userProgress.kontrasSelesai.length + '/3';
+    if(progKontras) progKontras.innerText = userProgress.kontrasSelesai.length + '/' + totalKontras;
 
     let progQuiz = document.getElementById('progQuiz');
     if (progQuiz) {
@@ -86,14 +97,38 @@ function updateUIProgress() {
     }
 }
 
+let partikelFilterKategori = 'semua';
+
+function setFilterKategori(kategori) {
+    partikelFilterKategori = kategori;
+    renderPartikelGrid();
+}
+
 function renderPartikelGrid() {
     const grid = document.getElementById('partikelGrid');
+    const filterBar = document.getElementById('partikelFilterBar');
     if(!grid) return;
-    grid.innerHTML = '';
 
     if (typeof partikelData === 'undefined') return;
 
-    partikelData.forEach(p => {
+    let dataToShow = partikelData;
+    if (partikelFilterKategori !== 'semua') {
+        dataToShow = partikelData.filter(p => p.kategori && p.kategori.includes(partikelFilterKategori));
+    }
+
+    if (filterBar) {
+        let kategoris = [...new Set(partikelData.flatMap(p => p.kategori || []))];
+        let filterHtml = `<button class="px-3 py-1.5 rounded-full text-xs font-bold transition ${partikelFilterKategori === 'semua' ? 'bg-[#b89cff] text-[#12161d]' : 'bg-white/5 text-[#a9a29a] hover:bg-white/10'}" onclick="setFilterKategori('semua')">Semua</button>`;
+        kategoris.forEach(k => {
+            let label = k.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            filterHtml += `<button class="px-3 py-1.5 rounded-full text-xs font-bold transition ${partikelFilterKategori === k ? 'bg-[#b89cff] text-[#12161d]' : 'bg-white/5 text-[#a9a29a] hover:bg-white/10'}" onclick="setFilterKategori('${k}')">${label}</button>`;
+        });
+        filterBar.innerHTML = filterHtml;
+    }
+
+    grid.innerHTML = '';
+
+    dataToShow.forEach(p => {
         const isCompleted = userProgress.partikelSelesai.includes(p.id);
         const card = document.createElement('div');
         card.className = `partikel-card glass-card bg-gradient-to-br from-[#161b22] to-[#161b22]/40 border ${isCompleted ? 'border-[#b89cff]/50 shadow-lg shadow-[#b89cff]/10' : 'border-white/5'} rounded-2xl p-5 ${isCompleted ? 'completed' : ''} transition-all duration-300 hover:border-[#b89cff]/50 group`;
@@ -102,15 +137,21 @@ function renderPartikelGrid() {
 
         let charClass = p.char.length > 1 ? 'text-xl' : 'text-3xl';
 
+        let tingkatBadge = p.tingkat ? `<span class="text-[10px] px-1.5 py-0.5 rounded-full ${p.tingkat === 'N5' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'} font-bold">${p.tingkat}</span>` : '';
+
         card.innerHTML = `
             <div class="flex items-center justify-between mb-4">
                 <div class="card-icon w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center font-jp ${charClass} font-bold transition-all duration-300 group-hover:bg-[#b89cff]/20 group-hover:text-[#b89cff] border border-white/5 group-hover:border-[#b89cff]/30 ${isCompleted ? 'bg-[#b89cff]/20 text-[#b89cff] border-[#b89cff]/30' : ''}">
                     ${p.char}
                 </div>
-                ${isCompleted ? '<i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>' : ''}
+                <div class="flex items-center gap-2">
+                    ${tingkatBadge}
+                    ${isCompleted ? '<i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>' : ''}
+                </div>
             </div>
             <h3 class="text-xl font-bold text-[#f4efe7] font-jp mb-1">${p.romaji.toUpperCase()}</h3>
             <p class="text-[#a9a29a] text-sm">${p.fungsi}</p>
+            ${p.penjelasanSingkat ? `<p class="text-[#777] text-xs mt-2 line-clamp-2">${p.penjelasanSingkat}</p>` : ''}
         `;
         grid.appendChild(card);
     });
@@ -136,6 +177,61 @@ function openPartikelModal(id) {
         </div>
     `).join('');
 
+    let ceritaHtml = '';
+    if (p.cerita) {
+        ceritaHtml = `
+            <div class="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl text-sm">
+                <p class="font-bold mb-1 flex items-center gap-1 text-amber-300"><i data-lucide="sparkles" class="w-4 h-4"></i> Cerita Pembantu Ingatan</p>
+                <p class="text-amber-200/80 leading-relaxed">${p.cerita}</p>
+            </div>
+        `;
+    }
+
+    let semuaFungsiHtml = '';
+    if (p.semuaFungsi && p.semuaFungsi.length > 0) {
+        let fungsiItems = p.semuaFungsi.map((f, fi) => `
+            <div class="bg-[#0a0d12] border border-white/5 p-3 rounded-xl mb-2">
+                <p class="text-[#b89cff] font-bold text-sm mb-1 flex items-center gap-1"><i data-lucide="list" class="w-3 h-3"></i> ${f.judul}</p>
+                <p class="text-[#c0c0c0] text-xs leading-relaxed mb-2">${f.penjelasan}</p>
+                ${f.contoh ? f.contoh.map(ct => `<div class="text-xs text-[#f4efe7] font-jp bg-white/5 p-1.5 rounded mb-1">${ct}</div>`).join('') : ''}
+            </div>
+        `).join('');
+        semuaFungsiHtml = `
+            <div class="bg-[#161b22] p-4 rounded-xl border border-white/5">
+                <h4 class="text-[#b89cff] font-bold mb-3 flex items-center gap-2 text-sm"><i data-lucide="layers" class="w-4 h-4"></i> Semua Fungsi</h4>
+                ${fungsiItems}
+            </div>
+        `;
+    }
+
+    let jlptHtml = '';
+    if (p.jlptQuestions && p.jlptQuestions.length > 0) {
+        let qItems = p.jlptQuestions.map((q, qi) => {
+            let opts = q.opsi.map((o, oi) => `
+                <button class="px-2 py-1 text-xs rounded bg-[#161b22] border border-white/10 hover:bg-white/10 text-[#f4efe7] transition-all" onclick="checkJlptSample(this, ${qi}, ${oi})">${o}</button>
+            `).join('');
+            return `
+                <div class="bg-[#0a0d12] border border-white/5 p-3 rounded-xl mb-2" data-jlpt="${qi}">
+                    <p class="text-[#f4efe7] text-sm font-jp mb-2">${q.soal}</p>
+                    <div class="flex flex-wrap gap-1.5">${opts}</div>
+                    <div class="jlpt-feedback-${qi} mt-1 text-xs hidden"></div>
+                </div>
+            `;
+        }).join('');
+        jlptHtml = `
+            <div class="bg-[#161b22] p-4 rounded-xl border border-white/5">
+                <h4 class="text-[#b89cff] font-bold mb-3 flex items-center gap-2 text-sm"><i data-lucide="graduation-cap" class="w-4 h-4"></i> Latihan Gaya JLPT</h4>
+                ${qItems}
+            </div>
+        `;
+    }
+
+    let tingkatBadge = p.tingkat ? `<span class="text-xs px-2 py-0.5 rounded-full ${p.tingkat === 'N5' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'} font-bold ml-2">${p.tingkat}</span>` : '';
+    let kategoriLabel = '';
+    if (p.kategori && p.kategori.length > 0) {
+        kategoriLabel = `<span class="text-xs text-[#777] ml-2">${p.kategori[0].split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>`;
+    }
+
     let miniPracticeHtml = '';
     if (p.miniPractice) {
         let optionsHtml = p.miniPractice.options.map(opt =>
@@ -158,11 +254,12 @@ function openPartikelModal(id) {
                     ${p.char}
                 </div>
                 <div>
-                    <h3 class="text-2xl font-bold text-[#f4efe7] flex items-center gap-2">
+                    <h3 class="text-xl md:text-2xl font-bold text-[#f4efe7] flex items-center gap-2 flex-wrap">
                         Partikel ${p.romaji.toUpperCase()}
-                        ${isCompleted ? '<i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>' : ''}
+                        ${tingkatBadge}
+                        ${isCompleted ? '<i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>' : ''}
                     </h3>
-                    <p class="text-[#a9a29a] font-medium mt-1">${p.fungsi}</p>
+                    <p class="text-[#a9a29a] font-medium mt-1 text-sm">${p.fungsi} ${kategoriLabel}</p>
                 </div>
             </div>
 
@@ -172,6 +269,8 @@ function openPartikelModal(id) {
                         <p class="text-[#b89cff] font-bold mb-1"><i data-lucide="braces" class="w-4 h-4 inline mr-1"></i>Rumus:</p>
                         <p class="text-[#f4efe7]">${p.rumus}</p>
                     </div>
+
+                    ${ceritaHtml}
 
                     ${p.perbandingan ? `
                         <div class="bg-[#161b22] p-4 rounded-xl border border-white/5 text-sm">
@@ -184,6 +283,8 @@ function openPartikelModal(id) {
                         <h4 class="text-[#b89cff] font-bold mb-3 flex items-center gap-2 text-sm"><i data-lucide="book-open" class="w-4 h-4"></i> Contoh Kalimat</h4>
                         ${examplesHtml}
                     </div>
+
+                    ${semuaFungsiHtml}
 
                     ${p.salah ? `
                         <div class="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl text-rose-200 text-sm">
@@ -200,6 +301,8 @@ function openPartikelModal(id) {
                     ` : ''}
 
                     ${miniPracticeHtml}
+
+                    ${jlptHtml}
                 </div>
             </div>
 
@@ -264,6 +367,43 @@ function closePartikelModal() {
         modal.classList.add('hidden');
     }, 300);
     document.body.style.overflow = '';
+}
+
+function checkJlptSample(btn, qIdx, selectedIdx) {
+    const container = btn.closest('[data-jlpt]');
+    if (!container) return;
+    const allBtns = container.querySelectorAll('button');
+    allBtns.forEach(b => b.disabled = true);
+
+    // Find the particle
+    const modal = document.getElementById('partikelModal');
+    const content = document.getElementById('modalContent');
+    const idFromHeader = content ? content.querySelector('h3')?.textContent || '' : '';
+    let p = null;
+    const possibleId = idFromHeader.toLowerCase().replace('partikel ', '').trim();
+    if (typeof partikelData !== 'undefined') {
+        p = partikelData.find(x => x.romaji === possibleId || x.id === possibleId);
+    }
+    if (!p || !p.jlptQuestions || !p.jlptQuestions[qIdx]) return;
+
+    const q = p.jlptQuestions[qIdx];
+    const feedback = container.querySelector(`.jlpt-feedback-${qIdx}`);
+    if (!feedback) return;
+
+    feedback.classList.remove('hidden');
+
+    if (selectedIdx === q.jawaban) {
+        btn.classList.add('bg-emerald-500/20', 'border-emerald-500/50', 'text-emerald-400');
+        feedback.className = `jlpt-feedback-${qIdx} mt-2 text-xs text-emerald-400 block`;
+        feedback.innerHTML = '<i data-lucide="check-circle" class="w-3 h-3 inline mr-1"></i> Benar! ' + (q.penjelasan || '');
+    } else {
+        btn.classList.add('bg-rose-500/20', 'border-rose-500/50', 'text-rose-400');
+        let correctBtn = container.querySelectorAll('button')[q.jawaban];
+        if (correctBtn) correctBtn.classList.add('bg-emerald-500/20', 'border-emerald-500/50', 'text-emerald-400');
+        feedback.className = `jlpt-feedback-${qIdx} mt-2 text-xs text-rose-400 block`;
+        feedback.innerHTML = '<i data-lucide="x-circle" class="w-3 h-3 inline mr-1"></i> Kurang tepat. ' + (q.penjelasan || '');
+    }
+    lucide.createIcons();
 }
 
 function showToast(title, msg) {

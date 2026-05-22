@@ -31,6 +31,7 @@
   </script>
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/partikel.css">
+  <link rel="stylesheet" href="assets/css/games.css">
 </head>
 <body class="bg-dark-900 text-white overflow-x-hidden font-sans">
 
@@ -155,6 +156,7 @@
         <p class="text-neutral-400">Pelajari 15 partikel fundamental bahasa Jepang beserta pola penggunaannya.</p>
       </div>
 
+      <div class="flex flex-wrap gap-2 mb-6" id="partikelFilterBar"></div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="partikelGrid">
         <!-- Rendered by JS -->
       </div>
@@ -316,6 +318,70 @@
     </div>
   </div>
 
+    <!-- ========== SECTION: DECISION TREE ========== -->
+  <section class="py-16 px-6 lg:px-12 border-t border-white/5">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-12">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-semibold mb-6">
+          <i data-lucide="git-branch" class="w-4 h-4"></i> Decision Tree
+        </div>
+        <h2 class="text-3xl font-bold mb-4">Bingung Pilih Partikel?</h2>
+        <p class="text-neutral-400">Jawab pertanyaan-pertanyaan berikut, dan sistem akan merekomendasikan partikel yang tepat untuk kalimatmu.</p>
+      </div>
+
+      <div class="glass-card bg-gradient-to-br from-[#161b22] to-[#161b22]/40 border border-white/10 rounded-3xl p-6 md:p-8">
+        <div id="decisionTreeContainer">
+          <div class="text-center py-10">
+            <i data-lucide="loader" class="w-8 h-8 text-[#b89cff] mx-auto mb-4 animate-spin"></i>
+            <p class="text-neutral-400">Memuat Decision Tree...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+    <!-- ========== SECTION: CONTRAST LAB ========== -->
+  <section class="py-16 px-6 lg:px-12 border-t border-white/5 bg-dark-950">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-12">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-sm font-semibold mb-6">
+          <i data-lucide="git-compare" class="w-4 h-4"></i> Contrast Lab
+        </div>
+        <h2 class="text-3xl font-bold mb-4">Perbandingan Partikel</h2>
+        <p class="text-neutral-400">Bandingkan partikel yang sering membingungkan — lengkap dengan aturan, contoh, dan mnemonik.</p>
+      </div>
+
+      <div id="contrastLabContainer">
+        <div class="text-center py-10">
+          <i data-lucide="loader" class="w-8 h-8 text-cyan-400 mx-auto mb-4 animate-spin"></i>
+          <p class="text-neutral-400">Memuat perbandingan...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION: PARTICLE QUEST RPG ========== -->
+  <section class="py-16 px-6 lg:px-12 border-t border-white/5">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-12">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-semibold mb-6">
+          <i data-lucide="swords" class="w-4 h-4"></i> RPG Game
+        </div>
+        <h2 class="text-3xl font-bold mb-4">Particle Quest RPG</h2>
+        <p class="text-neutral-400">Jelajahi 7 dungeon, kalahkan monster grammar, dan kuasai semua partikel!</p>
+      </div>
+
+      <div class="glass-card bg-gradient-to-br from-[#161b22] to-[#161b22]/40 border border-white/10 rounded-3xl p-6 md:p-8">
+        <div id="rpgGameContainer">
+          <div class="text-center py-10">
+            <i data-lucide="loader" class="w-8 h-8 text-emerald-400 mx-auto mb-4 animate-spin"></i>
+            <p class="text-neutral-400">Memulai petualangan...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
     <!-- ========== SECTION: LATIHAN PARTIKEL ========== -->
   <section class="py-16 px-6 lg:px-12">
     <div class="max-w-3xl mx-auto text-center mb-12">
@@ -389,8 +455,12 @@
   <!-- Wanakana JS for Romaji -> Kana conversion -->
   <script src="https://unpkg.com/wanakana"></script>
   <script src="assets/js/partikel.utils.js"></script>
+  <script src="assets/js/game-engine.js"></script>
   <script src="assets/js/partikel.data.js"></script>
+  <script src="assets/js/partikel.decision-tree.js"></script>
+  <script src="assets/js/partikel.contrast-lab.js"></script>
   <script src="assets/js/partikel.practice.js"></script>
+  <script src="assets/js/partikel.game.js"></script>
   <script src="assets/js/partikel.js"></script>
   <script>
     lucide.createIcons();

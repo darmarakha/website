@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+error_log
+uploads/Gambar/
+uploads/Jawaban/
+uploads/PDF/
+N5/node_modules/
+N5/dist/
+N5/.env
+N5/.zscripts/*.pid
