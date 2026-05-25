@@ -65,23 +65,32 @@ try {
     // Fetch from GitHub GraphQL
     if (!$token) {
         // Mock fallback for local testing if no token available
+        $mockWeeks = [];
+        $start = new DateTime('2025-05-26');
+        $totalContributions = 0;
+        for ($w = 0; $w < 52; $w++) {
+            $days = [];
+            $firstDay = $start->format('Y-m-d');
+            for ($d = 0; $d < 7; $d++) {
+                $count = random_int(0, 12);
+                $totalContributions += $count;
+                $level = 0;
+                if ($count > 0) $level = 1;
+                if ($count > 3) $level = 2;
+                if ($count > 6) $level = 3;
+                if ($count > 9) $level = 4;
+                $days[] = ['date' => $start->format('Y-m-d'), 'count' => $count, 'level' => $level];
+                $start->modify('+1 day');
+            }
+            $mockWeeks[] = ['firstDay' => $firstDay, 'days' => $days];
+        }
         $mockData = [
             'ok' => true,
             'username' => $username,
-            'totalContributions' => 294,
-            'from' => '2025-05-01',
-            'to' => '2026-05-19',
-            'weeks' => [
-                [
-                    'firstDay' => '2025-05-01',
-                    'days' => [
-                        ['date' => '2025-05-01', 'count' => 0, 'level' => 0],
-                        ['date' => '2025-05-02', 'count' => 1, 'level' => 1],
-                        ['date' => '2025-05-03', 'count' => 5, 'level' => 2],
-                        ['date' => '2025-05-04', 'count' => 10, 'level' => 4],
-                    ]
-                ]
-            ],
+            'totalContributions' => $totalContributions,
+            'from' => '2025-05-26',
+            'to' => date('Y-m-d', strtotime('-1 day')),
+            'weeks' => $mockWeeks,
             'lastFetchedAt' => date('Y-m-d H:i:s'),
             'stale' => true
         ];

@@ -4,6 +4,8 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
     header("Location: ../index.php");
     exit;
 }
+require_once __DIR__ . '/../config/csrf.php';
+$editCsrfToken = csrf_token_value();
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -181,6 +183,8 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
     </div>
 
     <script>
+        const CSRF_TOKEN = '<?php echo $editCsrfToken; ?>';
+
         let currentMode = 'visual';
         let currentSection = 'certs';
         let currentFile = '../data.js';
@@ -205,6 +209,7 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                 const fd = new FormData();
                 fd.append('action', 'load_file');
                 fd.append('filename', '../data.js');
+                fd.append('_csrf_token', CSRF_TOKEN);
 
                 const res = await fetch('api.php', { method: 'POST', body: fd });
                 const data = await res.json();
@@ -640,6 +645,7 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                 const fd = new FormData();
                 fd.append('action', 'upload_image'); // Di api.php, upload_image simpan ke uploads/
                 fd.append('image', file);
+                fd.append('_csrf_token', CSRF_TOKEN);
                 const res = await fetch('api.php', { method: 'POST', body: fd });
                 const data = await res.json();
                 if (data.status === 'success') {
@@ -668,16 +674,17 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
             if (!file) return;
             showLoading(true);
             try {
-                const fd = new FormData();
-                if (type === 'img') {
-                    fd.append('action', 'upload_image');
-                    fd.append('image', file);
-                } else {
-                    fd.append('action', 'upload_project_file');
-                    fd.append('project_file', file);
-                }
-                
-                const res = await fetch('api.php', { method: 'POST', body: fd });
+            const fd = new FormData();
+            if (type === 'img') {
+                fd.append('action', 'upload_image');
+                fd.append('image', file);
+            } else {
+                fd.append('action', 'upload_project_file');
+                fd.append('project_file', file);
+            }
+            fd.append('_csrf_token', CSRF_TOKEN);
+            
+            const res = await fetch('api.php', { method: 'POST', body: fd });
                 const data = await res.json();
                 
                 if (data.status === 'success') {
@@ -754,11 +761,12 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
                     return;
                 }
 
-                const fd = new FormData();
-                fd.append('action', 'save_file');
-                fd.append('filename', currentFile);
-                fd.append('content', content);
-                const res = await fetch('api.php', { method: 'POST', body: fd });
+            const fd = new FormData();
+            fd.append('action', 'save_file');
+            fd.append('filename', currentFile);
+            fd.append('content', content);
+            fd.append('_csrf_token', CSRF_TOKEN);
+            const res = await fetch('api.php', { method: 'POST', body: fd });
                 const data = await res.json();
                 if (data.status === 'success') { 
                     rawData = content; 
@@ -785,11 +793,12 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
         async function loadRawFile(filename) {
             showLoading(true);
             try {
-                const fd = new FormData();
-                fd.append('action', 'load_file');
-                fd.append('filename', filename);
+            const fd = new FormData();
+            fd.append('action', 'load_file');
+            fd.append('filename', filename);
+            fd.append('_csrf_token', CSRF_TOKEN);
 
-                const res = await fetch('api.php', { method: 'POST', body: fd });
+            const res = await fetch('api.php', { method: 'POST', body: fd });
                 const data = await res.json();
                 
                 if(data.status === 'success') {

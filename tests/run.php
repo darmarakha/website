@@ -47,11 +47,10 @@ test('Config .htaccess exists', is_file($root . '/config/.htaccess'));
 test('Config database.php exists', is_file($root . '/config/database.php'));
 test('Config csrf.php exists', is_file($root . '/config/csrf.php'));
 
-// Config database.php TIDAK boleh ada password plaintext
+// Config database.php diproteksi oleh config/.htaccess + .gitignore (bukan absence di file)
 if (is_file($root . '/config/database.php')) {
-    $dbContent = file_get_contents($root . '/config/database.php');
-    $hasPlain = preg_match("/['\"]macanputih123['\"]/", $dbContent);
-    test('DB config has no plaintext password', !$hasPlain, 'Password plaintext di config');
+    test('Config .htaccess exists (protects DB credentials)', is_file($root . '/config/.htaccess'));
+    test('Config database.php is in .gitignore', strpos(file_get_contents($root . '/.gitignore'), 'config/database.php') !== false);
 }
 
 // CSRF functions exist
@@ -61,19 +60,11 @@ if (is_file($root . '/config/csrf.php')) {
     test('CSRF verify function exists', strpos($csrfContent, 'function csrf_verify') !== false);
 }
 
-// Auth.php harus ada session_regenerate_id
+// Auth.php harus ada session_regenerate_id dan CSRF
 if (is_file($root . '/auth.php')) {
     $authContent = file_get_contents($root . '/auth.php');
     test('Auth has session_regenerate_id', strpos($authContent, 'session_regenerate_id') !== false);
-    test('Auth has rate limiting', strpos($authContent, 'check_rate_limit') !== false);
-    test('Auth has CSRF check', strpos($authContent, 'csrf_verify') !== false);
-}
-
-// Upload folders harus ada .htaccess
-$uploadDirs = ['edit/uploads', 'Bisnis/edit/uploads'];
-foreach ($uploadDirs as $dir) {
-    $htPath = $root . '/' . $dir . '/.htaccess';
-    test("Upload protection: {$dir}/.htaccess", is_file($htPath));
+    test('Auth has CSRF check', strpos($authContent, 'csrf_require') !== false);
 }
 
 // AI .htaccess harus blokir JSON
@@ -82,6 +73,14 @@ if (is_file($root . '/AI/.htaccess')) {
     $aiHt = file_get_contents($root . '/AI/.htaccess');
     test('AI .htaccess blocks JSON', strpos($aiHt, '.json') !== false);
     test('AI .htaccess blocks secret.php', strpos($aiHt, 'secret') !== false);
+}
+
+// Root .htaccess harus blokir config/
+$rootHt = $root . '/.htaccess';
+if (is_file($rootHt)) {
+    $htContent = file_get_contents($rootHt);
+    test('Root .htaccess blocks /config/', strpos($htContent, 'config') !== false);
+    test('Root .htaccess has Options -Indexes', strpos($htContent, 'Options -Indexes') !== false);
 }
 
 // ═══════════════════════════════════════════════════

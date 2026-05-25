@@ -41,5 +41,9 @@ desktop.ini
 
 # Local configs
 config.local.php
+config/github_private.php
+config/database.php
 AI/nvidia.local.php
 AI/*.local.php
+AI/secret.php
+config/_gen_enc.php

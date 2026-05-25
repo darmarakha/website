@@ -13,7 +13,18 @@ Options -Indexes
     <Files "config.php">
         Require all denied
     </Files>
+    <FilesMatch "\.(php|inc)$">
+        <If "-d %{REQUEST_FILENAME}">
+            Require all denied
+        </If>
+    </FilesMatch>
 </IfModule>
+
+# Protect sensitive directories (PHP includes are server-side, not affected)
+RedirectMatch 403 ^/config/.*$
+RedirectMatch 403 ^/AI/secret\.php$
+RedirectMatch 403 ^/AI/.*\.json$
+RedirectMatch 403 ^/AI/.*\.log$
 
 <IfModule mod_rewrite.c>
 RewriteEngine On

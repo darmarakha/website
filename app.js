@@ -503,6 +503,9 @@ authForm.addEventListener('submit', async e => {
     authSubmitBtn.disabled = true;
 
     try {
+        const csrfInput = document.querySelector('#auth-form input[name="_csrf_token"]');
+        const csrfToken = csrfInput ? csrfInput.value : '';
+
         // Mengirim data ke auth.php
         const response = await fetch('auth.php', {
             method: 'POST',
@@ -513,7 +516,8 @@ authForm.addEventListener('submit', async e => {
                 action: action,
                 name: name,
                 email: email,
-                password: password
+                password: password,
+                _csrf_token: csrfToken
             })
         });
 

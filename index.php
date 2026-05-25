@@ -5,6 +5,8 @@ header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 header("Expires: 0");
+require_once __DIR__ . '/config/csrf.php';
+$gemu_csrf_token = csrf_token_value();
 $gemu_asset_version = max(
     @filemtime(__DIR__ . '/index.php') ?: time(),
     @filemtime(__DIR__ . '/app.js') ?: time(),
@@ -1266,6 +1268,7 @@ $gemu_asset_version = max(
                 </div>
 
                 <form id="auth-form" class="space-y-4">
+                    <input type="hidden" name="_csrf_token" value="<?php echo htmlspecialchars($gemu_csrf_token, ENT_QUOTES, 'UTF-8'); ?>">
                     <div id="auth-name-group" class="hidden">
                         <label class="block text-xs sm:text-sm font-medium text-navy-700 mb-1"
                             data-i18n="contact.nameLabel">Nama</label>
@@ -1406,8 +1409,6 @@ $gemu_asset_version = max(
                     let currentMonth = -1;
 
                     data.weeks.forEach(week => {
-                        // Month label logic
-                        let monthLabelAdded = false;
                         if (week.days.length > 0) {
                             const firstDayDate = new Date(week.days[0].date);
                             const monthIndex = firstDayDate.getMonth();
@@ -1419,7 +1420,6 @@ $gemu_asset_version = max(
                                 // Span spanning column
                                 monthsEl.appendChild(span);
                                 currentMonth = monthIndex;
-                                monthLabelAdded = true;
                             } else {
                                 const span = document.createElement('span');
                                 monthsEl.appendChild(span); // Empty spacer

@@ -9,6 +9,9 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/config/csrf.php';
+
+csrf_require(gemu_input('_csrf_token'));
 
 function gemu_auth_json(array $payload, int $code = 200): void
 {

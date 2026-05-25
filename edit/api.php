@@ -8,6 +8,9 @@ if (!isset($_SESSION['user_role']) || strtolower($_SESSION['user_role']) !== 'ow
     exit;
 }
 
+require_once __DIR__ . '/../config/csrf.php';
+csrf_require($_POST['_csrf_token'] ?? '');
+
 $action = $_POST['action'] ?? '';
 
 if ($action === 'load_file') {

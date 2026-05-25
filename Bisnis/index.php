@@ -1,5 +1,7 @@
 <?php
-session_start(); // Wajib untuk melacak status login user
+session_start();
+require_once __DIR__ . '/../config/csrf.php';
+$bisnis_csrf = csrf_token_value();
 ?>
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
@@ -130,6 +132,7 @@ session_start(); // Wajib untuk melacak status login user
                 
                 <form id="auth-form" class="space-y-4">
                     <input type="hidden" name="action" id="auth-action" value="login">
+                    <input type="hidden" name="_csrf_token" value="<?php echo htmlspecialchars($bisnis_csrf, ENT_QUOTES, 'UTF-8'); ?>">
                     <div id="auth-name-group" class="hidden">
                         <label class="block text-xs sm:text-sm font-medium text-navy-700 mb-1">Nama</label>
                         <input type="text" name="name" id="auth-name" class="w-full px-4 py-2.5 rounded-xl border border-navy-200 bg-navy-50/50 text-navy-900 text-sm focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 transition-all">
