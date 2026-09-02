@@ -140,6 +140,13 @@ echo "\n─── Agent Intelligence Tests ───\n";
 
 if (is_file($root . '/AI/api.php')) {
     $apiContent = file_get_contents($root . '/AI/api.php');
+    preg_match_all("/require_once\s+__DIR__\s*\.\s*[\x27\x22]([^\x27\x22]+)[\x27\x22]/", $apiContent, $matches);
+    foreach ($matches[1] as $inc) {
+        $incPath = $root . '/AI' . $inc;
+        if (is_file($incPath)) {
+            $apiContent .= "\n" . file_get_contents($incPath);
+        }
+    }
     test('Quality gate has files_read check', strpos($apiContent, 'filesRead === 0') !== false);
     test('Quality gate has confidence cap', strpos($apiContent, 'confidence < 0.80') !== false);
     test('Counter-argument in discussion', strpos($apiContent, 'COUNTER-ARGUMENT') !== false);

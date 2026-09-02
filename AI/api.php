@@ -6,6 +6,7 @@ if (is_file(__DIR__ . '/nvidia.local.php')) {
 require_once __DIR__ . '/api_nvidia.php';
 require_once __DIR__ . '/api_dual_brain.php';
 require_once __DIR__ . '/api_lexicon.php';
+require_once __DIR__ . '/api_website.php';
 require_once __DIR__ . '/api.part02.php';
 require_once __DIR__ . '/api.part03.php';
 require_once __DIR__ . '/api_agent.php';
