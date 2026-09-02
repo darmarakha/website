@@ -1,6 +1,6 @@
 Options -Indexes
 
-<FilesMatch "\.(json|log|bak|tmp)$">
+<FilesMatch "(\.json|\.log|\.bak|\.tmp)$">
     Require all denied
 </FilesMatch>
 
